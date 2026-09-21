@@ -1,0 +1,10 @@
+web/node_modules/
+web/dist/
+web/*.tsbuildinfo
+**/.env
+**/.env.local
+**/.env.*.local
+supabase/.temp/
+supabase/.branches/
+web/test-results/
+web/coverage/

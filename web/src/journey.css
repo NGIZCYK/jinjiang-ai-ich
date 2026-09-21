@@ -1,0 +1,35 @@
+.journey-page {max-width:1120px;margin:0 auto;padding:24px 0 60px;display:grid;gap:24px}
+.journey-card {padding:clamp(20px,3vw,36px);border:1px solid #d9d4c8;background:#fbfaf6;border-radius:4px;margin:24px 0;color:#253e36;min-width:0}
+.journey-card h2,.journey-page h1 {font-family:Georgia,'Noto Serif SC',serif;font-size:clamp(22px,2.6vw,30px);line-height:1.4;margin:8px 0 12px}
+.journey-card h3 {font-size:18px;margin:12px 0;font-weight:600}
+.journey-card p {font-size:14px;line-height:1.85;margin:10px 0;color:#59665f;overflow-wrap:anywhere}
+.journey-heading {display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.journey-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:22px;margin:22px 0}
+.needs-grid {grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
+.journey-card label,.journey-form label {font-size:14px;display:grid;gap:8px;align-content:start}
+.journey-card fieldset {border:1px solid #dedbd1;border-radius:4px;padding:16px;min-width:0}
+.journey-card legend {padding:0 6px;font-size:15px;font-weight:600}
+.journey-actions,.choice-row {display:flex;gap:10px;flex-wrap:wrap;margin:14px 0;align-items:center}
+.choice-row button,.choice-grid button {border:1px solid #cfcdbf;background:#fffdf8;padding:10px 13px;font-size:13px;border-radius:3px;min-height:44px}
+.choice-row button[aria-pressed=true],.choice-grid button[aria-pressed=true] {border:2px solid #40685b;background:#e9f0e9;padding:9px 12px}
+.choice-grid {display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.choice-grid img {width:100%;height:68px;object-fit:cover;margin-bottom:6px}
+.palette-dot {display:inline-block;border:1px solid #8888;width:15px;height:15px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.journey-text-button {text-decoration:underline;text-underline-offset:4px;font-size:13px;padding:10px 0;color:#315c4c}
+.journey-card .journey-radio {display:flex;align-items:flex-start;gap:10px;margin:12px 0;line-height:1.65}
+.journey-radio input {margin-top:5px;accent-color:#40685b}
+.journey-card progress {display:block;width:100%;height:7px;margin:22px 0;accent-color:#40685b}
+.exploration-summary,.experience-result {padding:20px;background:#f0efe6;border-left:3px solid #b89d6a}
+.journey-notice {padding:12px 16px;background:#edf2e9;border:1px solid #d6e2d0;color:#3e5548;font-size:14px;line-height:1.7;margin:14px 0;overflow-wrap:anywhere}
+.journey-notice.is-error {background:#fff0ea;border-color:#e6b4a6;color:#833629}
+.booking-card {padding:24px 0;border-top:1px solid #ddd6c7}
+.status-pill {display:inline-block;background:#e7eee6;padding:5px 11px;border-radius:20px;font-size:12px}
+.status-pending {background:#f4e8ce}.status-cancelled,.status-declined {background:#eee4e2}
+.journey-card details {font-size:13px;line-height:1.8;margin:12px 0}.journey-card summary {cursor:pointer}
+.journey-form,.feedback-form {display:grid;gap:18px;margin:24px 0}.feedback-form {max-width:600px}
+.journey-card button:disabled,.journey-form button:disabled {opacity:.5;cursor:not-allowed}
+.trial-funnel {display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:16px;margin:24px 0}
+.trial-funnel li {display:grid;gap:7px;font-size:12px}.trial-funnel strong {font-size:28px;color:#315c4c}
+.funnel-track {background:#e7e4db;height:6px}.funnel-track span {display:block;background:#668578;height:100%}
+.journey-card blockquote {border-left:2px solid #ad9877;padding:8px 14px;font-size:14px;margin:12px 0}
+@media(max-width:600px){.journey-card{margin:18px 0}.journey-actions .btn-primary,.journey-actions .btn-ghost{white-space:normal;text-align:center}.journey-card .input{max-width:100%;min-width:0}.trial-funnel{grid-template-columns:1fr 1fr}.journey-heading{align-items:flex-start}.journey-page{padding-top:12px}.journey-card{scroll-margin-top:130px}}

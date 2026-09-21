@@ -1,0 +1,5 @@
+project_id = "jinjiang-ai-ich"
+
+[functions.concierge]
+# Handler validates Supabase Auth JWTs explicitly; public capabilities contain no secrets.
+verify_jwt = false

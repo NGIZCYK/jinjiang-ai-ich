@@ -1,0 +1,33 @@
+Develop actionable solutions for Jinjiang's real-world business scenarios across three domains: hotel operations, tourism products, and scenic area management, focusing on AI+ICH
+Jinjiang Group (锦江国际集团 / Jin Jiang International Holdings Co., Ltd.)
+
+Problem / challenge description
+Jinjiang Group (锦江国际集团 / Jin Jiang International Holdings Co., Ltd.) is one of China's largest and most influential hospitality and tourism conglomerates, headquartered in Shanghai. With a portfolio spanning multiple hotel brands—including Jin Jiang Hotels and partnerships with international chains such as Louvre Hotels Group—the group operates thousands of properties across China and globally. Beyond its core lodging business, Jinjiang Group has expanded into tourism, transportation, and real estate, and is increasingly recognized as a pioneer in integrating digital technology with cultural tourism, positioning itself at the forefront of China's hospitality industry's digital transformation.This topic centers on Jinjiang Group's flagship initiative, the "Jinjiang Cup" National College Student AI + ICH Innovation Challenge (锦江杯全国大学生AI+非遗创新挑战赛), which embodies the company's commitment to bridging traditional culture with cutting-edge technology. The challenge operates under the theme "Smart Innovation for ICH, Revitalizing Culture and Tourism" (智创非遗，焕活文旅) and is organized by the National Pan-Hospitality Industry Education-Industry Integration Community, with Jinjiang International Group as the lead enterprise.
+Where could this go?
+These are not recommendations and none is better than another — they're here to show how differently this brief could be answered. Your team's own direction should come from your research, not this list.
+Immersive AR/VR cultural experience
+A solution might use AR/VR to overlay ICH stories onto physical hotel rooms or scenic spots, letting guests interact with digital heritage elements in real time.
+AI-driven personalized itinerary and content generator
+Could leverage LLMs to craft custom cultural tourism itineraries and generate marketing copy tailored to individual preferences, enhancing guest engagement.
+Data analytics for ICH product viability
+Might build a decision-support tool using Python to analyze customer segments, project revenues, and simulate ROI for ICH-integrated offerings, guiding business strategy.
+Digital human guide with sentiment-aware dialogue
+Could deploy an interactive digital human (e.g., 'Wan Niang') that uses NLP to detect user sentiment and adapt storytelling, creating emotionally resonant cultural exchanges.
+Automated content and coordination workflow
+May design an intelligent automation system that streamlines the creation and distribution of ICH-themed content across hotel and tourism channels, reducing manual effort.
+What any solution must satisfy
+• Integrate AI technologies including LLM APIs (e.g., DeepSeek, OpenAI, Claude) and possibly computer vision or AR/VR frameworks.
+• Address at least one of the three domains: hotel operations, tourism products, or scenic area management.
+• Focus on AI + ICH (intangible cultural heritage) with a clear link to cultural preservation or revitalization.
+• Include a business planning analytics component using Python (pandas, scikit-learn) for customer segmentation, revenue projections, or ROI scenarios.
+• Be feasible as a prototype within the course timeline and align with the learning outcomes, including AI agents, intelligent automation, and interactive simulations.
+• Consider the target users (e.g., hotel guests, tourists) and the context of Jinjiang Group's operations.
+Find these out before you choose
+• What specific ICH elements (e.g., crafts, performances, rituals) are most relevant to Jinjiang's properties and how can they be authentically represented?
+• How can the solution measure its impact on cultural preservation or guest engagement, and what data would be needed?
+• What are the technical constraints and integration challenges with existing hotel or scenic area systems?
+• How might the solution be monetized or create value for Jinjiang Group, and what are the potential revenue streams?
+• What are the ethical considerations in using AI to represent ICH, and how can we ensure respect for cultural origins?
+Expected Outcomes & Deliverables
+This project requires building an AI-driven cultural tourism innovation framework at the intersection of generative AI and intangible cultural heritage (ICH) preservation. Students must develop a multimodal AI prototype leveraging LLM APIs (DeepSeek, OpenAI, Claude) to power interactive digital human guides (e.g., "Wan Niang") capable of narrating ICH stories through natural language dialogues. The technical scope includes integrating computer vision and AR/VR frameworks (Unity, WebXR, or A-Frame) to create immersive hotel-room and scenic-area experiences, alongside NLP pipelines for sentiment analysis of cultural content and automated generation of themed marketing copy. Students will construct a business planning analytics layer using Python (pandas, scikit-learn) to model customer segmentation, revenue projections, and ROI scenarios for ICH-integrated hospitality products.
+deliverables
