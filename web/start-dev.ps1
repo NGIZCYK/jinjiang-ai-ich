@@ -9,6 +9,6 @@ if (-not (Test-Path (Join-Path $PSScriptRoot "node_modules"))) {
   npm install
 }
 
-Write-Host "==> 启动开发服务器 http://127.0.0.1:5180/"
+Write-Host "==> 启动公开课程演示环境 http://127.0.0.1:5180/"
 Start-Process "http://127.0.0.1:5180/"
-npm run dev
+npm run dev:demo

@@ -561,6 +561,124 @@ p {
   box-shadow: 0 24px 70px rgba(35, 29, 24, 0.07);
 }
 
+.demo-account-panel {
+  margin-top: 1.4rem;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 1.25rem;
+}
+
+.demo-account-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.demo-account-heading h3 {
+  margin-top: 0.35rem;
+  color: var(--ink);
+  font-family: var(--font-serif, 'Songti SC', STSong, serif);
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+
+.demo-account-heading > span {
+  color: var(--ink-soft);
+  font-size: 0.66rem;
+}
+
+.demo-account-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin-top: 0.9rem;
+}
+
+.demo-account-card {
+  display: grid;
+  min-height: 7.2rem;
+  align-content: start;
+  gap: 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  background: rgba(251, 248, 242, 0.72);
+  padding: 0.9rem;
+  color: var(--ink);
+  text-align: left;
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.demo-account-card:hover:not(:disabled) {
+  border-color: rgba(43, 74, 66, 0.55);
+  background: white;
+}
+
+.demo-account-card[aria-pressed='true'] {
+  border-color: var(--jade);
+  background: rgba(43, 74, 66, 0.055);
+  box-shadow: inset 3px 0 0 var(--jade);
+}
+
+.demo-account-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.demo-account-card-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.demo-account-card-title strong {
+  font-family: var(--font-serif, 'Songti SC', STSong, serif);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.demo-account-card-title > span {
+  color: var(--gold);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.demo-account-card small {
+  overflow-wrap: anywhere;
+  color: var(--jade);
+  font-size: 0.66rem;
+}
+
+.demo-account-description {
+  color: var(--ink-soft);
+  font-size: 0.67rem;
+  line-height: 1.55;
+}
+
+.demo-account-note {
+  margin-top: 0.75rem;
+  color: #77766f;
+  font-size: 0.66rem;
+  line-height: 1.65;
+}
+
+@media (max-width: 47.99rem) {
+  .demo-account-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .demo-account-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .demo-account-card {
+    min-height: 6.2rem;
+  }
+}
+
 @media (min-width: 48rem) {
   .site-footer-inner {
     grid-template-columns: minmax(11rem, 0.7fr) minmax(20rem, 1.6fr) auto;

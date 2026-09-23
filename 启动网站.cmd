@@ -34,7 +34,7 @@ if errorlevel 1 goto install_failed
 :start_server
 echo Starting the website. Keep this window open while using the site.
 REM Vite opens the browser itself after the local server is ready.
-"%NODE%" "node_modules\vite\bin\vite.js" --host 127.0.0.1 --port 5181 --strictPort --open
+"%NODE%" "node_modules\vite\bin\vite.js" --mode demo --host 127.0.0.1 --port 5181 --strictPort --open
 set "RESULT=%ERRORLEVEL%"
 echo.
 echo The website server stopped. Error code: %RESULT%
