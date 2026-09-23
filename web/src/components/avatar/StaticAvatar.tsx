@@ -9,8 +9,6 @@ export function StaticAvatar({
   imageSrc = '/images/wanniang-concierge-v2.png',
   alt = '婉娘文化礼宾',
   className = '',
-  mouthOpen = 0,
-  mouthForm = 0,
   ttsMode = 'browser',
 }: StaticAvatarProps) {
   const [loadError, setLoadError] = useState(false)
@@ -27,10 +25,6 @@ export function StaticAvatar({
       data-emotion={emotion}
       data-gesture={gesture}
       data-tts-mode={ttsMode}
-      style={{
-        '--avatar-mouth-open': mouthOpen,
-        '--avatar-mouth-form': mouthForm,
-      } as React.CSSProperties}
     >
       {/* 景深环境微光层 */}
       <div className="static-avatar-depth-glow" aria-hidden="true" />

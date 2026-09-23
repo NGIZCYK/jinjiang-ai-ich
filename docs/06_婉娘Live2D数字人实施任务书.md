@@ -9,6 +9,8 @@ owner_scope: 婉娘礼宾 /guide
 
 # 婉娘 Live2D 数字人实施任务书
 
+> 文档性质：实施目标与验收口径。`status: approved-for-implementation` 不表示 Live2D 模型、Azure Viseme 或性能指标已完成验收；资产现状见 [角色与资产规范](07_婉娘角色设计与Live2D资产规范.md)，已核验基线见 [2026-09-15 礼宾修复日志](05_每周日志/02_成员工作日志/2026-09-15_婉娘礼宾问答路由与角色呈现修复.md)。
+
 > 项目根目录：`C:\Users\21701\Desktop\jinjiang-ai-ich`  
 > 前端目录：`web/`  
 > 当前技术栈：Vite + React 18 + TypeScript + Tailwind + Zustand  
@@ -609,4 +611,3 @@ npm run build
 4. 确认正式 Live2D 模型和 TTS 凭证是否存在。
 5. 若资产尚未齐备，从“批次 1”开始，不等待外部资产。
 6. 每完成一个批次，报告修改文件、功能变化、构建结果、已知限制和下一批前置条件。
-

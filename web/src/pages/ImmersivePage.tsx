@@ -1,7 +1,7 @@
 import { ExplorationTask } from '../components/ExplorationTask'
 import type { Exploration } from '../lib/journey'
-import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import { LobbyConciergeScene, type LobbyHotspotId } from '../components/LobbyConciergeScene'
 import { useLanguage, type Language } from '../lib/i18n'
 
@@ -29,7 +29,7 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
     silk: {
       title: '识线：从蚕茧、劈丝到丝光',
       eyebrow: '02 · THREAD',
-      body: '材料序列沿“蚕茧—劈丝—取色—丝光”展开，并将五组项目色样与相对细度合并为一个观察台，帮助理解颜色、线条与受光变化之间的关系。',
+      body: '从蚕茧到丝光，观察材料、色样与相对细度如何影响绣面的视觉表现。',
       tags: ['材料序列', '相对细度', '策展取色'],
       observe: '依次查看四项材料观察，再选一组色样，对比整股、1/4、1/16 与 1/32 在固定显示倍率下的视觉变化。',
       stay: '选中的色样可作为入门练习的配色参考；实体材料与教学方式以后续合作工坊方案为准。',
@@ -38,7 +38,7 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
     workbench: {
       title: '试针：传统绣台与第一针',
       eyebrow: '03 · STITCH',
-      body: '绣台将较长的制作过程压缩为“上绷、配线、起针、完成与留存”四个教学节点，让第一次接触苏绣的住客理解材料、工具和工序之间的关系。',
+      body: '循着上绷、配线、起针与留存四步，认识一枚练习样片的制作过程。',
       tags: ['传统绣绷', '四步工序', '入门体验'],
       observe: '按次序查看四个流程节点，留意绷面张力、丝线方向与落针节奏如何共同影响成绣效果。',
       stay: '原型建议以 90 分钟完成一枚基础练习样片；师资、材料和成品形式仍需与合作方确认。',
@@ -58,7 +58,7 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
     silk: {
       title: 'Thread: From Cocoon and Splitting to Lustre',
       eyebrow: '02 · THREAD',
-      body: 'The sequence moves through cocoon, splitting, palette and lustre. Five project swatches and a relative-fineness study connect colour, line character and reflected light in one learning surface.',
+      body: 'From cocoon to lustre, explore how materials, colour and relative thread fineness shape the embroidered surface.',
       tags: ['Material sequence', 'Relative fineness', 'Curated palette'],
       observe: 'Review the four material views, choose a swatch, then compare Full, 1/4, 1/16 and 1/32 at a fixed display scale.',
       stay: 'A selected palette can inform an introductory practice piece; physical materials and teaching depend on a future atelier partner.',
@@ -67,7 +67,7 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
     workbench: {
       title: 'Stitch: The Workbench and a First Stitch',
       eyebrow: '03 · STITCH',
-      body: 'The workbench condenses a longer making process into four learning moments: mounting, thread selection, first stitch, and completion. It helps a first-time guest connect materials, tools and sequence.',
+      body: 'Follow mounting, thread selection, the first stitch and keeping a practice sample.',
       tags: ['Embroidery frame', 'Four-step flow', 'Introductory session'],
       observe: 'Move through the four steps and notice how surface tension, thread direction and stitch rhythm shape the result together.',
       stay: 'The prototype proposes a 90-minute introduction resulting in a small practice sample. Tutor, materials and finish remain to be confirmed.',
@@ -90,9 +90,9 @@ const PAGE_COPY = {
     routeEyebrow: 'THE GUEST JOURNEY',
     routeTitle: '从驻足，到理解，再到亲手尝试。',
     route: [
-      ['01', '观绣 · 15 分钟', '选择一个微距点位，记录构图与纹理发现。'],
-      ['02', '识线 · 20 分钟', '比较材料、色样与相对细度，理解丝光如何形成。'],
-      ['03', '试针 · 55 分钟', '认识上绷与配线，完成一枚基础练习样片。'],
+      ['01', '观绣', '选择一个微距点位，记录构图与纹理发现。'],
+      ['02', '识线', '比较材料、色样与相对细度，观察丝光变化。'],
+      ['03', '试针', '认识上绷与配线，了解基础练习样片的制作。'],
     ],
     technical: '原型与内容边界',
     technicalBody: '页面为课程数字原型。图像用于文化叙事与工艺观察，正式发布前需补充逐条出处、版权授权，并由苏绣从业者复核具体技艺表述。',
@@ -110,9 +110,9 @@ const PAGE_COPY = {
     routeEyebrow: 'THE GUEST JOURNEY',
     routeTitle: 'From pause, to understanding, to making.',
     route: [
-      ['01', 'Observe · 15 min', 'Choose one macro point and record a compositional or textural detail.'],
-      ['02', 'Thread · 20 min', 'Compare materials, swatches and relative fineness to understand silk lustre.'],
-      ['03', 'Stitch · 55 min', 'Learn mounting and thread selection, then complete a small practice sample.'],
+      ['01', 'Observe', 'Choose one macro point and record a compositional or textural detail.'],
+      ['02', 'Thread', 'Compare materials, swatches and relative fineness to observe silk lustre.'],
+      ['03', 'Stitch', 'Explore mounting and thread selection, then see how a practice sample is made.'],
     ],
     technical: 'Prototype and content boundaries',
     technicalBody: 'This is a course prototype. Images support cultural storytelling and craft observation. Public release requires itemised sources, image permissions and practitioner review of technical claims.',
@@ -125,7 +125,9 @@ function isHotspotId(value: string | null): value is LobbyHotspotId {
 
 export function ImmersivePage() {
   const { language } = useLanguage()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
+  const explorationDisclosureRef = useRef<HTMLDetailsElement>(null)
   const [active, setActive] = useState<LobbyHotspotId>('artwork')
   const [focusRequest, setFocusRequest] = useState(0)
   const [observation, setObservation] = useState<Partial<Exploration>>()
@@ -139,6 +141,12 @@ export function ImmersivePage() {
     setActive(requestedFocus)
     setFocusRequest((request) => request + 1)
   }, [requestedFocus])
+
+  useEffect(() => {
+    if (location.hash !== '#exploration-task') return
+    if (explorationDisclosureRef.current) explorationDisclosureRef.current.open = true
+    requestAnimationFrame(() => document.getElementById('exploration-task')?.scrollIntoView())
+  }, [location.hash])
 
   const focusExhibit = (id: LobbyHotspotId) => {
     setActive(id)
@@ -172,15 +180,19 @@ export function ImmersivePage() {
             </div>
             <h2>{detail.title}</h2>
             <p className="immersive-label-body">{detail.body}</p>
-            <p className="immersive-label-tags">{detail.tags.join(' · ')}</p>
-            <div className="immersive-label-note">
-              <span>{copy.observe}</span>
-              <p>{detail.observe}</p>
-            </div>
-            <div className="immersive-label-note">
-              <span>{copy.stay}</span>
-              <p>{detail.stay}</p>
-            </div>
+            {active === 'artwork' && (
+              <>
+                <p className="immersive-label-tags">{detail.tags.join(' · ')}</p>
+                <div className="immersive-label-note">
+                  <span>{copy.observe}</span>
+                  <p>{detail.observe}</p>
+                </div>
+                <div className="immersive-label-note">
+                  <span>{copy.stay}</span>
+                  <p>{detail.stay}</p>
+                </div>
+              </>
+            )}
             <details className="immersive-label-source">
               <summary>{copy.source}</summary>
               <p>{detail.source}</p>
@@ -194,7 +206,13 @@ export function ImmersivePage() {
         )}
       </section>
 
-      <ExplorationTask observation={observation} onFocus={(id) => { focusExhibit(id); document.querySelector(".immersive-workspace")?.scrollIntoView({behavior:"smooth"}) }} />
+      <details className="immersive-exploration-disclosure" ref={explorationDisclosureRef}>
+        <summary>
+          <span>{language === 'zh' ? '个人探索卡' : 'My exploration card'}</span>
+          <small>{language === 'zh' ? '展开记录观察、色样与工序理解' : 'Open to record observations, colours and process insights'}</small>
+        </summary>
+        <ExplorationTask observation={observation} onFocus={(id) => { focusExhibit(id); document.querySelector('.immersive-workspace')?.scrollIntoView({ behavior: 'smooth' }) }} />
+      </details>
       <section className="immersive-journey">
         <header>
           <p className="eyebrow">{copy.routeEyebrow}</p>

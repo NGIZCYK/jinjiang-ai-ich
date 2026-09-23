@@ -1475,6 +1475,59 @@ p {
   font-size: 0.72rem;
 }
 
+.immersive-exploration-disclosure {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.immersive-exploration-disclosure > summary {
+  display: flex;
+  min-height: 5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0;
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+}
+
+.immersive-exploration-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.immersive-exploration-disclosure > summary:focus-visible,
+.atelier-study-details summary:focus-visible {
+  outline: 2px solid var(--jade);
+  outline-offset: 3px;
+}
+
+.immersive-exploration-disclosure > summary::after {
+  content: '+';
+  font-size: 1.4rem;
+  font-weight: 300;
+}
+
+.immersive-exploration-disclosure[open] > summary::after {
+  content: '−';
+}
+
+.immersive-exploration-disclosure > summary span {
+  font-family: var(--font-serif, 'Songti SC', STSong, serif);
+  font-size: 1.2rem;
+}
+
+.immersive-exploration-disclosure > summary small {
+  margin-left: auto;
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+}
+
+.immersive-exploration-disclosure > .exploration-task {
+  margin: 0 0 1.5rem;
+  scroll-margin-top: 7rem;
+}
+
 .immersive-journey {
   display: grid;
   gap: 2.5rem;
@@ -1543,89 +1596,46 @@ p {
   background: rgba(239, 233, 224, 0.76);
 }
 
-.atelier-heading {
-  display: flex;
-  min-height: 4rem;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  border-bottom: 1px solid var(--line-soft);
-  padding: 0.85rem 1.25rem;
-}
-
-.atelier-heading > div:first-child > span {
-  color: var(--ink);
-  font-family: var(--font-serif, "Songti SC", STSong, serif);
-  font-size: 0.73rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-}
-
-.atelier-heading > div:first-child > p {
-  margin-top: 0.15rem;
-  color: #85837c;
-  font-size: 0.65rem;
-}
-
-.atelier-tools button,
-.atelier-tools > span {
-  border-bottom: 1px solid var(--line);
-  padding: 0.3rem 0;
-  color: #666861;
-  font-size: 0.68rem;
-  font-weight: 600;
-}
-
-.atelier-tools button.is-active {
-  border-bottom-color: var(--jade);
-  color: var(--jade);
-}
-
 .atelier-chapter-tabs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: min(100%, 52rem);
+  margin-inline: auto;
+  padding-inline: 1rem;
 }
 
 .atelier-chapter-tabs button {
   position: relative;
-  display: grid;
+  display: flex;
   min-width: 0;
-  gap: 0.15rem;
-  border-right: 1px solid var(--line-soft);
-  padding: 0.85rem 1rem 1rem;
-  text-align: left;
-  transition: background 200ms ease;
-}
-
-.atelier-chapter-tabs button:last-child {
-  border-right: 0;
+  min-height: 4.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.9rem 0.5rem;
+  text-align: center;
+  transition: color 200ms ease;
 }
 
 .atelier-chapter-tabs button::after {
   position: absolute;
-  right: 50%;
   bottom: 0;
   left: 50%;
+  width: 2.75rem;
   height: 2px;
   background: var(--jade);
   content: '';
-  transition: left 200ms ease, right 200ms ease;
-}
-
-.atelier-chapter-tabs button:hover,
-.atelier-chapter-tabs button.is-active {
-  background: rgba(255, 255, 255, 0.52);
+  transform: translateX(-50%) scaleX(0);
+  transition: transform 200ms ease;
 }
 
 .atelier-chapter-tabs button.is-active::after {
-  right: 0;
-  left: 0;
+  transform: translateX(-50%) scaleX(1);
 }
 
 .atelier-chapter-tabs button > span {
   color: var(--gold);
-  font-size: 0.61rem;
+  font-size: 0.7rem;
   font-weight: 700;
 }
 
@@ -1633,23 +1643,19 @@ p {
   overflow: hidden;
   color: #666861;
   font-family: var(--font-serif, "Songti SC", STSong, serif);
-  font-size: 0.8rem;
+  font-size: 1.05rem;
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.atelier-chapter-tabs button:hover strong {
+  color: var(--jade);
+}
+
 .atelier-chapter-tabs button.is-active strong {
   color: var(--ink);
   font-weight: 600;
-}
-
-.atelier-chapter-tabs small {
-  overflow: hidden;
-  color: #89877f;
-  font-size: 0.59rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .atelier-context-line {
@@ -1662,6 +1668,152 @@ p {
   padding: 0 0 0.75rem;
   color: #666861;
   font-size: 0.72rem;
+}
+
+.atelier-loupe-toggle {
+  min-height: 2.75rem;
+  border-bottom: 1px solid var(--jade);
+  color: var(--jade);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.atelier-figure-caption {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.3rem 0 0.6rem;
+}
+
+.atelier-study-panel h3,
+.atelier-workbench-header h3 {
+  color: var(--ink);
+  font-family: var(--font-serif, 'Songti SC', STSong, serif);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.atelier-figure-caption p,
+.atelier-study-panel > div:first-child p {
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+  line-height: 1.65;
+}
+
+.atelier-subtabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+.atelier-subtabs button {
+  min-height: 2.75rem;
+  border-bottom: 1px solid transparent;
+  color: var(--ink-soft);
+  font-size: 0.75rem;
+}
+
+.atelier-subtabs button:hover,
+.atelier-subtabs button.is-active {
+  border-bottom-color: var(--jade);
+  color: var(--jade);
+}
+
+.atelier-study-panel,
+.atelier-workbench-panel {
+  display: grid;
+  align-content: start;
+  gap: 1.25rem;
+  min-width: 0;
+  border-left: 1px solid var(--line);
+  padding: 0.2rem 0 0.2rem 1.5rem;
+}
+
+.atelier-study-panel h4 {
+  color: var(--ink);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.atelier-fineness,
+.atelier-study-details,
+.atelier-step-detail,
+.atelier-experience-link {
+  border-top: 1px solid var(--line-soft);
+  padding-top: 1rem;
+}
+
+.atelier-study-details summary {
+  color: var(--jade);
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.atelier-study-details p {
+  margin-top: 0.7rem;
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  line-height: 1.75;
+}
+
+.atelier-workbench-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.atelier-step-list {
+  display: grid;
+}
+
+.atelier-step-list button {
+  display: flex;
+  min-height: 3.25rem;
+  align-items: center;
+  gap: 1rem;
+  border-top: 1px solid var(--line-soft);
+  border-left: 2px solid transparent;
+  padding-left: 0.65rem;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  text-align: left;
+}
+
+.atelier-step-list button:last-child {
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.atelier-step-list button:hover,
+.atelier-step-list button.is-active {
+  border-left-color: var(--jade);
+  color: var(--jade);
+}
+
+.atelier-step-index {
+  color: var(--gold);
+  font-size: 0.67rem;
+}
+
+.atelier-step-detail {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.76rem;
+  line-height: 1.75;
+}
+
+.atelier-experience-link a {
+  color: var(--jade);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.atelier-experience-link p {
+  margin-top: 0.4rem;
+  color: var(--ink-soft);
+  font-size: 0.68rem;
+  line-height: 1.6;
 }
 
 .atelier-scroll-stage {
@@ -1810,16 +1962,23 @@ p {
     min-width: 2rem;
   }
 
-  .atelier-heading {
-    padding-inline: 0.85rem;
+  .atelier-chapter-tabs {
+    width: 100%;
+    padding-inline: 0.35rem;
   }
 
   .atelier-chapter-tabs button {
-    padding-inline: 0.55rem;
+    min-height: 3.5rem;
+    gap: 0.35rem;
+    padding-inline: 0.2rem;
   }
 
-  .atelier-chapter-tabs small {
-    display: none;
+  .atelier-chapter-tabs button > span {
+    font-size: 0.6rem;
+  }
+
+  .atelier-chapter-tabs strong {
+    font-size: 0.9rem;
   }
 
   .atelier-stage-content {
@@ -1828,6 +1987,23 @@ p {
 
   .atelier-context-line > div:last-child {
     width: 100%;
+  }
+
+  .atelier-study-panel,
+  .atelier-workbench-panel {
+    border-top: 1px solid var(--line);
+    border-left: 0;
+    padding: 1.25rem 0 0;
+  }
+
+  .immersive-exploration-disclosure > summary {
+    flex-wrap: wrap;
+  }
+
+  .immersive-exploration-disclosure > summary small {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
   }
 }
 
@@ -2131,7 +2307,7 @@ textarea:focus-visible {
   backdrop-filter: blur(10px);
 }
 
-.digital-human-status span {
+.digital-human-status .status-dot {
   height: 0.42rem;
   width: 0.42rem;
   flex: 0 0 auto;
@@ -2144,18 +2320,8 @@ textarea:focus-visible {
   filter: brightness(1.08) saturate(1.07);
 }
 
-.digital-human-stage.is-listening .digital-human-status span {
-  background: #f0cc77;
-  animation: digital-status-pulse 1.25s ease-in-out infinite;
-}
-
 .digital-human-stage.is-speaking .digital-human-art {
   filter: brightness(1.05) saturate(1.1);
-}
-
-.digital-human-stage.is-speaking .digital-human-status span {
-  background: #b4dfcc;
-  animation: digital-status-pulse 0.85s ease-in-out infinite;
 }
 
 /* ==========================================================================
@@ -2318,8 +2484,8 @@ textarea:focus-visible {
 }
 
 .digital-human-status .status-dot-speaking {
-  background: #b4dfcc;
-  animation: digital-status-pulse-speaking 0.85s ease-in-out infinite;
+  background: #b9d5c6;
+  box-shadow: 0 0 0 0.18rem rgb(185 213 198 / 0.13);
 }
 
 .digital-human-status .status-dot-paused {
@@ -2335,11 +2501,6 @@ textarea:focus-visible {
 @keyframes avatar-breathe {
   0%, 100% { transform: scale(1) translateY(0); }
   50% { transform: scale(1.012) translateY(-2px); }
-}
-
-@keyframes avatar-speaking-cadence {
-  0%, 100% { transform: scale(1.008) translateY(-1px); }
-  50% { transform: scale(1.018) translateY(-3px); }
 }
 
 @keyframes avatar-depth-breathe {
@@ -2362,11 +2523,6 @@ textarea:focus-visible {
   50% { box-shadow: 0 0 0 0.46rem rgb(142 197 182 / 0); }
 }
 
-@keyframes digital-status-pulse-speaking {
-  0%, 100% { box-shadow: 0 0 0 0.22rem rgb(180 223 204 / 0.28); }
-  50% { box-shadow: 0 0 0 0.48rem rgb(180 223 204 / 0); }
-}
-
 @keyframes digital-human-video-enter {
   from { opacity: 0.5; }
   to { opacity: 1; }
@@ -2377,18 +2533,12 @@ textarea:focus-visible {
   50% { transform: rotate(7deg) translateY(-0.5rem); }
 }
 
-@keyframes digital-status-pulse {
-  0%, 100% { box-shadow: 0 0 0 0.22rem rgb(217 192 145 / 0.16); }
-  50% { box-shadow: 0 0 0 0.42rem rgb(217 192 145 / 0); }
-}
-
 /* 减弱动效偏好适配 */
 @media (prefers-reduced-motion: reduce) {
   .digital-human-art,
   .static-avatar-image,
   .static-avatar-depth-glow,
   .static-avatar-gleam,
-  .digital-human-status span,
   .digital-human-status .status-dot,
   .digital-human-stage::after,
   .guide-streaming-cursor,
@@ -2396,6 +2546,144 @@ textarea:focus-visible {
     animation: none !important;
     transition: none !important;
     transform: none !important;
+  }
+}
+
+/* ==========================================================================
+   PuppetAvatar 婉娘 puppet 偶动画（分层立绘 + 部件贴片）
+   ========================================================================== */
+
+.puppet-avatar {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  --puppet-pace-scale: 1;
+}
+
+.puppet-avatar[data-pace='lively'] {
+  --puppet-pace-scale: 0.85;
+}
+
+.puppet-figure {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  transition: transform 500ms ease, filter 500ms ease;
+}
+
+/* 画布尺寸由立绘自身比例决定，部件锚点以画布为基准 */
+.puppet-canvas {
+  position: relative;
+  height: 100%;
+  width: auto;
+  aspect-ratio: 1024 / 1472;
+  flex: none;
+  transform-origin: center 38%;
+  animation: avatar-breathe calc(5.5s * var(--puppet-pace-scale)) ease-in-out infinite;
+}
+
+.puppet-base {
+  display: block;
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.puppet-part {
+  position: absolute;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 90ms ease;
+}
+
+.puppet-eye-right {
+  transform: scaleX(-1);
+}
+
+/* 状态驱动的克制微动（任务书：禁止大幅摇头与频繁摆动） */
+.digital-human-stage.is-listening .puppet-figure {
+  transform: scale(1.012) translateY(-2px);
+  filter: brightness(1.05) saturate(1.05);
+}
+
+.digital-human-stage.is-thinking .puppet-figure {
+  animation: puppet-tilt calc(7s * var(--puppet-pace-scale)) ease-in-out infinite;
+  filter: brightness(1.02) contrast(1.02);
+}
+
+.digital-human-stage.is-speaking .puppet-figure {
+  animation: puppet-nod calc(3.2s * var(--puppet-pace-scale)) ease-in-out infinite;
+  filter: brightness(1.03) saturate(1.05);
+}
+
+.digital-human-stage.is-paused .puppet-canvas,
+.digital-human-stage.is-paused .puppet-figure {
+  animation-play-state: paused;
+}
+
+/* 手势：单次触发，由 GuidePage 2.8s 复位逻辑移除 class */
+.puppet-avatar.avatar-gesture-introduce .puppet-figure {
+  animation: puppet-gesture-introduce 1.2s ease-out 1;
+}
+
+.puppet-avatar.avatar-gesture-acknowledge .puppet-figure {
+  animation: puppet-gesture-acknowledge 0.9s ease-out 1;
+}
+
+.puppet-avatar.avatar-gesture-emphasis .puppet-figure {
+  animation: puppet-gesture-emphasis 1.4s ease-out 1;
+}
+
+/* 情绪氛围：warm 微暖光、thoughtful 微青光 */
+.puppet-avatar.avatar-emotion-warm .static-avatar-depth-glow {
+  background: radial-gradient(circle at 50% 32%, rgba(224, 186, 128, 0.2) 0%, rgba(20, 35, 29, 0.45) 52%, transparent 78%);
+}
+
+.puppet-avatar.avatar-emotion-thoughtful .static-avatar-depth-glow {
+  background: radial-gradient(circle at 50% 32%, rgba(142, 197, 182, 0.18) 0%, rgba(20, 35, 29, 0.5) 52%, transparent 78%);
+}
+
+@keyframes puppet-nod {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  50% { transform: rotate(0.7deg) translateY(1px); }
+}
+
+@keyframes puppet-tilt {
+  0%, 100% { transform: rotate(0deg); }
+  35% { transform: rotate(-1.2deg); }
+  70% { transform: rotate(-0.4deg); }
+}
+
+@keyframes puppet-gesture-introduce {
+  0% { transform: rotate(0deg) translateX(0); }
+  30% { transform: rotate(-1.8deg) translateX(-3px); }
+  100% { transform: rotate(0deg) translateX(0); }
+}
+
+@keyframes puppet-gesture-acknowledge {
+  0% { transform: rotate(0deg) translateY(0); }
+  35% { transform: rotate(1.4deg) translateY(3px); }
+  100% { transform: rotate(0deg) translateY(0); }
+}
+
+@keyframes puppet-gesture-emphasis {
+  0% { transform: scale(1) translateY(0); }
+  30% { transform: scale(1.015) translateY(-3px); }
+  100% { transform: scale(1) translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .puppet-figure,
+  .puppet-canvas,
+  .puppet-part {
+    animation: none !important;
+    transition: none !important;
   }
 }
 
@@ -2690,7 +2978,7 @@ textarea:focus-visible {
 .guide-concierge-shell {
   display: grid;
   grid-template-columns: minmax(17rem, 0.48fr) minmax(0, 1.2fr);
-  min-height: 39rem;
+  min-height: 32rem;
   overflow: hidden;
   border-top: 1px solid rgba(163, 138, 99, 0.78);
   background: rgba(251, 248, 242, 0.82);
@@ -2703,6 +2991,13 @@ textarea:focus-visible {
   flex-direction: column;
   background: #18221e;
   color: white;
+}
+
+.guide-host-body {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
 }
 
 .guide-host-mobile-bar {
@@ -2771,14 +3066,19 @@ textarea:focus-visible {
     display: block;
   }
 
+  .guide-host-body {
+    display: grid;
+    grid-template-columns: minmax(12rem, 0.82fr) minmax(0, 1fr);
+  }
+
   .guide-host.is-collapsed .guide-host-body {
     display: none;
   }
 }
 
 .guide-host-stage.digital-human-stage {
-  min-height: 26rem;
-  flex: 1 1 auto;
+  min-height: 0;
+  flex: 1 1 0;
   background: #18231f;
 }
 
@@ -3047,7 +3347,7 @@ textarea:focus-visible {
 
 .guide-welcome > h2 {
   margin-top: 0.8rem;
-  font-size: clamp(2rem, 4.2vw, 3.75rem);
+  font-size: clamp(2rem, 3.5vw, 3.15rem);
   font-weight: 400;
   letter-spacing: -0.04em;
   line-height: 1.1;
@@ -3063,13 +3363,13 @@ textarea:focus-visible {
 .guide-welcome-choices {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: clamp(2.2rem, 5vw, 4.5rem);
+  margin-top: clamp(1.5rem, 3vw, 2.5rem);
   border-top: 1px solid var(--line);
 }
 
 .guide-welcome-choices button {
   display: flex;
-  min-height: 9.5rem;
+  min-height: 7.5rem;
   flex-direction: column;
   align-items: flex-start;
   border-left: 1px solid var(--line-soft);
@@ -3404,7 +3704,7 @@ textarea:focus-visible {
 
 @media (min-width: 64rem) {
   .guide-concierge-shell {
-    height: min(47rem, calc(100dvh - 11.5rem));
+    height: clamp(32rem, calc(100dvh - 14rem), 43rem);
   }
 }
 
@@ -3837,8 +4137,7 @@ textarea:focus-visible {
     grid-template-columns: 1fr;
   }
 
-  .guide-host {
-    display: grid;
+  .guide-host-body {
     grid-template-columns: minmax(12rem, 0.82fr) minmax(0, 1fr);
   }
 
@@ -3874,7 +4173,7 @@ textarea:focus-visible {
     font-size: 2.25rem;
   }
 
-  .guide-host {
+  .guide-host-body {
     grid-template-columns: minmax(8rem, 38%) minmax(0, 1fr);
   }
 

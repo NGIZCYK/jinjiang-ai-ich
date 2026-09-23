@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { AVATAR_STATE_TEXT, type AvatarStageProps } from './avatarTypes'
 import { Live2DAvatar } from './Live2DAvatar'
+import { PuppetAvatar } from './PuppetAvatar'
 import { StaticAvatar } from './StaticAvatar'
 
 /**
  * 页面唯一的数字人舞台入口。
- * 静态礼宾形象负责首屏和故障兜底；只有合法模型与真实运行时均就绪后，
- * Live2D 才会接管显示，避免空 Canvas、黑屏或能力标注失真。
+ * 静态礼宾形象负责首屏和故障兜底；puppet 偶动画资产就绪后接管显示；
+ * 只有合法模型与真实运行时均就绪后，Live2D 才会接管，避免空 Canvas、黑屏或能力标注失真。
  */
 export function AvatarStage({
   state,
@@ -23,9 +24,13 @@ export function AvatarStage({
   ttsMode = 'browser',
   useLive2D = false,
   modelPath,
+  pace = 'calm',
+  usePuppet = true,
 }: AvatarStageProps) {
   const [live2dFailed, setLive2dFailed] = useState(false)
   const [live2dReady, setLive2dReady] = useState(false)
+  const [puppetFailed, setPuppetFailed] = useState(false)
+  const [puppetReady, setPuppetReady] = useState(false)
 
   useEffect(() => {
     setLive2dFailed(false)
@@ -38,10 +43,16 @@ export function AvatarStage({
   const accessibilityLabel = `${name}：${resolvedStatus}`
 
   const canUseLive2D = useLive2D && Boolean(modelPath) && !live2dFailed
+  const showLive2D = canUseLive2D && live2dReady
   const handleLive2DReady = useCallback(() => setLive2dReady(true), [])
   const handleLive2DFallback = useCallback(() => {
     setLive2dReady(false)
     setLive2dFailed(true)
+  }, [])
+  const handlePuppetReady = useCallback(() => setPuppetReady(true), [])
+  const handlePuppetFallback = useCallback(() => {
+    setPuppetReady(false)
+    setPuppetFailed(true)
   }, [])
 
   return (
@@ -52,8 +63,8 @@ export function AvatarStage({
       {/* 顶部业务标识 */}
       {eyebrow && <span className="digital-human-eyebrow">{eyebrow}</span>}
 
-      {/* 静态形象承担首屏与故障降级，真实 Live2D 就绪后再无闪烁接管。 */}
-      {(!canUseLive2D || !live2dReady) && (
+      {/* 静态形象承担首屏与故障降级，puppet/Live2D 就绪后无闪烁接管。 */}
+      {!showLive2D && !puppetReady && (
         <StaticAvatar
           state={state}
           emotion={emotion}
@@ -63,6 +74,17 @@ export function AvatarStage({
           mouthOpen={mouthOpen}
           mouthForm={mouthForm}
           ttsMode={ttsMode}
+        />
+      )}
+      {!showLive2D && usePuppet && !puppetFailed && (
+        <PuppetAvatar
+          state={state}
+          emotion={emotion}
+          gesture={gesture}
+          pace={pace}
+          alt={name}
+          onReady={handlePuppetReady}
+          onFallback={handlePuppetFallback}
         />
       )}
       {canUseLive2D && (

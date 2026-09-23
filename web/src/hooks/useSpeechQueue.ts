@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { MouthSource } from '../components/avatar/avatarTypes'
 import { BrowserTtsProvider } from '../lib/tts/browserTts'
 import { detectTtsMode, getTtsProvider } from '../lib/tts/ttsFactory'
 import type { SpeechPlayback, SpeechRequest, TtsProvider } from '../lib/tts/types'
@@ -29,6 +30,8 @@ export interface UseSpeechQueueReturn {
   queueLength: number
   mouthOpen: number
   mouthForm: number
+  /** 口型帧订阅源（每帧直推，供 puppet 渲染器绕开 React 使用）。 */
+  mouthSource: MouthSource
   ttsMode: 'viseme' | 'browser' | 'unavailable'
 }
 
@@ -61,6 +64,32 @@ export function useSpeechQueue({
   const currentAbortRef = useRef<AbortController | null>(null)
   const currentLanguageRef = useRef(language)
   const animationFrameRef = useRef<number | null>(null)
+  const mouthFrameRef = useRef({ open: 0, form: 0 })
+  const mouthListenersRef = useRef(new Set<(open: number, form: number) => void>())
+  const lastMouthStateSyncRef = useRef(0)
+
+  // 口型每帧只写 ref 并直推订阅者；React state 以约 5Hz 节流同步，兼容旧链路。
+  const publishMouth = useCallback((open: number, form: number, forceState = false) => {
+    mouthFrameRef.current = { open, form }
+    mouthListenersRef.current.forEach((listener) => listener(open, form))
+    const now = performance.now()
+    if (forceState || now - lastMouthStateSyncRef.current >= 200) {
+      lastMouthStateSyncRef.current = now
+      setMouthOpen(open)
+      setMouthForm(form)
+    }
+  }, [])
+
+  const subscribeMouth = useCallback((listener: (open: number, form: number) => void) => {
+    mouthListenersRef.current.add(listener)
+    const current = mouthFrameRef.current
+    listener(current.open, current.form)
+    return () => {
+      mouthListenersRef.current.delete(listener)
+    }
+  }, [])
+
+  const mouthSource = useMemo<MouthSource>(() => ({ subscribe: subscribeMouth }), [subscribeMouth])
 
   useEffect(() => {
     void detectTtsMode().then(setTtsMode)
@@ -76,9 +105,8 @@ export function useSpeechQueue({
       animationFrameRef.current = null
     }
     const rest = getRestViseme()
-    setMouthOpen(rest.mouthOpen)
-    setMouthForm(rest.mouthForm)
-  }, [])
+    publishMouth(rest.mouthOpen, rest.mouthForm, true)
+  }, [publishMouth])
 
   const stop = useCallback(() => {
     // 使所有仍在 await 的旧任务失效，防止停止后快速重播产生双队列。
@@ -126,13 +154,12 @@ export function useSpeechQueue({
       const shape = hasVisemes
         ? interpolateVisemeFrame(playback.visemes, elapsedMs)
         : getApproximateFallbackViseme(elapsedMs)
-      setMouthOpen(shape.mouthOpen)
-      setMouthForm(shape.mouthForm)
+      publishMouth(shape.mouthOpen, shape.mouthForm)
       animationFrameRef.current = requestAnimationFrame(tick)
     }
 
     animationFrameRef.current = requestAnimationFrame(tick)
-  }, [stopAnimation])
+  }, [publishMouth, stopAnimation])
 
   const processQueue = useCallback(async () => {
     const runId = runIdRef.current
@@ -219,6 +246,7 @@ export function useSpeechQueue({
     queueLength,
     mouthOpen,
     mouthForm,
+    mouthSource,
     ttsMode,
   }
 }

@@ -1,0 +1,28 @@
+{
+  "baseWidth": 1024,
+  "baseHeight": 1472,
+  "eye": {
+    "leftCx": 452,
+    "rightCx": 576,
+    "cy": 307,
+    "w": 100,
+    "h": 50
+  },
+  "mouth": {
+    "cx": 512,
+    "cy": 432,
+    "w": 142,
+    "h": 96
+  },
+  "mouthCells": [
+    "closed",
+    "a",
+    "aa",
+    "o",
+    "smile"
+  ],
+  "eyeCells": [
+    "closed",
+    "half"
+  ]
+}

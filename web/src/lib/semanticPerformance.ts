@@ -1,6 +1,6 @@
-import type { AvatarEmotion, AvatarGesture } from '../components/avatar/avatarTypes'
+import type { AvatarEmotion, AvatarGesture, AvatarPace } from '../components/avatar/avatarTypes'
 
-export type AvatarPace = 'calm' | 'lively'
+export type { AvatarPace }
 
 export interface SemanticPerformance {
   emotion: AvatarEmotion

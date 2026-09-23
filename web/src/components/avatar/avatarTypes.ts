@@ -22,6 +22,13 @@ export type AvatarGesture =
   | 'emphasis'
   | 'acknowledge'
 
+export type AvatarPace = 'calm' | 'lively'
+
+/** 口型帧数据订阅源：rAF 每帧直推，绕开 React 重渲染。 */
+export interface MouthSource {
+  subscribe: (listener: (open: number, form: number) => void) => () => void
+}
+
 export type VisemeFrame = {
   offsetMs: number
   id: number
@@ -72,6 +79,9 @@ export interface AvatarStageProps {
   ttsMode?: 'viseme' | 'browser' | 'unavailable'
   useLive2D?: boolean
   modelPath?: string
+  pace?: AvatarPace
+  /** 默认 true；置 false 时跳过 puppet 渲染器直接用静态兜底。 */
+  usePuppet?: boolean
 }
 
 export interface StaticAvatarProps {
@@ -84,4 +94,19 @@ export interface StaticAvatarProps {
   mouthOpen?: number
   mouthForm?: number
   ttsMode?: 'viseme' | 'browser' | 'unavailable'
+}
+
+export interface PuppetAvatarProps {
+  state: AvatarState
+  emotion?: AvatarEmotion
+  gesture?: AvatarGesture
+  pace?: AvatarPace
+  alt?: string
+  className?: string
+  /** 部件资源目录，默认 /avatar/wanniang-puppet */
+  assetBase?: string
+  /** 全部部件载入完成时通知舞台移除静态兜底层。 */
+  onReady?: () => void
+  /** 部件加载失败或 prefers-reduced-motion 时回调，交由舞台降级为静态形象。 */
+  onFallback?: () => void
 }

@@ -112,8 +112,6 @@ export interface SilkGalleryView {
   titleEn: string
   navZh: string
   navEn: string
-  tagZh: string
-  tagEn: string
   image: string
   leadZh: string
   leadEn: string
@@ -126,8 +124,6 @@ const SILK_GALLERY_VIEWS: SilkGalleryView[] = [
     titleEn: '01 Cocoon & Reeling · Material Origin',
     navZh: '蚕茧',
     navEn: 'Cocoon',
-    tagZh: '材料观察',
-    tagEn: 'Material Study',
     image: '/assets/suxiu-silk-03-cocoons.webp',
     leadZh: '以桑蚕茧与绕线器物说明丝线形成的起点；图片用于材料认知，不作为具体产地、年代或工坊来源证明。',
     leadEn: 'Cocoons and reeling tools introduce the material journey. The image supports material learning rather than proving a specific origin, date or atelier.',
@@ -138,8 +134,6 @@ const SILK_GALLERY_VIEWS: SilkGalleryView[] = [
     titleEn: '02 Silk Splitting · Relative Fineness',
     navZh: '劈丝',
     navEn: 'Splitting',
-    tagZh: '劈丝概念示意',
-    tagEn: 'Conceptual Comparison',
     image: '/assets/suxiu-silk-02-splitting.webp',
     leadZh: '借助针具与丝线近景引出劈丝概念；实际分丝手法、材料结构与用线尺度需结合合作工坊演示确认。',
     leadEn: 'A needle-and-thread close-up introduces silk splitting. Technique, material structure and working scale remain subject to atelier demonstration.',
@@ -150,8 +144,6 @@ const SILK_GALLERY_VIEWS: SilkGalleryView[] = [
     titleEn: '03 Scroll Palette · Five Curated Swatches',
     navZh: '取色',
     navEn: 'Palette',
-    tagZh: '项目策展取色',
-    tagEn: 'Project Palette',
     image: '/assets/suxiu-silk-01-palette.webp',
     leadZh: '以数字长卷中的水色、荷粉、青黛、暖金与初白组织五组配色，帮助比较冷暖、明度与丝光；它们是本项目的策展色样，不是传统标准色谱。',
     leadEn: 'Five project swatches drawn from the digital scroll compare temperature, value and sheen. They are a curatorial palette, not a traditional colour standard.',
@@ -162,8 +154,6 @@ const SILK_GALLERY_VIEWS: SilkGalleryView[] = [
     titleEn: '04 Finished Silk · Directional Lustre',
     navZh: '丝光',
     navEn: 'Lustre',
-    tagZh: '成绣表面观察',
-    tagEn: 'Surface Observation',
     image: '/assets/suxiu-silk-04-lustre.webp',
     leadZh: '通过成绣表面近景观察丝线方向、覆盖密度与受光角度如何共同形成光泽变化；图片不承担单丝截面或微观结构证明。',
     leadEn: 'A finished-surface close-up shows how thread direction, coverage and viewing angle shape lustre; it does not claim to show a filament cross-section.',
@@ -223,36 +213,24 @@ const SILK_PALETTES = [
 const SPLIT_LEVELS = [
   {
     id: 'full',
-    nameZh: '整股参照',
-    nameEn: 'Full Reference',
-    ratio: '整股示意',
     gauge: 10,
     descZh: '完整丝线的视觉基准。具体结构、用线与材料会因工坊和作品而异。',
     descEn: 'Visual baseline for a full strand. Material and usage vary by atelier and work.',
   },
   {
     id: 'quarter',
-    nameZh: '四分之一',
-    nameEn: 'Quarter Level',
-    ratio: '相对 1/4',
     gauge: 6,
     descZh: '用于对比更细线条在水纹与衣褶表达中的视觉可能性。',
     descEn: 'Compares the visual potential of finer lines in ripples and clothing folds.',
   },
   {
     id: 'fine',
-    nameZh: '十六分之一',
-    nameEn: '1/16 Level',
-    ratio: '相对 1/16',
     gauge: 3,
     descZh: '极细等级示意，适合讨论羽毛、枝梢与人物细节的表现需求。',
     descEn: 'Fine-level illustration for discussing feathers, branches and figure detail.',
   },
   {
     id: 'micro',
-    nameZh: '三十二分之一',
-    nameEn: '1/32 Level',
-    ratio: '相对 1/32',
     gauge: 1,
     descZh: '本档仅作分级概念演示，不表示统一标准或对某件作品的测量结论。',
     descEn: 'Conceptual scale only; it is neither a universal standard nor a measurement of a specific work.',
@@ -266,40 +244,32 @@ const WORKBENCH_STEPS = [
     titleZh: '上绷 · 紧致如鼓',
     titleEn: 'Mounting the Frame',
     image: '/assets/suxiu-step-01-mounting.webp',
-    leadZh: '双层真丝绢底以纯棉布条缝边，扣入传统插绷木槽，四方绷平，指叩微弹如鼓面。',
-    leadEn: 'Silk ground is sewn to linen borders and mounted into traditional wood slots, tensioned drum-tight.',
-    tagZh: '底布张力平衡',
-    tagEn: 'Uniform Ground Tension',
+    leadZh: '将底布固定在绣绷上，观察绷面张力如何影响后续落针。',
+    leadEn: 'Mount the ground fabric on a frame and observe how its tension affects the first stitches.',
   },
   {
     step: '02',
     titleZh: '配线 · 辨色分丝',
     titleEn: 'Splitting Silk Threads',
     image: '/assets/suxiu-step-02-threading.webp',
-    leadZh: '手持极细绣针挑剖天然桑蚕丝，依工序将原丝劈分至微观细度，对照水波与岸柳渐变色阶。',
-    leadEn: 'Artisan splits raw mulberry silk using a slender needle down to gossamer filaments, preparing tonal gradients.',
-    tagZh: '极细劈丝分级',
-    tagEn: 'Fine Silk Splitting',
+    leadZh: '从画面取色，比较不同丝线细度对线条与色阶的影响。',
+    leadEn: 'Choose colours from the scene and compare how relative thread fineness changes line and tone.',
   },
   {
     step: '03',
     titleZh: '起针 · 水纹顺光',
     titleEn: 'The First Stitch',
     image: '/assets/suxiu-step-03-stitching.webp',
-    leadZh: '水纹第一针平齐定点，尾线隐于织纹内部不打结，针随水走，借助丝光折射体现活水灵动。',
-    leadEn: 'The initial water stitch anchors invisibly without knotting, guiding silk lustre to mimic living water.',
-    tagZh: '无结起针法',
-    tagEn: 'Seamless Hidden Anchor',
+    leadZh: '观察第一针的位置和走线方向，理解丝光如何随视角变化。',
+    leadEn: 'Observe the first stitch and its direction, then notice how lustre changes with the viewing angle.',
   },
   {
     step: '04',
-    titleZh: '传承 · 屏韵成器',
-    titleEn: 'Framed Desk Screen Keepsake',
+    titleZh: '留存 · 练习样片',
+    titleEn: 'Keeping a Practice Sample',
     image: '/assets/suxiu-step-04-keepsake.webp',
-    leadZh: '将运河水纹与花卉刺绣习作装入典雅红木双面台屏，榫卯底座精雕成器，作为住中可带走的非遗雅物。',
-    leadEn: 'Mounting the completed water ripple embroidery into a rosewood double-sided desk screen as an authentic keepsake.',
-    tagZh: '红木台屏装裱',
-    tagEn: 'Rosewood Screen Framing',
+    leadZh: '以练习样片回看用色和针路；装裱与带走形式仍待合作确认。',
+    leadEn: 'Review colour and stitch direction in a practice sample. Mounting and takeaway format remain unconfirmed.',
   },
 ]
 
@@ -438,34 +408,6 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
   return (
     <div className="atelier-shell">
       <header className="atelier-chrome">
-        <div className="atelier-heading">
-          <div>
-            <span>{isZh ? 'MICRO ATELIER · 苏绣微距工坊' : 'MICRO ATELIER · SU EMBROIDERY'}</span>
-            <p>{isZh ? '观绣、识线、试针' : 'Observe, read the thread, take a stitch'}</p>
-          </div>
-          <div className="atelier-tools">
-            {currentTab === 'artwork' && (
-              <button
-                type="button"
-                onClick={() => {
-                  const next = !loupeActive
-                  setLoupeActive(next)
-                  if (next) {
-                    setTimeout(() => updateLoupePosition(selectedSpot.xPct, selectedSpot.yPct), 20)
-                  }
-                }}
-                aria-pressed={loupeActive}
-                className={loupeActive ? 'is-active' : ''}
-              >
-                {isZh ? (loupeActive ? '收起 3x 微距' : '开启 3x 微距') : (loupeActive ? 'Close 3x loupe' : 'Open 3x loupe')}
-              </button>
-            )}
-            {currentTab === 'workbench' && (
-              <span>{isZh ? `工序 0${currentStepIndex + 1} / 04` : `Step 0${currentStepIndex + 1} / 04`}</span>
-            )}
-          </div>
-        </div>
-
         <nav className="atelier-chapter-tabs" aria-label={isZh ? '工坊章节' : 'Atelier chapters'}>
           {getLobbyHotspots(language).map((h) => {
             const isCurrent = currentTab === h.id
@@ -473,7 +415,6 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
               <button key={h.id} type="button" onClick={() => onSelect(h.id)} aria-pressed={isCurrent} className={isCurrent ? 'is-active' : ''}>
                 <span>{h.index}</span>
                 <strong>{h.code.replace(`${h.index} · `, '')}</strong>
-                <small>{h.hint}</small>
               </button>
             )
           })}
@@ -511,6 +452,18 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
                   </strong>
                 </span>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const next = !loupeActive
+                  setLoupeActive(next)
+                  if (next) setTimeout(() => updateLoupePosition(selectedSpot.xPct, selectedSpot.yPct), 20)
+                }}
+                aria-pressed={loupeActive}
+                className="atelier-loupe-toggle"
+              >
+                {isZh ? (loupeActive ? '收起 3x 微距' : '开启 3x 微距') : (loupeActive ? 'Close 3x loupe' : 'Open 3x loupe')}
+              </button>
             </div>
 
             {/* 主画卷视窗 */}
@@ -667,7 +620,7 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
             {/* 左侧：材料观察画廊 */}
             <div className="space-y-3 lg:col-span-7">
               {/* 16:9 主画幅材料观察视窗 */}
-              <div className="group relative overflow-hidden rounded-2xl border border-stone-200 bg-stone-900 shadow-[0_18px_45px_rgba(45,36,28,0.14)]">
+              <div className="relative overflow-hidden rounded-lg bg-stone-900">
                 <img
                   key={SILK_GALLERY_VIEWS[silkViewIndex].image}
                   src={SILK_GALLERY_VIEWS[silkViewIndex].image}
@@ -675,56 +628,14 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
                   className="block aspect-[16/9] w-full object-cover transition-opacity duration-300"
                 />
 
-                {/* 中性序号仅用于定位，不承担画质或来源背书 */}
-                <div className="absolute right-3 top-3 rounded-full border border-white/20 bg-black/45 px-2.5 py-1 font-mono text-[10px] tracking-[0.12em] text-white/85 backdrop-blur-sm">
-                  {String(silkViewIndex + 1).padStart(2, '0')} / {String(SILK_GALLERY_VIEWS.length).padStart(2, '0')}
-                </div>
-
-                {/* 图内只保留前后翻页，具体视角由图下缩略标签承担 */}
-                <div className="pointer-events-none absolute inset-0 flex items-center justify-between px-2 sm:px-3">
-                  <button
-                    type="button"
-                    disabled={silkViewIndex === 0}
-                    onClick={() => setSilkViewIndex((prev) => Math.max(0, prev - 1))}
-                    aria-label={isZh ? '上一项材料观察' : 'Previous material view'}
-                    className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/35 text-lg text-white/90 backdrop-blur-sm transition hover:bg-black/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:pointer-events-none disabled:opacity-0"
-                  >
-                    <span aria-hidden="true">←</span>
-                  </button>
-                  <button
-                    type="button"
-                    disabled={silkViewIndex === SILK_GALLERY_VIEWS.length - 1}
-                    onClick={() => setSilkViewIndex((prev) => Math.min(SILK_GALLERY_VIEWS.length - 1, prev + 1))}
-                    aria-label={isZh ? '下一项材料观察' : 'Next material view'}
-                    className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/35 text-lg text-white/90 backdrop-blur-sm transition hover:bg-black/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:pointer-events-none disabled:opacity-0"
-                  >
-                    <span aria-hidden="true">→</span>
-                  </button>
-                </div>
               </div>
 
-              {/* 当前视界手札与工艺解析展签 */}
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-stone-200/90 bg-white p-3 shadow-xs">
-                <div className="flex items-start gap-2.5">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-jade/10 font-serif text-xs font-bold text-jade">
-                    0{silkViewIndex + 1}
-                  </span>
-                  <div>
-                    <h4 className="font-serif text-xs font-bold text-stone-900">
-                      {isZh ? SILK_GALLERY_VIEWS[silkViewIndex].titleZh : SILK_GALLERY_VIEWS[silkViewIndex].titleEn}
-                    </h4>
-                    <p className="mt-0.5 text-[11px] leading-relaxed text-stone-600">
-                      {isZh ? SILK_GALLERY_VIEWS[silkViewIndex].leadZh : SILK_GALLERY_VIEWS[silkViewIndex].leadEn}
-                    </p>
-                  </div>
-                </div>
-                <span className="rounded-md border border-jade/20 bg-jade-light px-2 py-0.5 text-[10px] font-semibold text-jade">
-                  {isZh ? SILK_GALLERY_VIEWS[silkViewIndex].tagZh : SILK_GALLERY_VIEWS[silkViewIndex].tagEn}
-                </span>
+              <div className="atelier-figure-caption">
+                <p>{isZh ? SILK_GALLERY_VIEWS[silkViewIndex].leadZh : SILK_GALLERY_VIEWS[silkViewIndex].leadEn}</p>
               </div>
 
-              {/* 唯一的直接跳转入口：4 格材料观察缩略标签 */}
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {/* 单一材料导航：不再与图上箭头或计数器重复。 */}
+              <nav className="atelier-subtabs" aria-label={isZh ? '材料观察' : 'Material views'}>
                 {SILK_GALLERY_VIEWS.map((view, idx) => {
                   const isCurrent = silkViewIndex === idx
                   return (
@@ -733,76 +644,26 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
                       type="button"
                       onClick={() => setSilkViewIndex(idx)}
                       aria-pressed={isCurrent}
-                      className={`group/view flex items-center gap-2 rounded-xl border p-2 text-left transition ${
-                        isCurrent
-                          ? 'border-jade bg-jade/[0.06] shadow-sm ring-1 ring-jade/30'
-                          : 'border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50'
-                      }`}
+                      className={isCurrent ? 'is-active' : ''}
                     >
-                      <div className="h-10 w-12 shrink-0 overflow-hidden rounded-lg bg-stone-900 shadow-inner">
-                        <img
-                          src={view.image}
-                          alt={isZh ? view.titleZh : view.titleEn}
-                          className="h-full w-full object-cover transition duration-300 group-hover/view:scale-105"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1">
-                          <span className={`text-[10px] font-mono font-bold ${isCurrent ? 'text-jade' : 'text-stone-400'}`}>
-                            0{idx + 1}
-                          </span>
-                          <span className="truncate text-xs font-semibold text-stone-800">
-                            {isZh ? view.navZh : view.navEn}
-                          </span>
-                        </div>
-                        <span className="block truncate text-[10px] text-stone-500">
-                          {isZh ? view.tagZh.split('·')[0] : view.tagEn.split(' ')[0]}
-                        </span>
-                      </div>
+                      {isZh ? view.navZh : view.navEn}
                     </button>
                   )
                 })}
-              </div>
+              </nav>
 
             </div>
 
-            {/* 右侧：取色与劈丝合并为一个核心交互台 */}
-            <div className="space-y-4 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm lg:col-span-5">
-              <div className="border-b border-stone-100 pb-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-jade">
-                    {isZh ? '识线实验台' : 'Thread Study'}
-                  </span>
-                  {silkViewIndex !== 1 && (
-                    <button
-                      type="button"
-                      onClick={() => setSilkViewIndex(1)}
-                      className="text-[10px] font-semibold text-jade transition hover:text-jade-dark hover:underline"
-                    >
-                      {isZh ? '查看劈丝图' : 'View splitting image'} →
-                    </button>
-                  )}
-                </div>
-                <h3 className="mt-1 font-serif text-lg font-semibold text-stone-900">
-                  {isZh ? '选一组色样，再比较相对细度' : 'Choose a swatch, then compare fineness'}
-                </h3>
-                <p className="mt-1 text-[11px] leading-5 text-stone-500">
-                  {isZh
-                    ? '以下色样取自本项目数字长卷，仅用于策展配色与视觉比较。'
-                    : 'These project swatches are drawn from the digital scroll for curatorial and visual comparison.'}
-                </p>
+            {/* 右侧：一个连续观察区，不再叠加实验台卡片。 */}
+            <div className="atelier-study-panel lg:col-span-5">
+              <div>
+                <h3>{isZh ? '色样与丝线' : 'Colour & thread'}</h3>
+                <p>{isZh ? '选色，再比较丝线的相对细度。五组为项目策展配色。' : 'Select a swatch, then compare relative fineness. These five colours are curated for this project.'}</p>
               </div>
 
               {/* 紧凑色样选择器：不再作为独立大板块 */}
               <div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-xs font-semibold text-stone-700">
-                    {isZh ? '长卷取色 · 五组色样' : 'Scroll palette · Five swatches'}
-                  </span>
-                  <span className="truncate font-serif text-xs font-semibold text-stone-900">
-                    {isZh ? selectedPalette.nameZh : selectedPalette.nameEn}
-                  </span>
-                </div>
+                <h4>{isZh ? '取色' : 'Palette'}</h4>
                 <div className="mt-2 grid grid-cols-5 gap-2">
                   {SILK_PALETTES.map((palette) => {
                     const isSelected = selectedPalette.id === palette.id
@@ -814,10 +675,10 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
                         aria-pressed={isSelected}
                         aria-label={isZh ? `选择${palette.nameZh}` : `Select ${palette.nameEn}`}
                         title={isZh ? palette.nameZh : palette.nameEn}
-                        className={`rounded-lg border p-1.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade/50 ${
+                        className={`min-h-11 rounded-md border p-1.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade/50 ${
                           isSelected
-                            ? 'border-jade bg-jade/[0.06] ring-1 ring-jade/30'
-                            : 'border-stone-200 bg-stone-50 hover:border-stone-300'
+                            ? 'border-jade bg-jade/[0.04]'
+                            : 'border-stone-200 bg-white hover:border-stone-400'
                         }`}
                       >
                         <span
@@ -828,30 +689,15 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
                     )
                   })}
                 </div>
-                <p className="mt-2 text-[11px] leading-5 text-stone-500">
-                  {isZh ? selectedPalette.usageZh : selectedPalette.usageEn}
+                <p className="mt-2 text-xs leading-5 text-stone-600">
+                  <strong className="font-medium text-stone-800">{isZh ? selectedPalette.nameZh : selectedPalette.nameEn}</strong>
+                  {' · '}{isZh ? selectedPalette.usageZh : selectedPalette.usageEn}
                 </p>
               </div>
 
-              {/* 同屏展示四个代表档位，让差异无需来回点击即可被感知 */}
-              <div className="space-y-2.5 rounded-xl border border-stone-100 bg-stone-50/80 p-3">
-                <div className="flex items-end justify-between gap-3">
-                  <div>
-                    <span className="block text-xs font-semibold text-stone-800">
-                      {isZh ? '劈丝概念 · 相对细度比较' : 'Silk splitting · Relative comparison'}
-                    </span>
-                    <span className="mt-0.5 block text-[10px] text-stone-500">
-                      {isZh ? '固定放大倍率下的视觉示意' : 'Visual guide at a fixed display scale'}
-                    </span>
-                  </div>
-                  <span className="font-mono text-xs font-bold text-jade">
-                    {isZh
-                      ? SPLIT_LEVELS[splitIndex].ratio
-                      : splitIndex === 0
-                        ? 'Full reference'
-                        : SPLIT_LEVELS[splitIndex].ratio.replace('相对', 'Relative')}
-                  </span>
-                </div>
+              {/* 四档比较保留选择能力，只用一组轻量行。 */}
+              <div className="atelier-fineness">
+                <h4>{isZh ? '相对细度' : 'Relative fineness'}</h4>
 
                 <div className="space-y-1.5">
                   {SPLIT_LEVELS.map((level, idx) => {
@@ -862,10 +708,10 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
                         type="button"
                         onClick={() => { setSplitIndex(idx); onExplore?.({levels: [['full','1/4','1/16','1/32'][idx]]}) }}
                         aria-pressed={isSelected}
-                        className={`grid w-full grid-cols-[4.5rem_1fr] items-center gap-3 rounded-lg border px-2.5 py-2 text-left transition ${
+                        className={`grid w-full min-h-11 grid-cols-[4.5rem_1fr] items-center gap-3 border-b px-1 py-2 text-left transition ${
                           isSelected
-                            ? 'border-jade/60 bg-white shadow-xs'
-                            : 'border-transparent hover:border-stone-200 hover:bg-white/70'
+                            ? 'border-jade bg-jade/[0.035]'
+                            : 'border-stone-200 hover:bg-stone-50'
                         }`}
                       >
                         <span className={`text-[11px] font-semibold ${isSelected ? 'text-jade' : 'text-stone-500'}`}>
@@ -882,42 +728,24 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
                   })}
                 </div>
 
-                <p className="border-t border-stone-200/80 pt-2 text-[11px] leading-5 text-stone-600">
-                  <strong className="font-semibold text-stone-800">
-                    {isZh ? SPLIT_LEVELS[splitIndex].nameZh : SPLIT_LEVELS[splitIndex].nameEn}
-                  </strong>
-                  {' · '}
+                <p className="mt-3 text-xs leading-5 text-stone-600">
                   {isZh ? SPLIT_LEVELS[splitIndex].descZh : SPLIT_LEVELS[splitIndex].descEn}
                 </p>
-                <p className="text-[10px] leading-4 text-stone-400">
+                <p className="mt-2 text-[11px] leading-4 text-stone-500">
                   {isZh
-                    ? '体验性相对示意，不代表统一行业标准或对具体作品的测量结果。'
-                    : 'Illustrative relative levels—not a universal standard or measurement of a specific work.'}
+                    ? '相对细度为概念示意，非统一标准或实测结果。'
+                    : 'Conceptual relative levels—not a standard or measured result.'}
                 </p>
               </div>
 
-              {/* 次要知识改为按需展开，避免持续挤占主交互空间 */}
-              <details className="group rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-[11px] text-stone-600">
-                <summary className="cursor-pointer list-none font-semibold text-stone-800 marker:hidden">
-                  <span className="flex items-center justify-between gap-3">
-                    {isZh ? '丝光为什么会随视角变化？' : 'Why does silk lustre shift with viewing angle?'}
-                    <span className="text-stone-400 transition group-open:rotate-45" aria-hidden="true">＋</span>
-                  </span>
-                </summary>
-                <p className="mt-2 leading-5">
+              <details className="atelier-study-details">
+                <summary>{isZh ? '材料与丝光说明' : 'Material & lustre notes'}</summary>
+                <p>
                   {isZh
                     ? '丝线方向、排列密度和受光角度共同影响表面反射，因此成绣在移动视角下会出现明暗变化。本页图片用于观察这种表面现象，微观机理仍需由专业资料或从业者复核。'
                     : 'Thread direction, coverage and lighting angle work together to shape surface reflection. The image demonstrates this visible effect; microscopic interpretation remains subject to expert review.'}
                 </p>
-                {silkViewIndex !== 3 && (
-                  <button
-                    type="button"
-                    onClick={() => setSilkViewIndex(3)}
-                    className="mt-2 font-semibold text-jade hover:underline"
-                  >
-                    {isZh ? '查看成绣丝光' : 'View finished-silk lustre'} →
-                  </button>
-                )}
+                <p>{isZh ? '五组色样取自项目数字长卷，属于策展配色；图片不证明具体产地、工坊或单丝结构。' : 'The five swatches are curated from the project scroll; the images do not establish a specific origin, atelier or filament structure.'}</p>
               </details>
             </div>
           </div>
@@ -926,9 +754,9 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
         {/* ======================= 展位 3: 试针 · 传统绣台与起针工坊 ======================= */}
         {currentTab === 'workbench' && (
           <div className="grid gap-5 lg:grid-cols-12">
-            {/* 左侧：大画幅工匠实拍大图 (约 65% 视口主体) */}
-            <div className="space-y-3 lg:col-span-7 xl:col-span-8">
-              <div className="group relative overflow-hidden rounded-2xl border-4 border-[#3b271d] bg-stone-900 shadow-xl">
+            {/* 照片不再承载任何步骤按钮，避免遮挡工艺细节。 */}
+            <div className="lg:col-span-7 xl:col-span-8">
+              <div className="overflow-hidden rounded-lg bg-stone-900">
                 <img
                   key={WORKBENCH_STEPS[currentStepIndex].image}
                   src={WORKBENCH_STEPS[currentStepIndex].image}
@@ -936,193 +764,60 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
                   className="block aspect-[16/9] w-full object-cover transition-opacity duration-300"
                 />
 
-                {/* 底部 4 步翻页与缩略指示条 */}
-                <div className="absolute bottom-2.5 left-0 right-0 flex items-center justify-between px-3 md:px-4">
-                  <button
-                    type="button"
-                    disabled={currentStepIndex === 0}
-                    onClick={() => setCurrentStepIndex((prev) => Math.max(0, prev - 1))}
-                    className="flex items-center gap-1 rounded-lg bg-black/70 px-2.5 py-1 text-xs font-medium text-stone-200 backdrop-blur transition hover:bg-black/90 disabled:opacity-30 disabled:pointer-events-none"
-                  >
-                    <span>←</span>
-                    <span className="hidden sm:inline">{isZh ? '上一步' : 'Prev'}</span>
-                  </button>
-
-                  <div className="flex items-center gap-1.5 rounded-xl bg-black/60 px-2.5 py-1 backdrop-blur">
-                    {WORKBENCH_STEPS.map((s, idx) => (
-                      <button
-                        key={s.step}
-                        type="button"
-                        onClick={() => setCurrentStepIndex(idx)}
-                        className={`group/thumb flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold transition ${
-                          currentStepIndex === idx
-                            ? 'bg-jade text-white shadow-xs ring-1 ring-white/50'
-                            : 'text-stone-300 hover:text-white hover:bg-white/10'
-                        }`}
-                        title={isZh ? s.titleZh : s.titleEn}
-                      >
-                        <span className="text-[10px] font-mono">0{idx + 1}</span>
-                        <span className="hidden md:inline text-[11px] font-serif">
-                          {isZh ? s.titleZh.split(' · ')[0] : s.titleEn.split(' ')[0]}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-
-                  <button
-                    type="button"
-                    disabled={currentStepIndex === WORKBENCH_STEPS.length - 1}
-                    onClick={() => setCurrentStepIndex((prev) => Math.min(WORKBENCH_STEPS.length - 1, prev + 1))}
-                    className="flex items-center gap-1 rounded-lg bg-jade px-2.5 py-1 text-xs font-semibold text-white shadow-xs transition hover:bg-jade/90 disabled:opacity-30 disabled:pointer-events-none"
-                  >
-                    <span className="hidden sm:inline">{isZh ? '下一步' : 'Next'}</span>
-                    <span>→</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* 工序专属器物与动作拆解说明 */}
-              <div className="rounded-xl border border-stone-200 bg-white p-3.5 text-xs text-stone-600 shadow-xs">
-                <div className="flex items-center justify-between gap-2 border-b border-stone-100 pb-2">
-                  <div className="flex items-center gap-2 font-semibold text-stone-800">
-                    <span className="inline-block h-2 w-2 rounded-full bg-jade" />
-                    <span className="font-serif text-xs tracking-wide">
-                      {isZh ? '工序考据与手作动作拆解：' : 'Craft Provenance & Motion Notes:'}
-                    </span>
-                  </div>
-                  <span className="font-mono text-[11px] text-stone-400">
-                    STEP {WORKBENCH_STEPS[currentStepIndex].step} / 04
-                  </span>
-                </div>
-                <p className="mt-2 text-xs leading-relaxed text-stone-600">
-                  {currentStepIndex === 0 && (isZh
-                    ? '【上绷】双层真丝绢底以纯棉布条缝边，扣入传统实木插绷槽，四方平拉张紧。指叩布面发出如小鼓微响，张力均匀方能确保刺绣中底布不抽缩走样。'
-                    : '【Mounting】Silk ground sewn to linen borders and mounted into wood slots, tensioned drum-tight to prevent ground distortion during embroidery.')}
-                  {currentStepIndex === 1 && (isZh
-                    ? '【配线】匠人手持极细纯钢绣针，挑剖天然桑蚕原丝（粗线径约120μm），依据水波明暗退晕劈为半丝、四丝乃至微尘丝，对照姑苏水碧与金石色系排线。'
-                    : '【Splitting】Using a steel needle to split raw mulberry silk (120μm) into half, quarter, or micro-filaments, organizing tonal gradients.')}
-                  {currentStepIndex === 2 && (isZh
-                    ? '【起针】水纹第一针平齐定点，微观钢针穿透白绢经纬，尾线巧妙隐于织纹内部不打死结。针随水波流向顺光刺入，借助丝光物理折射展现水韵流动。'
-                    : '【First Stitch】Initial stitch anchors seamlessly without knots, following the ripple direction to exploit natural silk lustre.')}
-                  {currentStepIndex === 3 && (isZh
-                    ? '【传承】将完成的运河水纹与花卉刺绣小品，装入特制紫光檀/红木双面台屏，榫卯底座精雕成器，作为住客 90 分钟非遗工坊可永久带走的雅致物证。'
-                    : '【Keepsake】Framing the completed embroidery into a bespoke rosewood double-sided desk screen as an authentic heirloom keepsake.')}
-                </p>
               </div>
             </div>
 
-            {/* 右侧：精炼工艺控制台 (约 35% 紧凑控制面板) */}
-            <div className="flex flex-col justify-between space-y-3 rounded-xl border border-stone-200 bg-white p-4 shadow-sm lg:col-span-5 xl:col-span-4">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="eyebrow">WORKSHOP SEQUENCE</span>
-                  <span className="rounded bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-stone-500">
-                    {isZh ? '四步手作闭环' : '4-Step Journey'}
-                  </span>
-                </div>
-                <h3 className="mt-1 font-serif text-base font-semibold text-stone-900">
-                  {isZh ? '起针四部曲 · 传统工序' : 'Sequence of the First Stitch'}
-                </h3>
-              </div>
+            <aside className="atelier-workbench-panel lg:col-span-5 xl:col-span-4">
+              <header className="atelier-workbench-header">
+                <h3>{isZh ? '试针四步' : 'Four steps of stitching'}</h3>
+              </header>
 
-              {/* 四个步骤点击卡（紧凑宋体微标卡，去除重复缩略图） */}
-              <div className="space-y-2">
-                {WORKBENCH_STEPS.map((step, idx) => {
-                  const isCurrent = currentStepIndex === idx
-                  return (
-                    <button
-                      key={step.step}
-                      type="button"
-                      onClick={() => setCurrentStepIndex(idx)}
-                      className={`group flex w-full items-center justify-between rounded-xl border p-2.5 text-left transition ${
-                        isCurrent
-                          ? 'border-jade bg-jade/[0.06] shadow-xs ring-1 ring-jade/30'
-                          : 'border-stone-200/80 bg-stone-50/50 hover:border-stone-300 hover:bg-white'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span
-                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg font-serif text-xs font-bold transition ${
-                            isCurrent ? 'bg-jade text-white shadow-xs' : 'bg-stone-200/80 text-stone-600'
-                          }`}
-                        >
-                          {step.step}
-                        </span>
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <span className={`text-xs font-semibold ${isCurrent ? 'text-jade-dark font-serif font-bold' : 'text-stone-800'}`}>
-                              {isZh ? step.titleZh : step.titleEn}
-                            </span>
-                          </div>
-                          <div className="text-[11px] text-stone-500">
-                            {isZh ? step.tagZh : step.tagEn}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center pr-1">
-                        {isCurrent ? (
-                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-jade text-[10px] font-bold text-white shadow-xs">
-                            ✓
-                          </span>
-                        ) : (
-                          <span className="text-xs text-stone-300 group-hover:text-stone-600 font-sans">
-                            →
-                          </span>
-                        )}
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-
-              {/* 当前步骤详解 */}
-              <div className="rounded-xl border border-stone-200/80 bg-stone-50/80 p-3">
-                <span className="block text-[10px] font-semibold uppercase tracking-wider text-stone-400">
-                  {isZh ? '工序核心手法' : 'Key Artisan Technique'}
-                </span>
-                <p className="mt-1 text-xs leading-5 text-stone-700">
-                  {isZh
-                    ? WORKBENCH_STEPS[currentStepIndex].leadZh
-                    : WORKBENCH_STEPS[currentStepIndex].leadEn}
-                </p>
-              </div>
-
-              {/* 工坊雅集预约卡 */}
-              <div className="rounded-xl border border-gold/40 bg-gradient-to-r from-gold-light via-white to-gold-light/60 p-3.5 text-xs shadow-xs">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-md bg-vermilion-light font-serif text-[10px] font-bold text-vermilion border border-vermilion/30">
-                      雅
-                    </span>
-                    <strong className="font-serif text-xs text-stone-900">
-                      {isZh ? '亲历江南刺绣工坊' : 'Join Live Atelier Session'}
-                    </strong>
-                  </div>
-                  <span className="text-[11px] font-semibold text-jade">
-                    ¥398 / 位
-                  </span>
-                </div>
-                <p className="mt-1 text-[11px] leading-relaxed text-stone-600">
-                  {isZh
-                    ? '每日午后 90 分钟实操，含纯桑蚕丝劈丝指导、运河水纹起针与红木台屏装裱带走。'
-                    : 'Daily 90-min workshop with silk splitting, ripple stitching, and framed keepsake.'}
-                </p>
-                <div className="mt-2.5 flex items-center gap-2">
-                  <Link
-                    to={`/my?slot=${encodeURIComponent(isZh ? '周末 14:00' : 'Weekend 14:00')}&course=suxiu-class`}
-                    className="btn-primary flex-1 !py-1.5 !text-xs text-center block"
+              <nav className="atelier-step-list" aria-label={isZh ? '切换试针步骤' : 'Choose a stitching step'}>
+                {WORKBENCH_STEPS.map((step, idx) => (
+                  <button
+                    key={step.step}
+                    type="button"
+                    aria-pressed={currentStepIndex === idx}
+                    className={currentStepIndex === idx ? 'is-active' : ''}
+                    onClick={() => setCurrentStepIndex(idx)}
                   >
-                    {isZh ? '一键预留工坊席位' : 'Reserve Atelier Seat'}
-                  </Link>
-                  <Link
-                    to="/studio"
-                    className="rounded-xl border border-stone-300 bg-white px-3 py-1.5 text-xs font-medium text-stone-600 hover:border-jade hover:text-jade transition"
-                  >
-                    {isZh ? '定制行程' : 'Customise'}
-                  </Link>
-                </div>
+                    <span className="atelier-step-index">{step.step}</span>
+                    <span>{isZh ? step.titleZh.split(' · ')[0] : step.titleEn}</span>
+                  </button>
+                ))}
+              </nav>
+
+              <p className="atelier-step-detail">
+                {isZh ? WORKBENCH_STEPS[currentStepIndex].leadZh : WORKBENCH_STEPS[currentStepIndex].leadEn}
+              </p>
+
+              <details className="atelier-study-details">
+                <summary>{isZh ? '工序说明与原型边界' : 'Process notes & prototype scope'}</summary>
+                <p>
+                  {isZh
+                    ? [
+                        '绷架固定底布并调整张力；实际用布与绷架结构由合作工坊确认。',
+                        '按画面配色选丝，观察劈丝带来的相对细度变化；具体材质和分丝级别以从业者演示为准。',
+                        '观察起针位置、走线方向与丝光变化；具体针法表述需由从业者复核。',
+                        '练习样片可作为住中体验的成果构想；装裱与带走形式需合作方确认。',
+                      ][currentStepIndex]
+                    : [
+                        'Secure the ground fabric and adjust its tension. Materials and frame details require atelier confirmation.',
+                        'Choose colour and observe relative fineness through silk splitting. Material and split levels require practitioner confirmation.',
+                        'Observe the starting point, stitch direction and changing lustre. Technique details require practitioner review.',
+                        'A practice sample is a proposed guest takeaway. Mounting and delivery require partner confirmation.',
+                      ][currentStepIndex]}
+                </p>
+                <p>{isZh ? '本页为课程数字原型，不代表已确认的工坊服务。' : 'This course prototype does not represent a confirmed atelier service.'}</p>
+              </details>
+
+              <div className="atelier-experience-link">
+                <Link to="/my?course=workshop">
+                  {isZh ? '记录工坊体验意向' : 'Save atelier interest'} <span aria-hidden="true">→</span>
+                </Link>
+                <p>{isZh ? '场次、价格与材料待合作确认。' : 'Schedule, price and materials await partner confirmation.'}</p>
               </div>
-            </div>
+            </aside>
           </div>
         )}
       </div>

@@ -2,6 +2,7 @@ import { RecommendationPanel } from '../components/RecommendationPanel'
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AvatarStage } from '../components/avatar/AvatarStage'
+import type { AvatarPace } from '../components/avatar/avatarTypes'
 import { useAvatarDirector } from '../hooks/useAvatarDirector'
 import { useSpeechQueue } from '../hooks/useSpeechQueue'
 import { useLanguage } from '../lib/i18n'
@@ -109,11 +110,12 @@ export function GuidePage() {
   const speechQueue = useSpeechQueue({ language })
   const [replyMode, setReplyMode] = useState<ChatMode>('demo')
   const [capabilities, setCapabilities] = useState<GuideCapabilities | null>(null)
-  const [serviceNotice, setServiceNotice] = useState<'stale' | 'fallback' | null>(null)
+  const [serviceNotice, setServiceNotice] = useState<'stale' | 'fallback' | 'error' | null>(null)
   const [signalError, setSignalError] = useState('')
   const [stopped, setStopped] = useState(false)
   const [streamingText, setStreamingText] = useState<string | null>(null)
   const [isStageCollapsedMobile, setIsStageCollapsedMobile] = useState(false)
+  const [avatarPace, setAvatarPace] = useState<AvatarPace>('calm')
   const streamingAccumulatedRef = useRef('')
   const chatScrollRef = useRef<HTMLDivElement>(null)
   const initializedRef = useRef<Record<string, boolean>>({})
@@ -129,8 +131,8 @@ export function GuidePage() {
         clear: '清空本语言', clearConfirm: '确认清空当前中文对话和会话预览标签吗？已进入测试统计的聚合记录不会被删除。', clearAll: '清空全部中英文记录', clearAllConfirm: '确认清空当前会话中的中英文对话与预览标签吗？已进入测试统计的聚合记录不会被删除。',
         privacy: '数据与隐私', privacyBody: '完整对话仅保留在当前浏览会话。未登录时，结构化兴趣标签也只保留在当前会话；登录后，主题、时长、预算、同行类型和情感会按账号所属测试批次保存，用于匿名汇总，不保存聊天原文。启用模型回复时，当前问题、最近 8 条对话与相关知识卡摘要会发送给 DeepSeek；请勿输入身份证、电话、订单号等敏感信息。',
         placeholder: '问苏绣、苏州景点、美食交通或住中安排…', send: '发送', stop: '停止', stopped: '已停止生成，你可以修改问题后重新发送。', loading: '婉娘正在整理回答…', read: '听婉娘讲解', stopRead: '暂停讲解',
-        ttsModeLabel: '语音模式', ttsViseme: 'Azure 语音 · Viseme 可用', ttsBrowser: '超自然女声 · 静态形象', ttsUnavailable: '语音暂不可用',
-        avatarModeLabel: '人物呈现', avatarLive2d: 'Live2D 模型', avatarStatic: '礼宾静态形象', restartNotice: '当前网页服务不是最新版本，请关闭旧服务后重新运行“一键启动网页”。', fallbackNotice: '在线回答暂时不可用，本次已切换为经过边界控制的本地回答。',
+        ttsModeLabel: '语音模式', ttsViseme: 'Azure 语音 · 已获取口型数据', ttsBrowser: '浏览器语音 · 自然微动', ttsUnavailable: '语音暂不可用',
+        avatarModeLabel: '人物呈现', avatarLive2d: 'Live2D 模型', avatarPuppet: '动态立绘 · 保留原脸表情', restartNotice: '当前网页服务不是最新版本，请关闭旧服务后重新运行“一键启动网页”。', fallbackNotice: '在线回答暂时不可用，本次已切换为经过边界控制的本地回答。', errorNotice: '回答中断，未保存不完整内容。问题已放回输入框，请重试。',
         collapseStage: '收起礼宾', expandStage: '展开礼宾', signalSaveFailed: '导览可以继续，但本次结构化兴趣标签未写入测试统计。请检查网络后重新发送需求。',
         avatarEyebrow: '当代江南文化礼宾', avatarIdle: '静候您的问题', avatarListening: '正在倾听您的提问', avatarThinking: '正在整理相关线索', avatarSpeaking: '正在为您讲解', avatarPaused: '已暂停生成',
         suggestions: ['苏绣为什么细腻？', '第一次去苏州有哪些推荐景点？', '帮我安排 2 小时苏绣体验', '体验时段如何选择？'],
@@ -145,8 +147,8 @@ export function GuidePage() {
         clear: 'Clear English chat', clearConfirm: 'Clear this English chat and its session preview tags? Aggregated study records already submitted will remain.', clearAll: 'Clear all Chinese and English records', clearAllConfirm: 'Clear chats and preview tags from this browser session? Aggregated study records already submitted will remain.',
         privacy: 'Data & privacy', privacyBody: 'Full chats stay in the current browser session. While signed out, structured interest tags also stay in this session only. When signed in, topic, time, budget, party type and sentiment are saved against the account cohort for anonymous aggregation; chat text is never stored in analytics. In model mode, the current question, latest 8 messages and relevant knowledge-card summaries are sent to DeepSeek. Do not enter identity numbers, phone numbers or booking references.',
         placeholder: 'Ask about Su embroidery, Suzhou sights, food, transport or your stay…', send: 'Send', stop: 'Stop', stopped: 'Generation stopped. You can revise the question and try again.', loading: 'Wanniang is preparing an answer…', read: 'Listen to Wanniang', stopRead: 'Pause voice',
-        ttsModeLabel: 'Voice mode', ttsViseme: 'Azure voice · Viseme available', ttsBrowser: 'Natural voice · Static portrait', ttsUnavailable: 'Voice unavailable',
-        avatarModeLabel: 'Character mode', avatarLive2d: 'Live2D model', avatarStatic: 'Concierge portrait', restartNotice: 'This page is served by an older local process. Close it and run the one-click launcher again.', fallbackNotice: 'Online answering is temporarily unavailable. This reply uses the bounded local guide.',
+        ttsModeLabel: 'Voice mode', ttsViseme: 'Azure voice · Viseme data available', ttsBrowser: 'Browser voice · Subtle portrait motion', ttsUnavailable: 'Voice unavailable',
+        avatarModeLabel: 'Character mode', avatarLive2d: 'Live2D model', avatarPuppet: 'Animated portrait · Natural expression', restartNotice: 'This page is served by an older local process. Close it and run the one-click launcher again.', fallbackNotice: 'Online answering is temporarily unavailable. This reply uses the bounded local guide.', errorNotice: 'The reply was interrupted and incomplete text was not saved. Your question is back in the input field; please retry.',
         collapseStage: 'Collapse Host', expandStage: 'Expand Host', signalSaveFailed: 'The guide can continue, but this structured intent was not added to study metrics. Check the connection and send the request again.',
         avatarEyebrow: 'CONTEMPORARY JIANGNAN CONCIERGE', avatarIdle: 'Awaiting your question', avatarListening: 'Listening to your question…', avatarThinking: 'Preparing relevant context…', avatarSpeaking: 'Explaining in voice', avatarPaused: 'Generation paused',
         suggestions: ['Why is Su embroidery so intricate?', 'What should a first-time visitor see in Suzhou?', 'Plan a 2-hour Su embroidery experience', 'How do I choose a workshop time?'],
@@ -300,6 +302,7 @@ export function GuidePage() {
       if (result.performance) {
         setEmotion(result.performance.emotion)
         setGesture(result.performance.gesture)
+        setAvatarPace(result.performance.pace)
         if (result.performance.gesture !== 'none') {
           window.setTimeout(() => {
             setGesture('none')
@@ -342,6 +345,10 @@ export function GuidePage() {
             sentiment: 'neutral',
           })
         }
+      } else {
+        speechQueue.stop()
+        setInput(q)
+        setServiceNotice('error')
       }
     } finally {
       if (abortRef.current === controller) abortRef.current = null
@@ -413,7 +420,6 @@ export function GuidePage() {
         <p>{copy.lead}</p>
       </header>
 
-      <RecommendationPanel />
       <div className={`guide-concierge-shell ${hasConversation ? 'has-conversation' : 'is-welcoming'} ${isStageCollapsedMobile ? 'stage-collapsed-mobile' : ''}`}>
         <aside className={`guide-host ${isStageCollapsedMobile ? 'is-collapsed' : ''}`}>
           <div className="guide-host-mobile-bar">
@@ -438,7 +444,8 @@ export function GuidePage() {
               mouthOpen={speechQueue.mouthOpen}
               mouthForm={speechQueue.mouthForm}
               ttsMode={speechQueue.ttsMode}
-              fallbackImage="/images/wanniang-concierge-v2.png"
+              pace={avatarPace}
+              fallbackImage="/avatar/wanniang-puppet/poster.webp"
               useLive2D={Boolean(live2dModelPath && capabilities?.avatar.modelConfigured)}
               modelPath={live2dModelPath || undefined}
             />
@@ -511,7 +518,7 @@ export function GuidePage() {
                 </div>
                 <div className="guide-mode-row">
                   <span>{copy.avatarModeLabel}</span>
-                  <strong>{capabilities?.avatar.mode === 'live2d' ? copy.avatarLive2d : copy.avatarStatic}</strong>
+                  <strong>{live2dModelPath && capabilities?.avatar.modelConfigured ? copy.avatarLive2d : copy.avatarPuppet}</strong>
                 </div>
                 <p>{copy.knowledge}</p>
                 <label>
@@ -542,7 +549,7 @@ export function GuidePage() {
           <div ref={chatScrollRef} className="guide-message-scroll">
             {serviceNotice && (
               <p className="guide-service-notice" role="status">
-                {serviceNotice === 'stale' ? copy.restartNotice : copy.fallbackNotice}
+                {serviceNotice === 'stale' ? copy.restartNotice : serviceNotice === 'error' ? copy.errorNotice : copy.fallbackNotice}
               </p>
             )}
             {signalError && <div className="guide-service-notice guide-service-fallback" role="alert">{signalError}</div>}
@@ -683,6 +690,7 @@ export function GuidePage() {
           </footer>
         </section>
       </div>
+      <RecommendationPanel />
     </div>
   )
 }
