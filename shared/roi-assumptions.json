@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "currency": "CNY",
+  "periodMonths": 12,
+  "boundary": "Synthetic operating scenarios; not measured hotel revenue or attendance. Excludes tax, discounting and depreciation.",
+  "scenarios": [
+    {"id":"baseline","name":"基线（无非遗模块）","nameEn":"Baseline · no heritage module","inputs":{"baseMonthlyRevenue":1000000,"monthlyHotelGuests":1000,"conversionRate":0,"ticketUplift":0,"ticketPrice":0,"sessions":0,"seatsPerSession":0,"unitCost":0,"fixedMonthlyCost":0,"initialInvestment":0}},
+    {"id":"light-experience","name":"情景 A（轻体验包）","nameEn":"Scenario A · light experience","inputs":{"baseMonthlyRevenue":1000000,"monthlyHotelGuests":1000,"conversionRate":0.18,"ticketUplift":0.01,"ticketPrice":228,"sessions":16,"seatsPerSession":12,"unitCost":42,"fixedMonthlyCost":7000,"initialInvestment":180000}},
+    {"id":"themed-room-workshop","name":"情景 B（主题房＋体验课）","nameEn":"Scenario B · themed room + workshop","inputs":{"baseMonthlyRevenue":1000000,"monthlyHotelGuests":1000,"conversionRate":0.32,"ticketUplift":0.03,"ticketPrice":398,"sessions":20,"seatsPerSession":12,"unitCost":68,"fixedMonthlyCost":16000,"initialInvestment":300000}}
+  ]
+}

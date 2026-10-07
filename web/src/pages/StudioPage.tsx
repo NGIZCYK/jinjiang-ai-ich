@@ -3,30 +3,7 @@ import { Link } from 'react-router-dom'
 import { useLanguage } from '../lib/i18n'
 import { generateItinerary, generateMarketingCopy } from '../lib/llm'
 import { useAppStore } from '../lib/store'
-import { ICH_ITEMS } from '../data/ichItems'
-
-const HERITAGE_EN: Record<string, { title: string; summary: string; sources: string }> = {
-  'gusu-scroll-provenance': {
-    title: 'Prosperous Suzhou: Source & Interpretation',
-    summary: 'A digital texture study referencing published records of Xu Yang’s painted scroll.',
-    sources: 'Liaoning Provincial Museum public record · project interpretation note',
-  },
-  'suxiu-history': {
-    title: 'Su Embroidery in Suzhou',
-    summary: 'A regional embroidery tradition connected with Jiangnan textile and visual culture.',
-    sources: 'Suzhou textile literature · bibliography pending page-level review',
-  },
-  'suxiu-xuehuan': {
-    title: 'Shen Shou and Xuehuan Xiupu',
-    summary: 'A key modern source for understanding embroidery observation and practice.',
-    sources: 'Xuehuan Xiupu · edition and page reference pending review',
-  },
-  'suxiu-pisi': {
-    title: 'Silk Splitting: Relative Levels',
-    summary: 'Illustrative levels explain finer thread without claiming a universal standard.',
-    sources: 'Published craft sources · project experience-level note',
-  },
-}
+import { searchICH } from '../data/ichItems'
 
 export function StudioPage() {
   const { language } = useLanguage()
@@ -74,16 +51,16 @@ export function StudioPage() {
         channel: '触达渠道',
         time: '可用停留时间',
         context: '传播情景',
-        hint: '根据客群、触点与总时长生成可编辑结构；服务可履约性仍需人工确认。',
+        hint: '使用本地规则与模板，按客群、触点和总时长生成草稿；服务可履约性需人工确认。',
         itinerary: '住客体验行程',
         marketing: '酒店推广文案',
         generateItinerary: '生成苏绣微旅行建议',
         generateMarketing: '生成住中推广文案',
-        itineraryLead: '根据停留时长（如90/120分钟）自动精确分段：赏析、劈丝、起针与茶歇。',
+        itineraryLead: '根据停留时长（如90/120分钟）自动精确分段：赏析、识线、起针与回看。',
         marketingLead: '将苏绣工艺意境转为兼具文采与转化力的酒店多渠道营销草稿。',
         draft: '生成草稿并进入第 2 步',
         regenerate: '重新生成',
-        aiDraft: '规则辅助草稿',
+        aiDraft: '规则／模板草稿',
         empty: '尚未生成草稿',
         emptyLead: '请先在左侧设定住客与渠道参数，点击上方按钮开启生成。',
         saveHint: '保存后可在「我的行程」随时查阅与管理。',
@@ -120,16 +97,16 @@ export function StudioPage() {
         channel: 'Touchpoint Channel',
         time: 'Available Duration',
         context: 'Context & Theme',
-        hint: 'Generate an editable structure from guest, touchpoint and duration inputs; a person still confirms feasibility.',
+        hint: 'Local rules and templates generate this draft from guest, touchpoint and duration inputs; a person confirms feasibility.',
         itinerary: 'Guest Itinerary',
         marketing: 'Hotel Promotion',
         generateItinerary: 'Generate Su Embroidery Itinerary',
         generateMarketing: 'Generate Marketing Copy',
-        itineraryLead: 'Dynamically partitions duration into appreciation, splitting, stitching, and tea pairing.',
+        itineraryLead: 'Dynamically partitions duration into appreciation, materials, stitching and reflection.',
         marketingLead: 'Turn craft heritage into high-conversion editorial copy for luxury hotel distribution.',
         draft: 'Generate Draft & Proceed to Step 2',
         regenerate: 'Regenerate Draft',
-        aiDraft: 'AI CURATED DRAFT',
+        aiDraft: 'RULE / TEMPLATE DRAFT',
         empty: 'No content generated yet',
         emptyLead: 'Configure guest parameters on the left and generate a tailored draft.',
         saveHint: 'Saved items can be managed in My Journey at any time.',
@@ -217,7 +194,7 @@ export function StudioPage() {
   }
 
   // 关联合适的考据项
-  const relevantHeritageItems = ICH_ITEMS.slice(0, 4)
+  const relevantHeritageItems = searchICH([isItinerary ? prefer : scene, audience, channel].join(' '), language, 4)
 
   return (
     <div className="ops-page studio-page">
@@ -469,12 +446,12 @@ export function StudioPage() {
                   {relevantHeritageItems.map((item) => (
                     <div key={item.id} className="rounded-xl border border-stone-200 bg-stone-50/60 p-3 text-xs">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-stone-800">{language === 'zh' ? item.title : HERITAGE_EN[item.id]?.title}</span>
+                        <span className="font-medium text-stone-800">{language === 'zh' ? item.title : (item.titleEn ?? item.title)}</span>
                         <span className="rounded bg-stone-200/70 px-1.5 py-0.5 text-[10px] text-stone-600">{language === 'zh' ? item.tags[0] : 'Reference'}</span>
                       </div>
-                      <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-stone-500">{language === 'zh' ? item.summary : HERITAGE_EN[item.id]?.summary}</p>
+                      <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-stone-500">{language === 'zh' ? item.summary : (item.summaryEn ?? item.summary)}</p>
                       <div className="mt-2 border-t border-stone-200/60 pt-1.5 text-[10px] text-stone-400">
-                        {language === 'zh' ? `来源：${item.sources.join(' / ')}` : `Sources: ${HERITAGE_EN[item.id]?.sources}`}
+                        {language === 'zh' ? `来源：${item.sources.join(' / ')}` : `Sources: ${(item.sourcesEn ?? item.sources).join(' / ')}`}
                       </div>
                     </div>
                   ))}

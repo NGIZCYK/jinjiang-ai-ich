@@ -24,10 +24,10 @@ export async function detectTtsMode(): Promise<'viseme' | 'browser' | 'unavailab
   if (cachedMode) return cachedMode
 
   try {
-    const res = await apiFetch('/api/tts/token', { headers: { Accept: 'application/json' }, cache: 'no-store' })
+    const res = await apiFetch('/api/tts/status', { headers: { Accept: 'application/json' }, cache: 'no-store', signal: AbortSignal.timeout(10000) })
     if (res.ok && (res.headers.get('content-type') || '').includes('application/json')) {
-      const data = (await res.json()) as TtsTokenResponse
-      if (data.mode === 'viseme' && data.token && data.region) {
+      const data = (await res.json()) as { provider?: string }
+      if (data.provider === 'azure') {
         cachedMode = 'viseme'
         return 'viseme'
       }
@@ -52,7 +52,7 @@ export async function getTtsProvider(): Promise<TtsProvider> {
   if (cachedProvider) return cachedProvider
 
   try {
-    const res = await apiFetch('/api/tts/token', { headers: { Accept: 'application/json' }, cache: 'no-store' })
+    const res = await apiFetch('/api/tts/token', { headers: { Accept: 'application/json' }, cache: 'no-store', signal: AbortSignal.timeout(10000) })
     if (res.ok && (res.headers.get('content-type') || '').includes('application/json')) {
       const data = (await res.json()) as TtsTokenResponse
       if (data.mode === 'viseme' && data.token && data.region) {

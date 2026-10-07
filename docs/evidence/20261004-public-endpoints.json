@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-04",
+  "authorization": "public unauthenticated only; no local keys sent",
+  "site": {
+    "url": "https://idyllic-bubblegum-1f5a5c.netlify.app",
+    "status": 200
+  },
+  "capabilities": {
+    "url": "https://uxfxhqdfrzkafekrbzcf.supabase.co/functions/v1/concierge/capabilities",
+    "status": 200,
+    "apiVersion": "2026.09.19-guide-v3",
+    "chatProvider": "demo",
+    "ttsProvider": "browser"
+  },
+  "withDemoOrigin": {
+    "GET": 403,
+    "OPTIONS": 403,
+    "error": "Origin not allowed"
+  },
+  "deploymentPerformed": false
+}

@@ -1,5 +1,5 @@
 import type { Exploration } from '../lib/journey'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import type { Language } from '../lib/i18n'
 
@@ -113,6 +113,8 @@ export interface SilkGalleryView {
   navZh: string
   navEn: string
   image: string
+  captionZh: string
+  captionEn: string
   leadZh: string
   leadEn: string
 }
@@ -120,41 +122,49 @@ export interface SilkGalleryView {
 const SILK_GALLERY_VIEWS: SilkGalleryView[] = [
   {
     id: 'cocoons',
-    titleZh: '01 蚕茧与缫丝 · 原料起点',
-    titleEn: '01 Cocoon & Reeling · Material Origin',
+    titleZh: '蚕茧 · 原料起点',
+    titleEn: 'Cocoon · Material Origin',
     navZh: '蚕茧',
     navEn: 'Cocoon',
     image: '/assets/suxiu-silk-03-cocoons.webp',
-    leadZh: '以桑蚕茧与绕线器物说明丝线形成的起点；图片用于材料认知，不作为具体产地、年代或工坊来源证明。',
-    leadEn: 'Cocoons and reeling tools introduce the material journey. The image supports material learning rather than proving a specific origin, date or atelier.',
+    captionZh: '观察茧体表面细密交叠的纹理，认识丝线的材料起点。',
+    captionEn: 'Observe the closely interwoven surface of a cocoon, the material starting point of silk.',
+    leadZh: '照片展示茧体表面，用于材料认知；缫丝过程需结合工坊演示理解，图片不作为具体产地、年代或工坊来源证明。',
+    leadEn: 'This photograph shows cocoon surfaces for material learning. Reeling requires an atelier demonstration; the image does not establish an origin, date or atelier.',
   },
   {
     id: 'splitting',
-    titleZh: '02 劈丝观察 · 相对细度',
-    titleEn: '02 Silk Splitting · Relative Fineness',
+    titleZh: '劈丝 · 相对细度',
+    titleEn: 'Splitting · Relative Fineness',
     navZh: '劈丝',
     navEn: 'Splitting',
     image: '/assets/suxiu-silk-02-splitting.webp',
+    captionZh: '从针线近景认识劈丝概念，再用示意线比较相对细度。',
+    captionEn: 'A needle-and-thread close-up introduces splitting; illustrated lines compare relative fineness.',
     leadZh: '借助针具与丝线近景引出劈丝概念；实际分丝手法、材料结构与用线尺度需结合合作工坊演示确认。',
     leadEn: 'A needle-and-thread close-up introduces silk splitting. Technique, material structure and working scale remain subject to atelier demonstration.',
   },
   {
     id: 'palette',
-    titleZh: '03 长卷取色 · 五组策展色样',
-    titleEn: '03 Scroll Palette · Five Curated Swatches',
+    titleZh: '取色 · 五组策展色样',
+    titleEn: 'Palette · Five Curated Swatches',
     navZh: '取色',
     navEn: 'Palette',
     image: '/assets/suxiu-silk-01-palette.webp',
+    captionZh: '观察五组丝色的冷暖与明度，选择一种颜色查看线束示意。',
+    captionEn: 'Compare the warmth and value of five colours, then choose a swatch to preview a thread bundle.',
     leadZh: '以数字长卷中的水色、荷粉、青黛、暖金与初白组织五组配色，帮助比较冷暖、明度与丝光；它们是本项目的策展色样，不是传统标准色谱。',
     leadEn: 'Five project swatches drawn from the digital scroll compare temperature, value and sheen. They are a curatorial palette, not a traditional colour standard.',
   },
   {
     id: 'lustre',
-    titleZh: '04 成绣丝光 · 顺逆观察',
-    titleEn: '04 Finished Silk · Directional Lustre',
+    titleZh: '丝光 · 受光观察',
+    titleEn: 'Lustre · Light & Direction',
     navZh: '丝光',
     navEn: 'Lustre',
     image: '/assets/suxiu-silk-04-lustre.webp',
+    captionZh: '留意成绣表面的线向与明暗，再切换示意中的受光方向。',
+    captionEn: 'Notice thread direction and tonal changes on the embroidered surface, then explore illustrated lighting directions.',
     leadZh: '通过成绣表面近景观察丝线方向、覆盖密度与受光角度如何共同形成光泽变化；图片不承担单丝截面或微观结构证明。',
     leadEn: 'A finished-surface close-up shows how thread direction, coverage and viewing angle shape lustre; it does not claim to show a filament cross-section.',
   },
@@ -237,6 +247,56 @@ const SPLIT_LEVELS = [
   },
 ]
 
+const SILK_LIGHTS = [
+  { id: 'left', labelZh: '左侧光', labelEn: 'Left', position: 20, opacity: 0.65,
+    noteZh: '高光偏向左侧，比较线束不同位置的明暗。',
+    noteEn: 'The highlight moves left; compare light and shade across the bundle.' },
+  { id: 'front', labelZh: '正面光', labelEn: 'Front', position: 50, opacity: 0.95,
+    noteZh: '高光集中在中部，留意亮部与周围线色的关系。',
+    noteEn: 'The highlight sits in the centre; notice its relation to the surrounding colour.' },
+  { id: 'right', labelZh: '右侧光', labelEn: 'Right', position: 80, opacity: 0.65,
+    noteZh: '高光移向右侧，回看与左侧受光的视觉差异。',
+    noteEn: 'The highlight moves right; compare it with light from the left.' },
+]
+
+function SilkMaterialImage({ view, isZh }: { view: SilkGalleryView; isZh: boolean }) {
+  const [failed, setFailed] = useState(false)
+  return (
+    <div className="silk-material-image">
+      {failed ? (
+        <div className="silk-image-fallback" role="status">
+          <strong>{isZh ? view.titleZh : view.titleEn}</strong>
+          <p>{isZh ? '图片暂时无法加载，可继续切换主题与观察示意。' : 'Image unavailable. You can still change views and explore the illustrations.'}</p>
+        </div>
+      ) : (
+        <img src={view.image} alt={isZh ? view.titleZh : view.titleEn} onError={() => setFailed(true)} />
+      )}
+    </div>
+  )
+}
+
+function SilkThreadPreview({ palette, gauge, light, label }: {
+  palette: typeof SILK_PALETTES[number]
+  gauge: number
+  light?: typeof SILK_LIGHTS[number]
+  label: string
+}) {
+  const style = {
+    '--silk-color': palette.hex,
+    '--silk-highlight': palette.lightHex,
+    '--silk-gauge': `${gauge}px`,
+    '--silk-light-position': `${light?.position ?? 50}%`,
+    '--silk-light-opacity': light?.opacity ?? 0.7,
+  } as CSSProperties
+  return (
+    <div className={`silk-thread-preview ${palette.id === 'white' ? 'is-pale' : ''}`} style={style} role="img" aria-label={label}>
+      <div className="silk-thread-bundle" aria-hidden="true">
+        {Array.from({ length: 7 }, (_, index) => <span className="silk-thread" key={index} />)}
+      </div>
+    </div>
+  )
+}
+
 /** 起针四步工序 */
 const WORKBENCH_STEPS = [
   {
@@ -292,6 +352,11 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
   const [silkViewIndex, setSilkViewIndex] = useState(0)
   const [selectedPalette, setSelectedPalette] = useState(SILK_PALETTES[0])
   const [splitIndex, setSplitIndex] = useState(1) // 默认相对 1/4
+  const [silkLightIndex, setSilkLightIndex] = useState(1)
+  const silkView = SILK_GALLERY_VIEWS[silkViewIndex]
+  const splitLabel = splitIndex === 0 ? (isZh ? '整股' : 'Full') : ['full', '1/4', '1/16', '1/32'][splitIndex]
+  const paletteName = isZh ? selectedPalette.nameZh : selectedPalette.nameEn
+  const silkLight = SILK_LIGHTS[silkLightIndex]
 
   // 绣台工序状态
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
@@ -616,137 +681,127 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
 
         {/* ======================= 展位 2: 识线 · 丝色百宝阁 ======================= */}
         {currentTab === 'silk' && (
-          <div className="grid gap-5 lg:grid-cols-12">
-            {/* 左侧：材料观察画廊 */}
-            <div className="space-y-3 lg:col-span-7">
-              {/* 16:9 主画幅材料观察视窗 */}
-              <div className="relative overflow-hidden rounded-lg bg-stone-900">
-                <img
-                  key={SILK_GALLERY_VIEWS[silkViewIndex].image}
-                  src={SILK_GALLERY_VIEWS[silkViewIndex].image}
-                  alt={isZh ? SILK_GALLERY_VIEWS[silkViewIndex].titleZh : SILK_GALLERY_VIEWS[silkViewIndex].titleEn}
-                  className="block aspect-[16/9] w-full object-cover transition-opacity duration-300"
-                />
+          <div className="silk-study">
+            <nav className="silk-view-nav" aria-label={isZh ? '材料观察' : 'Material views'}>
+              {SILK_GALLERY_VIEWS.map((view, index) => (
+                <button key={view.id} type="button" aria-pressed={silkViewIndex === index}
+                  aria-controls="silk-current-view" onClick={() => setSilkViewIndex(index)}>
+                  {isZh ? view.navZh : view.navEn}
+                </button>
+              ))}
+            </nav>
 
-              </div>
+            <div className="silk-study-layout" id="silk-current-view">
+              <figure className="silk-material-figure">
+                <SilkMaterialImage key={silkView.id} view={silkView} isZh={isZh} />
+                <figcaption className="silk-material-caption">
+                  <h3>{isZh ? silkView.titleZh : silkView.titleEn}</h3>
+                  <p>{isZh ? silkView.captionZh : silkView.captionEn}</p>
+                </figcaption>
+              </figure>
 
-              <div className="atelier-figure-caption">
-                <p>{isZh ? SILK_GALLERY_VIEWS[silkViewIndex].leadZh : SILK_GALLERY_VIEWS[silkViewIndex].leadEn}</p>
-              </div>
+              <aside className="silk-observation" aria-label={isZh ? '主题观察区' : 'Topic study'}>
+                {silkView.id === 'cocoons' && (
+                  <div className="silk-topic-content">
+                    <h3>{isZh ? '从一枚蚕茧开始' : 'Begin with a cocoon'}</h3>
+                    <p>{isZh ? '丝线的材料旅程由此开始。先驻足看表面，再进入劈丝与用色的观察。' : 'The material journey of silk starts here. Study the surface before exploring finer threads and colour.'}</p>
+                    <div className="silk-observation-note">
+                      <h4>{isZh ? '看表面' : 'Look at the surface'}</h4>
+                      <p>{isZh ? '留意茧体上细密交叠的纹理，以及不同位置的明暗。' : 'Notice the closely interwoven texture and the light and shade across each cocoon.'}</p>
+                    </div>
+                  </div>
+                )}
 
-              {/* 单一材料导航：不再与图上箭头或计数器重复。 */}
-              <nav className="atelier-subtabs" aria-label={isZh ? '材料观察' : 'Material views'}>
-                {SILK_GALLERY_VIEWS.map((view, idx) => {
-                  const isCurrent = silkViewIndex === idx
-                  return (
-                    <button
-                      key={view.id}
-                      type="button"
-                      onClick={() => setSilkViewIndex(idx)}
-                      aria-pressed={isCurrent}
-                      className={isCurrent ? 'is-active' : ''}
-                    >
-                      {isZh ? view.navZh : view.navEn}
-                    </button>
-                  )
-                })}
-              </nav>
+                {silkView.id === 'splitting' && (
+                  <div className="silk-topic-content">
+                    <h3>{isZh ? '比较相对细度' : 'Compare relative fineness'}</h3>
+                    <p>{isZh ? '选择一个档位，与整股基准上下对照。' : 'Choose a level and compare it with the full-strand baseline.'}</p>
+                    <div className="silk-options silk-level-options" role="group" aria-label={isZh ? '相对细度' : 'Relative fineness'}>
+                      {SPLIT_LEVELS.map((level, index) => (
+                        <button key={level.id} type="button" aria-pressed={splitIndex === index}
+                          onClick={() => {
+                            setSplitIndex(index)
+                            onExplore?.({ levels: [['full', '1/4', '1/16', '1/32'][index]] })
+                          }}>
+                          {index === 0 ? (isZh ? '整股' : 'Full') : ['full', '1/4', '1/16', '1/32'][index]}
+                        </button>
+                      ))}
+                    </div>
+                    <div className={`silk-line-comparison ${selectedPalette.id === 'white' ? 'is-pale' : ''}`}
+                      style={{ '--silk-color': selectedPalette.hex } as CSSProperties}
+                      role="img" aria-label={isZh ? `${paletteName}，整股基准与${splitLabel}的相对细度示意` : `${paletteName}: full-strand baseline compared with ${splitLabel}, relative fineness illustration`}>
+                      <div className="silk-comparison-row">
+                        <span>{isZh ? '整股基准' : 'Full baseline'}</span>
+                        <div className="silk-line-space"><i className="silk-comparison-line" style={{ height: '10px' }} /></div>
+                      </div>
+                      <div className="silk-comparison-row">
+                        <span>{isZh ? `当前 ${splitLabel}` : `Selected ${splitLabel}`}</span>
+                        <div className="silk-line-space"><i className="silk-comparison-line silk-selected-line" style={{ height: `${SPLIT_LEVELS[splitIndex].gauge}px` }} /></div>
+                      </div>
+                    </div>
+                    <div className="silk-selection-copy" aria-live="polite" aria-atomic="true">
+                      <h4>{paletteName} · {splitLabel}</h4>
+                      <p>{isZh ? SPLIT_LEVELS[splitIndex].descZh : SPLIT_LEVELS[splitIndex].descEn}</p>
+                    </div>
+                    <p className="silk-concept-label">{isZh ? '相对细度示意 · 固定显示尺度，非实测线径' : 'Relative fineness illustration · Fixed display scale, not measured diameters'}</p>
+                  </div>
+                )}
 
-            </div>
+                {silkView.id === 'palette' && (
+                  <div className="silk-topic-content">
+                    <h3>{isZh ? '选一缕丝色' : 'Choose a thread colour'}</h3>
+                    <p>{isZh ? '五组色样，比较冷暖与明度。' : 'Five swatches to compare warmth and value.'}</p>
+                    <div className="silk-swatches" role="group" aria-label={isZh ? '策展色样' : 'Curated swatches'}>
+                      {SILK_PALETTES.map((palette) => (
+                        <button key={palette.id} type="button" aria-pressed={selectedPalette.id === palette.id}
+                          aria-label={isZh ? `选择${palette.nameZh}` : `Select ${palette.nameEn}`}
+                          title={isZh ? palette.nameZh : palette.nameEn}
+                          onClick={() => {
+                            setSelectedPalette(palette)
+                            onExplore?.({ palette: ({ pink: 'rose', slate: 'indigo', white: 'ivory' } as Record<string, string>)[palette.id] || palette.id })
+                          }}>
+                          <span style={{ background: `linear-gradient(135deg, ${palette.lightHex}, ${palette.hex})` }} />
+                        </button>
+                      ))}
+                    </div>
+                    <SilkThreadPreview palette={selectedPalette} gauge={SPLIT_LEVELS[splitIndex].gauge}
+                      label={isZh ? `${paletteName} · ${splitLabel} 丝线示意` : `${paletteName} · ${splitLabel} thread illustration`} />
+                    <div className="silk-selection-copy" aria-live="polite" aria-atomic="true">
+                      <h4>{paletteName} · {splitLabel}</h4>
+                      <p>{isZh ? selectedPalette.usageZh : selectedPalette.usageEn}</p>
+                    </div>
+                    <p className="silk-concept-label">{isZh ? '项目策展配色 · 非传统标准色谱' : 'Project-curated colours · Not a traditional colour standard'}</p>
+                  </div>
+                )}
 
-            {/* 右侧：一个连续观察区，不再叠加实验台卡片。 */}
-            <div className="atelier-study-panel lg:col-span-5">
-              <div>
-                <h3>{isZh ? '色样与丝线' : 'Colour & thread'}</h3>
-                <p>{isZh ? '选色，再比较丝线的相对细度。五组为项目策展配色。' : 'Select a swatch, then compare relative fineness. These five colours are curated for this project.'}</p>
-              </div>
+                {silkView.id === 'lustre' && (
+                  <div className="silk-topic-content">
+                    <h3>{isZh ? '让光移过丝线' : 'Let light cross the threads'}</h3>
+                    <p>{isZh ? '切换受光方向，留意示意线束的高光与明暗。' : 'Change the light direction and watch the highlights and shade in the illustrated bundle.'}</p>
+                    <div className="silk-options silk-light-options" role="group" aria-label={isZh ? '受光方向' : 'Light direction'}>
+                      {SILK_LIGHTS.map((light, index) => (
+                        <button key={light.id} type="button" aria-pressed={silkLightIndex === index}
+                          onClick={() => setSilkLightIndex(index)}>{isZh ? light.labelZh : light.labelEn}</button>
+                      ))}
+                    </div>
+                    <SilkThreadPreview palette={selectedPalette} gauge={SPLIT_LEVELS[splitIndex].gauge} light={silkLight}
+                      label={isZh ? `${paletteName} · ${splitLabel} · ${silkLight.labelZh}受光示意` : `${paletteName} · ${splitLabel} · ${silkLight.labelEn} light illustration`} />
+                    <div className="silk-selection-copy" aria-live="polite" aria-atomic="true">
+                      <h4>{isZh ? silkLight.labelZh : `${silkLight.labelEn} light`}</h4>
+                      <p>{isZh ? silkLight.noteZh : silkLight.noteEn}</p>
+                      <p className="silk-current-material">{paletteName} · {splitLabel}</p>
+                    </div>
+                    <p className="silk-concept-label">{isZh ? '受光概念示意 · 用于观察明暗关系' : 'Conceptual light illustration · For observing light and shade'}</p>
+                  </div>
+                )}
 
-              {/* 紧凑色样选择器：不再作为独立大板块 */}
-              <div>
-                <h4>{isZh ? '取色' : 'Palette'}</h4>
-                <div className="mt-2 grid grid-cols-5 gap-2">
-                  {SILK_PALETTES.map((palette) => {
-                    const isSelected = selectedPalette.id === palette.id
-                    return (
-                      <button
-                        key={palette.id}
-                        type="button"
-                        onClick={() => { setSelectedPalette(palette); onExplore?.({palette: ({pink:'rose',slate:'indigo',white:'ivory'} as Record<string,string>)[palette.id] || palette.id}) }}
-                        aria-pressed={isSelected}
-                        aria-label={isZh ? `选择${palette.nameZh}` : `Select ${palette.nameEn}`}
-                        title={isZh ? palette.nameZh : palette.nameEn}
-                        className={`min-h-11 rounded-md border p-1.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jade/50 ${
-                          isSelected
-                            ? 'border-jade bg-jade/[0.04]'
-                            : 'border-stone-200 bg-white hover:border-stone-400'
-                        }`}
-                      >
-                        <span
-                          className="block h-7 rounded-md border border-black/5 shadow-inner"
-                          style={{ background: `linear-gradient(135deg, ${palette.lightHex}, ${palette.hex})` }}
-                        />
-                      </button>
-                    )
-                  })}
-                </div>
-                <p className="mt-2 text-xs leading-5 text-stone-600">
-                  <strong className="font-medium text-stone-800">{isZh ? selectedPalette.nameZh : selectedPalette.nameEn}</strong>
-                  {' · '}{isZh ? selectedPalette.usageZh : selectedPalette.usageEn}
-                </p>
-              </div>
-
-              {/* 四档比较保留选择能力，只用一组轻量行。 */}
-              <div className="atelier-fineness">
-                <h4>{isZh ? '相对细度' : 'Relative fineness'}</h4>
-
-                <div className="space-y-1.5">
-                  {SPLIT_LEVELS.map((level, idx) => {
-                    const isSelected = splitIndex === idx
-                    return (
-                      <button
-                        key={level.id}
-                        type="button"
-                        onClick={() => { setSplitIndex(idx); onExplore?.({levels: [['full','1/4','1/16','1/32'][idx]]}) }}
-                        aria-pressed={isSelected}
-                        className={`grid w-full min-h-11 grid-cols-[4.5rem_1fr] items-center gap-3 border-b px-1 py-2 text-left transition ${
-                          isSelected
-                            ? 'border-jade bg-jade/[0.035]'
-                            : 'border-stone-200 hover:bg-stone-50'
-                        }`}
-                      >
-                        <span className={`text-[11px] font-semibold ${isSelected ? 'text-jade' : 'text-stone-500'}`}>
-                          {idx === 0 ? (isZh ? '整股' : 'Full') : idx === 1 ? '1/4' : idx === 2 ? '1/16' : '1/32'}
-                        </span>
-                        <span className="flex h-3 items-center rounded-full bg-white px-1 shadow-inner">
-                          <span
-                            className="block w-full rounded-full transition-all duration-300"
-                            style={{ height: `${level.gauge}px`, backgroundColor: selectedPalette.hex }}
-                          />
-                        </span>
-                      </button>
-                    )
-                  })}
-                </div>
-
-                <p className="mt-3 text-xs leading-5 text-stone-600">
-                  {isZh ? SPLIT_LEVELS[splitIndex].descZh : SPLIT_LEVELS[splitIndex].descEn}
-                </p>
-                <p className="mt-2 text-[11px] leading-4 text-stone-500">
-                  {isZh
-                    ? '相对细度为概念示意，非统一标准或实测结果。'
-                    : 'Conceptual relative levels—not a standard or measured result.'}
-                </p>
-              </div>
-
-              <details className="atelier-study-details">
-                <summary>{isZh ? '材料与丝光说明' : 'Material & lustre notes'}</summary>
-                <p>
-                  {isZh
-                    ? '丝线方向、排列密度和受光角度共同影响表面反射，因此成绣在移动视角下会出现明暗变化。本页图片用于观察这种表面现象，微观机理仍需由专业资料或从业者复核。'
-                    : 'Thread direction, coverage and lighting angle work together to shape surface reflection. The image demonstrates this visible effect; microscopic interpretation remains subject to expert review.'}
-                </p>
-                <p>{isZh ? '五组色样取自项目数字长卷，属于策展配色；图片不证明具体产地、工坊或单丝结构。' : 'The five swatches are curated from the project scroll; the images do not establish a specific origin, atelier or filament structure.'}</p>
-              </details>
+                <details className="silk-material-details" key={silkView.id}>
+                  <summary>{isZh ? '材料与图像说明' : 'Material & image notes'}</summary>
+                  <p>{isZh ? silkView.leadZh : silkView.leadEn}</p>
+                  {silkView.id === 'splitting' && <p>{isZh ? '相对细度为概念示意，非统一标准或实测结果。' : 'These relative levels are conceptual, not a universal standard or measured result.'}</p>}
+                  {silkView.id === 'lustre' && <p>{isZh ? '丝线方向、排列密度和受光角度共同影响表面反射。示意中的高光变化仅用于帮助观察，不代表真实丝线的光学测量。' : 'Thread direction, coverage and light angle all affect surface reflection. The moving highlight supports observation; it is not an optical measurement of real silk.'}</p>}
+                </details>
+              </aside>
             </div>
           </div>
         )}

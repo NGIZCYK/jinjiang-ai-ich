@@ -1,4 +1,7 @@
+import { isKnownVersionMismatch } from '../lib/serviceCompatibility'
+import { capabilityChatMode } from '../lib/guideCapabilities'
 import { RecommendationPanel } from '../components/RecommendationPanel'
+import { FloatingWanNiangAssistant } from '../components/FloatingWanNiangAssistant'
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AvatarStage } from '../components/avatar/AvatarStage'
@@ -107,6 +110,9 @@ export function GuidePage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [speak, setSpeak] = useState(false)
+  const speechEnabledRef = useRef(false)
+  const activeRef = useRef(true)
+  const gestureTimerRef = useRef<number | null>(null)
   const speechQueue = useSpeechQueue({ language })
   const [replyMode, setReplyMode] = useState<ChatMode>('demo')
   const [capabilities, setCapabilities] = useState<GuideCapabilities | null>(null)
@@ -126,15 +132,15 @@ export function GuidePage() {
         title: '婉娘文化礼宾', name: '婉娘', lead: '一位懂苏绣，也懂苏州停留节奏的当代文化向导。', status: '私人文化礼宾',
         profile: '锦江苏州 · 当代江南文化礼宾', knowledge: '苏绣与苏州资料增强 + DeepSeek 通识', service: '苏绣工艺 · 苏州旅行 · 住中体验', speak: '自动朗读新回复',
         mode: '回答服务', demo: '本地精选内容', deepseek: 'DeepSeek 在线回答', fallback: '本地安全回答',
-        notice: '未登录也可对话；记录体验意向需登录。', book: '查看我的行程', private: '私人会话', online: '婉娘在线', reconnect: '服务版本待刷新', settings: '导览设置',
+        notice: '未登录可使用本地导览；在线回答和记录意向需登录。', book: '查看我的行程', private: '私人会话', online: '可开始导览', reconnect: '服务版本不同', offline: '在线服务暂不可用', settings: '导览设置',
         welcomeKicker: '今晚，从一段苏州故事开始', welcomeTitle: '想先了解哪一处？', welcomeLead: '您可以从一件绣品、一段城中行程，或一场住中体验开始。', replyLabel: '婉娘',
         clear: '清空本语言', clearConfirm: '确认清空当前中文对话和会话预览标签吗？已进入测试统计的聚合记录不会被删除。', clearAll: '清空全部中英文记录', clearAllConfirm: '确认清空当前会话中的中英文对话与预览标签吗？已进入测试统计的聚合记录不会被删除。',
         privacy: '数据与隐私', privacyBody: '完整对话仅保留在当前浏览会话。未登录时，结构化兴趣标签也只保留在当前会话；登录后，主题、时长、预算、同行类型和情感会按账号所属测试批次保存，用于匿名汇总，不保存聊天原文。启用模型回复时，当前问题、最近 8 条对话与相关知识卡摘要会发送给 DeepSeek；请勿输入身份证、电话、订单号等敏感信息。',
         placeholder: '问苏绣、苏州景点、美食交通或住中安排…', send: '发送', stop: '停止', stopped: '已停止生成，你可以修改问题后重新发送。', loading: '婉娘正在整理回答…', read: '听婉娘讲解', stopRead: '暂停讲解',
         ttsModeLabel: '语音模式', ttsViseme: 'Azure 语音 · 已获取口型数据', ttsBrowser: '浏览器语音 · 自然微动', ttsUnavailable: '语音暂不可用',
-        avatarModeLabel: '人物呈现', avatarLive2d: 'Live2D 模型', avatarPuppet: '动态立绘 · 保留原脸表情', restartNotice: '当前网页服务不是最新版本，请关闭旧服务后重新运行“一键启动网页”。', fallbackNotice: '在线回答暂时不可用，本次已切换为经过边界控制的本地回答。', errorNotice: '回答中断，未保存不完整内容。问题已放回输入框，请重试。',
+        avatarModeLabel: '人物呈现', avatarLive2d: 'Live2D 模型', avatarPuppet: '动态立绘 · 保留原脸表情', restartNotice: '服务版本与页面不同；可用接口将继续使用，回答来源以每次回复为准。', fallbackNotice: '在线回答暂时不可用，本次已切换为经过边界控制的本地回答。', errorNotice: '回答中断，未保存不完整内容。问题已放回输入框，请重试。',
         collapseStage: '收起礼宾', expandStage: '展开礼宾', signalSaveFailed: '导览可以继续，但本次结构化兴趣标签未写入测试统计。请检查网络后重新发送需求。',
-        avatarEyebrow: '当代江南文化礼宾', avatarIdle: '静候您的问题', avatarListening: '正在倾听您的提问', avatarThinking: '正在整理相关线索', avatarSpeaking: '正在为您讲解', avatarPaused: '已暂停生成',
+        avatarEyebrow: '当代江南文化礼宾', avatarIdle: '静候您的问题', avatarListening: '正在倾听您的提问', avatarThinking: '正在整理相关线索', avatarSpeaking: '正在为您讲解', avatarPaused: '已暂停',
         suggestions: ['苏绣为什么细腻？', '第一次去苏州有哪些推荐景点？', '帮我安排 2 小时苏绣体验', '体验时段如何选择？'],
         greeting: '你好，我是婉娘。除了苏绣工艺与项目体验，我也可以和你聊苏州景点、美食、交通与行程规划。涉及本项目时，我会区分文献线索、工艺经验和课程原型；涉及票价、营业时间等实时信息，会提醒你查询官方最新信息。',
       }
@@ -142,15 +148,15 @@ export function GuidePage() {
         title: 'Wanniang Cultural Concierge', name: 'Wanniang', lead: 'A contemporary cultural guide attuned to Su embroidery and the rhythm of a Suzhou stay.', status: 'Private cultural concierge',
         profile: 'Jinjiang Suzhou · Contemporary Jiangnan Concierge', knowledge: 'Suzhou references + DeepSeek general knowledge', service: 'Su embroidery · Suzhou travel · Stay experiences', speak: 'Auto-read new replies',
         mode: 'Answer service', demo: 'Curated local content', deepseek: 'DeepSeek online answer', fallback: 'Safe local answer',
-        notice: 'Chat is open to all; sign in to record a preference.', book: 'View my journey', private: 'Private conversation', online: 'Wanniang is available', reconnect: 'Service refresh required', settings: 'Guide settings',
+        notice: 'Local guide is open to all; sign in for online answers and preference records.', book: 'View my journey', private: 'Private conversation', online: 'Guide is available', reconnect: 'Service version differs', offline: 'Online service unavailable', settings: 'Guide settings',
         welcomeKicker: 'Begin with a story of Suzhou', welcomeTitle: 'Where would you like to begin?', welcomeLead: 'Start with an embroidered work, a route through the city, or a cultural moment during your stay.', replyLabel: 'Wanniang',
         clear: 'Clear English chat', clearConfirm: 'Clear this English chat and its session preview tags? Aggregated study records already submitted will remain.', clearAll: 'Clear all Chinese and English records', clearAllConfirm: 'Clear chats and preview tags from this browser session? Aggregated study records already submitted will remain.',
         privacy: 'Data & privacy', privacyBody: 'Full chats stay in the current browser session. While signed out, structured interest tags also stay in this session only. When signed in, topic, time, budget, party type and sentiment are saved against the account cohort for anonymous aggregation; chat text is never stored in analytics. In model mode, the current question, latest 8 messages and relevant knowledge-card summaries are sent to DeepSeek. Do not enter identity numbers, phone numbers or booking references.',
         placeholder: 'Ask about Su embroidery, Suzhou sights, food, transport or your stay…', send: 'Send', stop: 'Stop', stopped: 'Generation stopped. You can revise the question and try again.', loading: 'Wanniang is preparing an answer…', read: 'Listen to Wanniang', stopRead: 'Pause voice',
         ttsModeLabel: 'Voice mode', ttsViseme: 'Azure voice · Viseme data available', ttsBrowser: 'Browser voice · Subtle portrait motion', ttsUnavailable: 'Voice unavailable',
-        avatarModeLabel: 'Character mode', avatarLive2d: 'Live2D model', avatarPuppet: 'Animated portrait · Natural expression', restartNotice: 'This page is served by an older local process. Close it and run the one-click launcher again.', fallbackNotice: 'Online answering is temporarily unavailable. This reply uses the bounded local guide.', errorNotice: 'The reply was interrupted and incomplete text was not saved. Your question is back in the input field; please retry.',
+        avatarModeLabel: 'Character mode', avatarLive2d: 'Live2D model', avatarPuppet: 'Animated portrait · Natural expression', restartNotice: 'The service version differs from this page. Compatible interfaces remain available; each reply shows its actual source.', fallbackNotice: 'Online answering is temporarily unavailable. This reply uses the bounded local guide.', errorNotice: 'The reply was interrupted and incomplete text was not saved. Your question is back in the input field; please retry.',
         collapseStage: 'Collapse Host', expandStage: 'Expand Host', signalSaveFailed: 'The guide can continue, but this structured intent was not added to study metrics. Check the connection and send the request again.',
-        avatarEyebrow: 'CONTEMPORARY JIANGNAN CONCIERGE', avatarIdle: 'Awaiting your question', avatarListening: 'Listening to your question…', avatarThinking: 'Preparing relevant context…', avatarSpeaking: 'Explaining in voice', avatarPaused: 'Generation paused',
+        avatarEyebrow: 'CONTEMPORARY JIANGNAN CONCIERGE', avatarIdle: 'Awaiting your question', avatarListening: 'Listening to your question…', avatarThinking: 'Preparing relevant context…', avatarSpeaking: 'Explaining in voice', avatarPaused: 'Paused',
         suggestions: ['Why is Su embroidery so intricate?', 'What should a first-time visitor see in Suzhou?', 'Plan a 2-hour Su embroidery experience', 'How do I choose a workshop time?'],
         greeting: 'Hello, I am Wanniang. I can help with Su embroidery, Suzhou sights, food, transport and stay planning. For this project I distinguish documented leads, craft practice and prototype assumptions; for time-sensitive details I will suggest checking current official information.',
       }
@@ -168,7 +174,7 @@ export function GuidePage() {
     setGesture,
   } = useAvatarDirector({
     language,
-    isGenerating: loading,
+    isGenerating: loading || speechQueue.isPreparing,
     isSpeaking: speechQueue.isPlaying,
     isStopped: stopped,
     customStatusMap: {
@@ -211,19 +217,54 @@ export function GuidePage() {
   }, [language, visibleMessages.length])
 
   useEffect(() => {
+    let cancelled = false
     void getGuideCapabilities().then((nextCapabilities) => {
+      if (cancelled) return
       setCapabilities(nextCapabilities)
-      setReplyMode(nextCapabilities.stale
-        ? 'fallback'
-        : nextCapabilities.chat.provider === 'deepseek' ? 'deepseek' : 'demo')
-      if (nextCapabilities.stale) setServiceNotice('stale')
+      setReplyMode(capabilityChatMode(nextCapabilities))
+      if (!nextCapabilities.available) setServiceNotice('fallback')
+      else if (isKnownVersionMismatch(nextCapabilities)) setServiceNotice('stale')
     })
+    return () => { cancelled = true }
     // 文案会随语言切换，能力检测只需在首次加载时执行。
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  function resetGesture() {
+    if (gestureTimerRef.current !== null) window.clearTimeout(gestureTimerRef.current)
+    gestureTimerRef.current = null
+    setGesture('none')
+  }
+
+  function setSpeechEnabled(enabled: boolean) {
+    speechEnabledRef.current = enabled
+    setSpeak(enabled)
+    if (!enabled) stopSpeech()
+    else setStopped(false)
+  }
+
+  function stopSpeech() {
+    speechEnabledRef.current = false
+    setSpeak(false)
+    speechQueue.stop()
+    resetGesture()
+    setStopped(true)
+  }
+
+  useEffect(() => {
+    activeRef.current = true
+    return () => {
+      activeRef.current = false
+      speechEnabledRef.current = false
+      abortRef.current?.abort()
+      if (gestureTimerRef.current !== null) window.clearTimeout(gestureTimerRef.current)
+    }
+  }, [])
+
   function readMessageAloud(messageId: string, content: string, targetLanguage: 'zh' | 'en' = language) {
     speechQueue.stop()
+    setStopped(false)
+    resetGesture()
     const sentences = splitIntoSentences(content, targetLanguage)
     const requests: SpeechRequest[] = sentences.map((sentence, index) => ({
       id: `manual_${messageId}_${index}`,
@@ -237,12 +278,13 @@ export function GuidePage() {
   async function send(text: string) {
     if (!text.trim() || loading) return
     speechQueue.stop()
+    resetGesture()
     const q = text.trim()
     const requestLanguage = language
     const controller = new AbortController()
     abortRef.current = controller
     setStopped(false)
-    setServiceNotice(capabilities?.stale ? 'stale' : null)
+    setServiceNotice(isKnownVersionMismatch(capabilities) ? 'stale' : null)
     setInput('')
     setListening(false)
     streamingAccumulatedRef.current = ''
@@ -251,8 +293,8 @@ export function GuidePage() {
     const signal = extractGuideSignal(q, requestLanguage)
     if (signal) {
       void addGuideSignal({ ...signal, sourceMessageId: userMessage.id })
-        .then(() => setSignalError(''))
-        .catch(() => setSignalError(copy.signalSaveFailed))
+        .then(() => { if (activeRef.current) setSignalError('') })
+        .catch(() => { if (activeRef.current) setSignalError(copy.signalSaveFailed) })
     }
     setLoading(true)
     const history = visibleMessages.map((m) => ({ role: m.role, content: m.content }))
@@ -267,13 +309,15 @@ export function GuidePage() {
         requestLanguage,
         {
           onMeta: () => {
+            if (!activeRef.current || controller.signal.aborted) return
             setReplyMode('deepseek')
-            if (!capabilities?.stale) setServiceNotice(null)
+            if (activeRef.current && !isKnownVersionMismatch(capabilities)) setServiceNotice(null)
           },
           onDelta: (delta, accumulated) => {
+            if (!activeRef.current || controller.signal.aborted) return
             streamingAccumulatedRef.current = accumulated
             setStreamingText(accumulated)
-            if (speak) {
+            if (speechEnabledRef.current) {
               const sentences = segmenter.feed(delta)
               if (sentences.length > 0) {
                 const requests: SpeechRequest[] = sentences.map((sentence) => ({
@@ -287,15 +331,17 @@ export function GuidePage() {
             }
           },
           onError: () => {
-            if (capabilities?.stale) setServiceNotice('stale')
+            if (!activeRef.current) return
+            if (isKnownVersionMismatch(capabilities)) setServiceNotice('stale')
             else if (capabilities?.chat.provider === 'deepseek') setServiceNotice('fallback')
           },
         },
         controller.signal,
       )
+      if (!activeRef.current) return
       setReplyMode(result.mode)
       if (result.mode === 'fallback') {
-        setServiceNotice(capabilities?.stale ? 'stale' : 'fallback')
+        setServiceNotice(isKnownVersionMismatch(capabilities) ? 'stale' : 'fallback')
       } else if (result.mode === 'demo') {
         setServiceNotice(null)
       }
@@ -304,7 +350,7 @@ export function GuidePage() {
         setGesture(result.performance.gesture)
         setAvatarPace(result.performance.pace)
         if (result.performance.gesture !== 'none') {
-          window.setTimeout(() => {
+          gestureTimerRef.current = window.setTimeout(() => {
             setGesture('none')
           }, 2800)
         }
@@ -319,7 +365,7 @@ export function GuidePage() {
       })
       setStreamingText(null)
       streamingAccumulatedRef.current = ''
-      if (speak) {
+      if (speechEnabledRef.current) {
         const remaining = segmenter.flush()
         if (remaining.length > 0) {
           const requests: SpeechRequest[] = remaining.map((sentence) => ({
@@ -332,6 +378,7 @@ export function GuidePage() {
         }
       }
     } catch (error) {
+      if (!activeRef.current) return
       if (error instanceof Error && error.name === 'AbortError') {
         speechQueue.stop()
         setGesture('none')
@@ -352,8 +399,10 @@ export function GuidePage() {
       }
     } finally {
       if (abortRef.current === controller) abortRef.current = null
-      setLoading(false)
-      setStreamingText(null)
+      if (activeRef.current) {
+        setLoading(false)
+        setStreamingText(null)
+      }
       streamingAccumulatedRef.current = ''
     }
   }
@@ -372,7 +421,8 @@ export function GuidePage() {
 
   function stopGeneration() {
     speechQueue.stop()
-    setGesture('none')
+    resetGesture()
+    setStopped(true)
     abortRef.current?.abort()
   }
 
@@ -383,7 +433,7 @@ export function GuidePage() {
         if (loading) {
           stopGeneration()
         } else if (speechQueue.phase !== 'idle') {
-          speechQueue.stop()
+          stopSpeech()
         }
       }
     }
@@ -395,7 +445,7 @@ export function GuidePage() {
     const prompt = scope === 'all' ? copy.clearAllConfirm : copy.clearConfirm
     if (!window.confirm(prompt)) return
     speechQueue.stop()
-    setGesture('none')
+    resetGesture()
     setEmotion('neutral')
     if (scope === 'all') {
       clearMessages()
@@ -442,6 +492,7 @@ export function GuidePage() {
               eyebrow={copy.avatarEyebrow}
               name={copy.name}
               mouthOpen={speechQueue.mouthOpen}
+              mouthSource={speechQueue.mouthSource}
               mouthForm={speechQueue.mouthForm}
               ttsMode={speechQueue.ttsMode}
               pace={avatarPace}
@@ -467,7 +518,7 @@ export function GuidePage() {
               <span>{copy.avatarSpeaking}</span>
               <button
                 type="button"
-                onClick={() => speechQueue.stop()}
+                onClick={stopSpeech}
                 aria-keyshortcuts="Escape"
                 title={language === 'zh' ? '停止播放 (Esc)' : 'Stop playing (Esc)'}
               >
@@ -478,15 +529,14 @@ export function GuidePage() {
           <header className="guide-dialogue-head">
             <div>
               <span>{copy.private}</span>
-              <small>{capabilities?.stale ? copy.reconnect : copy.online}</small>
+              <small>{isKnownVersionMismatch(capabilities) ? copy.reconnect : capabilities?.stale ? copy.offline : copy.online}</small>
             </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => {
                   const next = !speak
-                  setSpeak(next)
-                  if (!next) speechQueue.stop()
+                  setSpeechEnabled(next)
                 }}
                 className={`text-xs px-2.5 py-1 rounded-full border transition-all flex items-center gap-1.5 font-serif ${
                   speak
@@ -526,8 +576,7 @@ export function GuidePage() {
                     type="checkbox"
                     checked={speak}
                     onChange={(e) => {
-                      setSpeak(e.target.checked)
-                      if (!e.target.checked) speechQueue.stop()
+                      setSpeechEnabled(e.target.checked)
                     }}
                   />
                   {copy.speak}
@@ -589,7 +638,7 @@ export function GuidePage() {
                         type="button"
                         onClick={() =>
                           isThisMessageSpeaking
-                            ? speechQueue.stop()
+                            ? stopSpeech()
                             : readMessageAloud(m.id, m.content, language)
                         }
                         className={`inline-flex items-center gap-1 text-[11px] font-serif transition-colors ${
@@ -691,6 +740,11 @@ export function GuidePage() {
         </section>
       </div>
       <RecommendationPanel />
+      <FloatingWanNiangAssistant
+        active={loading || speechQueue.phase !== 'idle'}
+        disabled={loading}
+        onPrompt={(prompt) => void send(prompt)}
+      />
     </div>
   )
 }

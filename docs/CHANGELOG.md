@@ -1,6 +1,213 @@
 # 更新日志 (Changelog)
 
+## 2026-10-05 Draft 1 导出 DOCX（可提交稿）
+
+新增 `docs/tools/build_report_docx.py`（Markdown → DOCX 转换器）并生成 `submission/Group20_Component2_DigitalPrototypeReport_Draft1_2026-10-07.docx`。**不覆盖任何 Markdown 源文件**；转换器只读 `.md`，输出写到独立目录。
+
+### 1. 交付物
+
+| 项 | 值 |
+| :--- | :--- |
+| 文件 | `submission/Group20_Component2_DigitalPrototypeReport_Draft1_2026-10-07.docx` |
+| 规格 | A4（21×29.7cm）、边距 2cm、正文 10.5pt、行距 1.25、页脚页码 |
+| 内容 | 27 张表格、38 个标题、18 页 |
+| 结构校验 | `check_office.py` verdict **pass**（含 6 项必需文本断言） |
+| 视觉校验 | LibreOffice 渲染 1/4/5 页确认：表格在页面内、长文本正确换行 |
+
+### 2. 转换过程中修掉的三个真实缺陷
+
+这三个都是渲染验证才暴露出来的，只看 Markdown 无法发现：
+
+- **表格分隔行判据过严**：`is_separator` 原要求至少两个破折号（`-{2,}`），但本报告大量表格使用 `:-:` 这种单破折号对齐写法，导致 **6 张表（56 行）没有转成表格，而是以带竖线的普通段落渲染**。改为 `-+` 后表格数 21 → **27**，原始竖线段落归零。
+- **表头紧跟引用块时被吞掉**：原逻辑先处理引用块再判断表格，导致「引用说明 + 紧跟表格」的写法把表头吃进引用段落，整张表退化。改为「当前行 + 下一行是分隔行」优先判定表格，并先落盘引用缓存。
+- **表格宽度没有约束**：`add_table` 只设 `autofit`，python-docx 建表时把 `tblGrid` 平均分且不会随 `cell.width` 更新，固定布局下 Word/LibreOffice 以 `tblGrid` 为准，宽表会溢出右边距。现改为同时写入 `tblLayout=fixed`、`tblW`、`tblGrid` 与每个 `tcW`，并按内容长度加权分配列宽（总和锁定 17cm 可用宽度）。
+- **BOM 导致 frontmatter 泄漏**：早期用 PowerShell 写文件引入了 UTF-8 BOM，使 `raw.startswith("---")` 判定失败，YAML 元数据整段进入了 DOCX。已在转换器改用 `utf-8-sig` 并清理两处文件 BOM。
+
+### 3. 提交稿的处理口径
+
+- **剔除内部小节**：`阅读说明` 一节（含「提交前请删除本节」与占位符说明）在 DOCX 中移除，因为它面向团队而非评审。**Markdown 源文件保留该节不变。**
+- **保留**「版本路线图」：它是「living document」要求的直接证据，对评审有价值。
+- 剩余 3 处 `【PLACEHOLDER】`（Visily / Figma / Pixso 链接）按原样保留，需团队实际完成工具交付后填写。
+
+### 4. 边界
+
+- 原 Markdown `docs/17` 未被修改（复核：25,224 字符、无 BOM）；DOCX 为派生产物，源仍以 `.md` 为准。
+- 渲染缺失字体提示 `Courier`（代码片段回退等宽字体），不影响正文排版。
+
+---
+
+## 2026-10-05 团队身份信息落实 + Draft 1 三处内容补强
+
+**未改动任何功能代码。** 两项工作：填写团队真实身份信息，并按导师视角对 Digital Prototype Report Draft 1 做补强。
+
+### 1. 团队身份信息（已确认，替换全部占位符）
+
+| 项 | 内容 |
+| :--- | :--- |
+| 团队名称 Team | **THISISIT2018**（原文档写作 `THIS IS IT`，已全部更正） |
+| 组号 Group | **Group 20**（对应 Table 20） |
+| 成员与学号 | Xiang Li 李享 2472682（组长）· Zhiyuan Liang 梁之源 2363950 · Wenjun Li 李文俊 2470787 · Zeyu Gong 龚泽宇 2472137 · Licheng Yang 杨立诚 2468210 · Guanqiao Feng 凤冠桥 2471032 |
+| 建议文件名 | `Group20_Component2_DigitalPrototypeReport_Draft1_2026-10-07`（Checkpoint 1 为 `Group20_Component2_Checkpoint1_<日期>`） |
+
+同步更新：`docs/10`（Checkpoint 1 报告封面，并删除遗留的重复成员占位行）、`docs/11`（导师邮件模板与 Form 1 命名示例）、`docs/15`（命名规则）、`docs/17`（Draft 1 封面与文件名）。
+
+### 2. Draft 1 补强（三处内容缺口）
+
+复审发现三个会被导师追问、而原稿未正面回答的问题，已在 `docs/17` 补齐：
+
+- **新增 §1.3「用户现在怎么办，以及为什么不够」**：列出四条现有替代做法（看展陈 / 问前台 / 自己搜攻略 / 放弃）及各自为何不足，并给出结论——问题不是「没兴趣」或「没内容」，而是**兴趣产生的那一刻与可行动的那一刻之间是断开的**。这为第 2 章「在住客已打开的界面内完成闭环」提供了推导依据。
+- **新增 §2.0「我们考虑过并被否掉的替代方案」**：把 Week 2 打分矩阵中的选项 2、选项 3 明确写成**被否掉的替代方案**（含问题、解法、得分、未采用原因与三条经验）。原文只提到「3 个候选 24/16/16」却从不说明另外两个是什么，是最明显的论证断口。
+- **新增代表画像**（§1.2 末尾）：陈女士，34 岁带孩子，下午 2 小时、预算 ¥150。**明确标注为合成画像而非真实访谈对象**，用途是统一设计判断与演示脚本，其验证归属 §1.5 的 E5。
+- **修正交叉引用**：因新增小节，第 1 章小节重新编号（why it matters → §1.4，证据 → §1.5），并同步修正正文、附录对照表与「阅读说明」中的四处引用。
+
+### 3. 边界
+
+- 仍如实标注：真实用户测试（E5/E6）、Figma/Visily/Pixso 交付链接、测试数字复跑、Checkpoint 1 公历日期为待补项。**未倒填、未虚构。**
+- Draft 1 剩余 3 处 `【PLACEHOLDER】` 全部为未产出的设计工具链接（Visily/Figma/Pixso），需团队实际完成后方可填写。
+
+---
+
+## 2026-10-05 Digital Prototype Report Draft 1 成稿（Week 4 · 10月7日到期）
+
+新增 `docs/17_Digital_Prototype_Report_Draft1.md`，按 Week 4 里程碑平台要求完成 Draft 1。**未改动任何功能代码。**
+
+### 1. 改动原因（Why）
+
+- 里程碑平台 Week 4（10月7日）交付项是 **Draft 1 of the Digital Prototype Report**，要求三项：① 记录问题（谁有、是什么、为何重要）② 记录解决方案概念及其如何回应问题 ③ 记录选定功能及**选择理由**。这与 Checkpoint 1 Report（十项内容）是**两份不同文档**，课程将其分别列为 Final Deliverables。
+- 平台明确要求「living document」：Draft 1 是最终 Digital Prototype Report 的底稿，**在同一份文件上持续改进，不在最后重写**。因此本篇按「Draft 1 必交 / 终稿扩充」分区组织，而非写一份日后作废的稿子。
+- 平台列出的常见错误之一是「应用做完才写报告」。本篇从既有材料与代码反向整理，且**第 1.4 节明确写出证据缺口**，不使用虚构验证数据。
+
+### 2. 具体改动内容（What）
+
+- **新增 `docs/17_Digital_Prototype_Report_Draft1.md`（Draft 1，8 章 + 版本路线图 + 要求对照表）**：
+  - §1 问题：what / who（C 端、B 端、间接受益三方 + 三条使用硬约束）/ why it matters（四视角）+ **E1–E7 证据现状表**（区分真实、二手、缺失）。
+  - §2 解决方案概念：概念陈述、「是什么 / 不是什么」对照、**问题逐环 → 产品机制映射表**、八步用户流程、三条设计原则。
+  - §3 选定功能及理由：判据 → 三功能各含输入/处理/输出/价值 + **为什么选它** → §3.5 三者缺一不可（一条链而非三个并列功能）→ §3.6 刻意不计入项（登录/首页/美化为何不算核心功能）→ **§3.7 删掉了什么及为什么**（3D、口型贴片、Live2D、雅凭、茶艺、Studio 在线生成、PMS/支付）。
+  - §4 架构与技术栈、§5 原型现状与访问、§6 已知限制（L1–L9）、§7 下一步与 H1–H5 待验证假设：标 🟡 为终稿待扩充项。
+- **剔除过度声称**：依据 `docs/12` §3.2，不写 sort/search（实际只有 filter）、不写 Live2D、不写口型同步；统一为「分层立绘 + 眨眼 + 下颚律动 + 语义表演」。
+- **诚实边界**：测试数字标注引自 2026-10-04 实测记录并注明须复跑；ROI 272.8% 标注为合成假设；明确写出「测试证明代码按设计工作，不能证明住客愿意用」。
+
+### 3. 验收结果与边界
+
+- **文档级改动**：未触碰 `web/`、`supabase/`、`analytics/` 下任何源码、迁移或测试。
+- **编号说明**：本篇原拟用 `16_` 前缀，与同日新增的 `16_团队看板补录清单_Week4.md` 冲突，已改为 `17_`；两文件互不相关，均可独立使用。
+- **仍待团队补充**：真实用户测试（E5/E6）、Figma/Visily/Pixso 交付与全员截图、公网可用性复检、测试数字复跑、实际组号与成员信息。**未倒填、未虚构。**
+
+---
+
+## 2026-10-05 团队看板补录清单（47 张卡片）
+
+把课程看板从「1 张 Done 卡」补正为与真实进度一致的 47 张有负责人、有日期的任务卡。**未改动任何功能代码。**
+
+### 1. 改动原因（Why）
+
+- 课程看板截至 2026-10-05 只有 1 张 Done 卡（`Assign tasks, begin the project`），
+  而 `CHANGELOG` 与 `05_每周日志/` 记录了三周多的真实工程、验证与交付工作。导师在看板上看到的进度与项目实际不符。
+- 该问题已由团队在 Week 3 周报中如实记录（「these tasks have not yet been reflected as owner-assigned cards」），本次是它的补正动作。
+- Week 3 页面要求「每个任务加一张卡片、每项任务有负责人」；课程看板亦要求**每位同学添加自己的任务**，
+  需要按人拆卡，让六名成员的贡献在看板上单独可见。
+
+### 2. 具体改动内容（What）
+
+- 新增 `docs/16_团队看板补录清单_Week4.md`：47 张卡片 = **23 Done + 14 In Progress + 10 To Do**，
+  每张卡含中英双语标题、负责人、日期（Done 为实际完成日期，未完成为内部目标日期）与证据 / 交付物路径。
+- 卡片事实来源逐条对应 `CHANGELOG` 与成员工作日志（2026-09-11 至 10-05）；未新增未经记录的工作项。
+- 含按成员索引（Xiang Li 11 张、Zhiyuan Liang 8、Wenjun Li 8、Zeyu Gong 7、Licheng Yang 7、Guanqiao Feng 6）、
+  录入方法、内部日期口径、诚实边界与提交前核对清单，以及可直接粘贴的周报「Kanban board status」段落。
+
+### 3. 验收结果与边界
+
+- **文档级改动**：未触碰 `web/`、`supabase/`、`analytics/` 下任何源码、迁移或测试。
+- **真实用户测试、Figma 交付、外部导师会面、云端发布仍如实标为进行中 / 待办**；未倒填日期、未虚构人数或导师意见。
+- **Done 卡为 2026-10-05 补录**，描述的是已有日期证据的既有工作，不表示本周新增功能；平台记录的创建时间保持原样。
+- **内部目标日期非课程截止**：Checkpoint 1 具体日期、时段与提交入口仍待 TA / 课程确认。
+
+---
+
+## 2026-10-05 Checkpoint 1 报告成稿（十项内容全覆盖）
+
+面向已延期至 **Week 4 末**的 Checkpoint 1，把报告从「结构初稿」推进到「内容可提交」：新增正文（问题/用户/证据/方案/流程/功能/MVP/原型/决策/下一步），并把全部尚未实现的承诺从对外表述中剔除。**未新增或改动任何功能代码。**
+
+### 1. 改动原因（Why）
+
+- 官方 Checkpoint 1 仅要求三项（problem choice and validation evidence / solution concept / digital prototype），但 Week 3 页面第 13 节列出了 **10 项必须讲清楚的内容**；旧稿只覆盖其中约 6 项，缺「用户流程」「决策记录」「测试发现」。
+- 旧稿正文含 5 处 `【PLACEHOLDER】` 之外，还残留与 2026-09-26/10-04 决策冲突的表述（A-Frame、Live2D、防伪雅凭、Studio 在线生成）。评审对照仓库会发现矛盾。
+- 项目**没有真实用户访谈、问卷或原型测试记录**。旧稿以占位符暗示「将补」，容易在提交时被倒填。本次改为**显式声明缺口**并给出验证计划。
+
+### 2. 具体改动内容（What）
+
+- **重写 `docs/10_Checkpoint1_Report_初稿.md`（v2）**：中英对照；12 章 + 3 附录；新增 §1.3 证据现状表（E1–E7，逐条标注真实/二手/缺失）、§3 用户流程（宏观闭环 + 八步顺序 + 三层验证程度）、§7 测试与决策（D1–D8 决策记录 + 反馈采纳表）、§8 下一步（P0–P2 分工 + H1–H5 待验证假设）、附录 A 十项对照表、附录 B 附件清单、附录 C 待确认事项。
+- **口径剔除**：对外不再出现 A-Frame/3D 全景、Live2D 正式模型、口型同步、防伪入席雅凭、茶艺交叉推荐、Studio 在线生成；统一为「苏绣艺境（DOM/CSS）」「分层立绘 + 眨眼 + 下颚律动 + 语义表演」「规则/模板 Studio」。
+- **数字口径收紧**：ROI 272.8% / 回收期 3.22 个月明确标注为**可调合成假设**；分析结论默认只输出试点/暂缓；Demo 批次不作为扩大依据。
+- **新增 `docs/15_Checkpoint1_十项对照与证据包.md`**：十项交付状态总表、证据包 A/B/C 三组分类、提交前真实性自查、需向 TA 确认的 6 项、7 分钟排练脚本与追问答案。
+- **新增 `docs/evidence/20260924-TA-feedback.md`**：把 2026-09-24 助教口头反馈（提案获准 + 要求完成 Figma MVP build）按「团队转述、无原始截图」口径留痕，供报告 E2 引用。
+
+### 3. 验收结果与边界
+
+- **文档级改动**：未触碰 `web/`、`supabase/`、`analytics/` 下任何源码、迁移或测试。
+- **测试重跑未完成**：`web/tests/` 下 **10 个测试文件经复核确实存在**；但 `analytics/.cache/python-deps` 的依赖包由 pip 写入时**未包含本机账户的访问权限**（仅 SYSTEM / Administrators / 应用容器 SID），本环境无法读取，Python 测试无法重跑；前端 `npm test` 亦受本沙箱 esbuild `spawn EPERM` 限制未执行。**报告 §6.1 已注明应重跑后再提交。**
+- **权限排查留痕**：`docs/evidence/acl-repair-20261005/` 保留了权限诊断报告（`NOT_THIS_CLASS`：非 ACL 缺失，而是缺少本机账户条目），**未做任何权限修改**。
+- **仍待团队补充**：真实用户测试（E5/E6）、Figma/Visily/Pixso 交付与个人截图、课程看板全貌图、公网页面截图、外部导师会面、提交日期与组号。**未倒填、未虚构。**
+
+---
+
+## 2026-10-04 本地课程演示修复
+
+完成 API/知识/SSE、公开账号、模板关联、共享 ROI、证据门槛、语音订阅、开发素材归档与重算入口。76 项前端测试、4 项 Python 测试及两种构建通过。云端未部署、密码未轮换、浏览器验收待完成。详见 [记录](14_课程演示修复与验收记录.md)。
+
 本文档记录本项目各版本的系统级更新、改动原因、工程细节与课程评分（ENT207 Digital Startup Lab）对照。
+
+---
+
+## [2026-09-26 死代码清理与数字人口型决策] 口型贴片证伪停用、下颚律动替代、A-Frame/全景死资产清除
+
+### 1. 改动原因（Why）
+- **消除"半成品痕迹"**：仓库内长期存有 **1.33 MB 未使用的 A-Frame**（`web/public/vendor/aframe.min.js`）、
+  15 个无人使用的 JSX 类型桩、11 KB 零引用的 `textures.ts`，以及 **26 MB 零引用的 360° 全景资产**。
+  评审翻仓库会看到"想做 3D 但没做完"，比诚实的 2D 方案更伤。
+- **消除"声称了口型同步但实际没有"**：`mouthOpen` 被 `StaticAvatar` 接收后**完全忽略**，
+  `PuppetAvatar` 根本没有该 prop，嘴型精灵选择逻辑（`selectMouthCell` 等）**只有单测在跑**。
+  数字人唯一可见动作是眨眼。
+- **A-Frame 路线已有实测结论**：团队此前尝试过 8K 等距柱状全景，结论是"全场景观看仍十分模糊，
+  且 AI 生成质感不真实"（见 `docs/05_每周日志/02_成员工作日志/2026-09-13_苏绣工坊与长卷微距重构.md:26`）。
+  该判断与数据一致：`lobby-heritage-360-*` 确为合规等距柱状图（4096×2048 / 8192×4096 / 2048×1024，
+  比例精确 2.000），但 8K 全 360° 摊到屏幕约 90° 视口后有效像素约 2048px 宽，与一张 2K 平面图等强，
+  偏软属该载体的固有上限。**故不再投入 3D 重建。**
+
+### 2. 具体改动内容（What）
+- **【口型贴片参数化证伪】**：以 6 组组合（嘴部盒现状/加宽/加宽加高 × 抠图阈值现状/收紧 × 色彩校正 0.85/1.0）
+  复测 `speak_aa` 与 `warm` 两个状态。结论：所有组合均失败——现状组合出现原图下唇透出的"双嘴"，
+  加宽后出现矩形色块边界，加宽加高后暖色块覆盖至鼻底与颏部。根因是 `raw/mouths.png` 与 `raw/base.png`
+  **异源**，`color_match` 仅做肤色均值平移，无法消除色域差异。对比图存档 `docs/evidence/mouth-sprite-falsification/`。
+- **【口型贴片停用】**：删除 `MOUTH_CELLS / MOUTH_ANCHOR / MOUTH_CELL_COUNT / selectMouthCell /
+  restMouthCell / mouthHysteresisMs` 与 `web/public/avatar/wanniang-puppet/mouths.webp`；
+  `puppetAvatar.test.ts` 移除 9 例失效用例（50 → 41 例）。
+- **【下颚律动替代口型】**：新增 `.puppet-jaw` 层（`PuppetAvatar` 把 `mouthOpen` 直写为
+  `--jaw-open` CSS 变量，**不经 React state，避免 rAF 60fps 重渲染**），
+  讲话时产生 `translateY(≤1.4px) + scaleY(≤1.004)` 的下颌律动；`.puppet-figure` 的 `puppet-nod`
+  幅度从 1px 提到 1.6px。`prefers-reduced-motion` 下完全静止。
+- **【眼部强化】**：`thinking` 态眨眼间隔由 `[5000,7000]` 放宽到 `[5500,7700]`，增强思考迟疑感。
+- **【A-Frame 与全景清理】**：删除 `web/public/vendor/aframe.min.js`（及空目录）、`web/src/aframe.d.ts`、
+  `web/src/lib/textures.ts`、`web/src/index.css` 的 `.immersive-canvas-shell` /
+  `.immersive-panorama-poster` / `.immersive-canvas-shell > a-scene` 死样式，
+  以及 `web/public/assets/lobby-*`（14 个：`lobby-concierge-360.jpg`、`lobby-heritage-360-{4k,8k,preview}-v2/v3/v4`、
+  `-v4-backup` 三件、`-source-v3.png`）。
+- **【其他零引用资产清理】**：`web/public/videos/wanniang-{idle,listening,speaking}.mp4`、
+  `web/public/images/wanniang-{concierge,listening,speaking}.png`。
+  **保留** `wanniang-concierge-v2.png`（`StaticAvatar.tsx` 默认图）与
+  `home-heritage-film-20260915-v1.mp4`（`CinematicHero.tsx` 使用）。
+- **【口径更正】**：`docs/README.md`、`docs/01`、`docs/03`、`docs/09`、`docs/12`、`docs/13` 及
+  `web/public/avatar/wanniang/README.md` 统一为"**分层立绘 + 眨眼 + 下颚律动 + 语义表演**"，
+  撤下"口型同步"表述。历史成员日志（2026-09-12/13/15）保持原样，作为当时的真实过程记录。
+
+### 3. 验收结果
+- **TypeScript 类型检查通过**：`tsc -b` 退出码 0。
+- **模块逻辑校验通过**：22 项断言全绿（眨眼调度 6、锚点换算 7、精灵定位 5、下颚开口度钳制 4）。
+- **引用复检通过**：`aframe` / `textures` / `mouths.webp` / `wanniang-{idle,listening,speaking}` /
+  `lobby-*` / `MOUTH_ANCHOR` / `selectMouthCell` 在 `src`+`tests`+`index.html` **均 0 命中**。
+- **释放体积约 33.8 MB**（`web/public`），另 `web/public/vendor` 目录已空并删除。
+- **待团队执行**：本沙箱禁止 esbuild 派生子进程（`spawn EPERM`），故 `npm test` 与 `npm run build`
+  未能在此执行；`web/dist` 仍为改动前的旧构建产物，发布前必须重新构建。
 
 ---
 
@@ -72,8 +279,12 @@
 
 ### 4. 遗留待办
 - 密钥轮换（Supabase access token、DeepSeek key、作废 web/.env 旧 key）——见 `docs/11_P0操作指引.md` 第四节，待团队执行。
-- Live2D 授权资产决策、A-Frame 恢复或死代码清除、茶艺辅非遗与雅凭凭证——见 `docs/09` P2 节，待团队选择优先级。
+- ~~Live2D 授权资产决策、A-Frame 恢复或死代码清除、茶艺辅非遗与雅凭凭证~~ → **已于 2026-09-26 处置：
+  A-Frame 与全景死资产已清除、口型贴片已停用并改为下颚律动（见本文首条 2026-09-26 记录）；
+  仍待决策的是 Live2D 授权资产、茶艺辅非遗交叉推荐与雅凭凭证。**
 - Checkpoint 1 Report 占位符替换与真实证据补充，第 3 周末提交。
+- **2026-09-26 新增 P0**：前后端 API 版本常量不一致导致假"服务已过期"横幅（`web/src/lib/llm.ts:205` vs `supabase/functions/concierge/index.ts:3`）；服务端丢弃 `body.context` 导致在线回答未使用非遗知识库（`index.ts:44-64`）。详见 `docs/13` P0-1、P0-2。
+- **2026-09-26 新增**：`web/dist` 为改动前旧产物，发布前需重新 `npm run build`。
 
 ---
 

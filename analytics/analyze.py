@@ -16,11 +16,12 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
 
-RNG = np.random.default_rng(42)
+from roi import ASSUMPTIONS, calculate_scenario
 
 
 def make_sample() -> pd.DataFrame:
     """构造可解释的住客特征，不包含姓名、联系方式等个人信息。"""
+    RNG = np.random.default_rng(42)
     profiles = [
         # 样本量、停留时长、客房消费、非遗兴趣、商务概率
         (430, 30, 7, 590, 105, 0.43, 0.11),
@@ -92,49 +93,23 @@ def segment(df: pd.DataFrame) -> tuple[pd.DataFrame, list[dict]]:
     return work, sorted(out, key=lambda x: x["share"], reverse=True)
 
 
-def revenue_scenarios(base: float = 100.0) -> list[dict]:
-    specs = [
-        ("baseline", "基线（无非遗模块）", "Baseline · no heritage module", 0.0, 0.0, {"monthlyHotelGuests": 1_000, "ticketPrice": 0, "sessions": 0, "seatsPerSession": 0, "unitCost": 0, "fixedMonthlyCost": 0, "initialInvestment": 0}),
-        ("light-experience", "情景 A（轻体验包）", "Scenario A · light experience", 0.18, 0.01, {"monthlyHotelGuests": 1_000, "ticketPrice": 228, "sessions": 16, "seatsPerSession": 12, "unitCost": 42, "fixedMonthlyCost": 7_000, "initialInvestment": 180_000}),
-        ("themed-room-workshop", "情景 B（主题房+体验课）", "Scenario B · themed room + workshop", 0.32, 0.03, {"monthlyHotelGuests": 1_000, "ticketPrice": 398, "sessions": 20, "seatsPerSession": 12, "unitCost": 68, "fixedMonthlyCost": 16_000, "initialInvestment": 300_000}),
-    ]
+def revenue_scenarios() -> list[dict]:
     rows = []
-    for scenario_id, name, name_en, attach, uplift, defaults in specs:
-        projected = base * (1 + attach * (0.35 + uplift * 2))
-        rows.append(
-            {
-                "id": scenario_id,
-                "name": name,
-                "nameEn": name_en,
-                "baseRevenue": base,
-                "ichAttachRate": attach,
-                "avgTicketUplift": uplift,
-                "projectedRevenue": round(float(projected), 1),
-                "defaults": defaults,
-            }
-        )
+    for scenario in ASSUMPTIONS['scenarios']:
+        inputs = scenario['inputs']
+        result = calculate_scenario(inputs)
+        defaults = {k: v for k, v in inputs.items() if k not in ('baseMonthlyRevenue', 'conversionRate', 'ticketUplift')}
+        rows.append(dict(id=scenario['id'], name=scenario['name'], nameEn=scenario['nameEn'],
+            baseRevenue=100, ichAttachRate=inputs['conversionRate'], avgTicketUplift=inputs['ticketUplift'],
+            projectedRevenue=result['revenueIndex'], defaults=defaults))
     return rows
 
 
 def roi_table() -> list[dict]:
-    plans = [
-        ("light-experience", "轻体验包", "Light experience", 18.0, 12.1, 9),
-        ("themed-room-workshop", "主题房+体验课", "Themed room + workshop", 30.0, 22.4, 11),
-    ]
-    out = []
-    for plan_id, name, name_en, inv, inc, months in plans:
-        out.append(
-            {
-                "id": plan_id,
-                "name": name,
-                "nameEn": name_en,
-                "investment": inv,
-                "incrementalRevenue": inc,
-                "roiPct": round((inc / inv) * 100, 1),
-                "paybackMonths": months,
-            }
-        )
-    return out
+    return [dict(id=s['id'], name=s['name'], nameEn=s['nameEn'],
+        currency=ASSUMPTIONS['currency'], periodMonths=ASSUMPTIONS['periodMonths'],
+        investment=s['inputs']['initialInvestment'], **calculate_scenario(s['inputs']))
+        for s in ASSUMPTIONS['scenarios'] if s['inputs']['initialInvestment'] > 0]
 
 
 def main() -> None:
@@ -159,6 +134,7 @@ def main() -> None:
         "sampleSize": len(segmented),
         "segments": segments,
         "records": records,
+        "assumptions": ASSUMPTIONS,
         "revenueScenarios": revenue_scenarios(),
         "roi": roi_table(),
     }

@@ -2,7 +2,7 @@
 
 当前仓库包含共享账号、探索卡、个性化推荐、体验意向、运营处理、批次化导览聚合和试用统计迁移。课程使用的 Supabase 后端已经建立，但克隆或移交仓库不会自动获得项目权限；新环境仍需单独 link 和配置。
 
-当前云端仍是 `2026.09.15-guide-v2`；本轮新增迁移 `202609190003_guide_signals_and_cohorts.sql` 与 `2026.09.19-guide-v3` Edge Function 尚待具有项目权限的成员部署。部署完成前不要使用 Study 01 开展正式测试。
+2026-10-05 只读核对课程演示环境的 `/capabilities`：云端接口为 `2026.09.19-guide-v3`，前端源码已同步该标识。这个标识表示聊天协议兼容性，不表示本轮优化代码已部署。本轮的运营简报 JSON 校验和服务诊断仍需由具有项目权限的成员部署 `concierge`；不新增数据库迁移。具体检查与发布步骤见 `docs/12_Checkpoint前优化与验收_20261005.md`。
 
 ## 1. 创建项目
 
@@ -79,8 +79,8 @@ where id = '<AUTH_USER_UUID>';
 VITE_SHOW_DEMO_ACCOUNTS=true
 VITE_DEMO_GUEST_EMAIL=<public-demo-guest-email>
 VITE_DEMO_GUEST_PASSWORD=<public-demo-guest-password>
-VITE_DEMO_OPS_EMAIL=<public-demo-ops-email>
-VITE_DEMO_OPS_PASSWORD=<public-demo-ops-password>
 ```
 
-这些变量会进入前端构建产物，不能视为秘密。登录页只有在开关为 `true` 且四项账号值完整时才显示双角色卡。正式测试部署应省略这些变量或设置 `VITE_SHOW_DEMO_ACCOUNTS=false`。演示前核验“住客登录 → 退出 → 运营登录 → 退出 → 住客登录”，演示后关闭入口或轮换演示密码，并重置独立项目中的虚拟数据。
+这些变量会进入前端构建产物，不能视为秘密。登录页只有在开关为 `true` 且住客账号值完整时显示住客卡。运营手工登录，运营凭据禁止配置为 `VITE_*`。Netlify 固定执行 `build:demo` 并校验独立演示后端；删除旧 `VITE_DEMO_OPS_*` 托管变量后再构建。正式测试部署应省略这些变量或设置 `VITE_SHOW_DEMO_ACCOUNTS=false`。演示前核验“住客登录 → 退出 → 运营登录 → 退出 → 住客登录”，演示后关闭入口或轮换演示密码，并重置独立项目中的虚拟数据。
+
+当前本地 Origin 白名单已精确包含 `https://idyllic-bubblegum-1f5a5c.netlify.app`；部署后仍需检查真实预检、登录后的回复和来源。2026-10-04 本轮未部署或查询参与者记录，云端私有检查需先明确授权。见 [发布前验收](docs/14_课程演示修复与验收记录.md)。

@@ -1,3 +1,4 @@
+import { scenarioInputs, calculateScenario, operatingDecision, type SimulationInputs } from '../lib/roi'
 import { TrialDashboard, type TrialData } from '../components/TrialDashboard'
 import { useEffect, useMemo, useState } from 'react'
 import type { AnalyticsSnapshot } from '../types'
@@ -11,34 +12,6 @@ type Filters = {
   minStayHours: number
   minRoomSpend: number
   minInterest: number
-}
-
-type SimulationInputs = {
-  baseMonthlyRevenue: number
-  monthlyHotelGuests: number
-  conversionRate: number
-  ticketUplift: number
-  ticketPrice: number
-  sessions: number
-  seatsPerSession: number
-  unitCost: number
-  fixedMonthlyCost: number
-  initialInvestment: number
-}
-
-type SimulationResult = {
-  eligibleGuests: number
-  demand: number
-  capacity: number
-  expectedBookings: number
-  workshopRevenue: number
-  roomUpliftRevenue: number
-  incrementalRevenue: number
-  operatingCost: number
-  monthlyContribution: number
-  revenueIndex: number
-  roiPct: number | null
-  paybackMonths: number | null
 }
 
 function Bar({ value, max }: { value: number; max: number }) {
@@ -79,57 +52,6 @@ function NumberField({
       </div>
     </label>
   )
-}
-
-function scenarioInputs(snapshot: AnalyticsSnapshot, scenarioId: string): SimulationInputs {
-  const scenario = snapshot.revenueScenarios.find((item) => item.id === scenarioId) ?? snapshot.revenueScenarios[0]
-  return {
-    baseMonthlyRevenue: 1_000_000,
-    monthlyHotelGuests: scenario.defaults.monthlyHotelGuests,
-    conversionRate: scenario.ichAttachRate,
-    ticketUplift: scenario.avgTicketUplift,
-    ticketPrice: scenario.defaults.ticketPrice,
-    sessions: scenario.defaults.sessions,
-    seatsPerSession: scenario.defaults.seatsPerSession,
-    unitCost: scenario.defaults.unitCost,
-    fixedMonthlyCost: scenario.defaults.fixedMonthlyCost,
-    initialInvestment: scenario.defaults.initialInvestment,
-  }
-}
-
-function calculateScenario(inputs: SimulationInputs, eligibleShare: number): SimulationResult {
-  const eligibleGuests = inputs.monthlyHotelGuests * eligibleShare
-  const demand = eligibleGuests * inputs.conversionRate
-  const capacity = inputs.sessions * inputs.seatsPerSession
-  const expectedBookings = Math.min(demand, capacity)
-  const workshopRevenue = expectedBookings * inputs.ticketPrice
-  const roomUpliftRevenue = inputs.baseMonthlyRevenue * inputs.ticketUplift
-  const incrementalRevenue = workshopRevenue + roomUpliftRevenue
-  const operatingCost = expectedBookings * inputs.unitCost + inputs.fixedMonthlyCost
-  const monthlyContribution = incrementalRevenue - operatingCost
-  const revenueIndex = inputs.baseMonthlyRevenue > 0
-    ? 100 * (1 + incrementalRevenue / inputs.baseMonthlyRevenue)
-    : 100
-  const roiPct = inputs.initialInvestment > 0
-    ? ((monthlyContribution * 12 - inputs.initialInvestment) / inputs.initialInvestment) * 100
-    : null
-  const paybackMonths = monthlyContribution > 0 && inputs.initialInvestment > 0
-    ? inputs.initialInvestment / monthlyContribution
-    : null
-  return {
-    eligibleGuests,
-    demand,
-    capacity,
-    expectedBookings,
-    workshopRevenue,
-    roomUpliftRevenue,
-    incrementalRevenue,
-    operatingCost,
-    monthlyContribution,
-    revenueIndex,
-    roiPct,
-    paybackMonths,
-  }
 }
 
 export function AnalyticsPage() {
@@ -281,12 +203,7 @@ export function AnalyticsPage() {
   const currentScenario = activeScenario
   const currentResult = result
 
-  const evidenceReady = guideSignalSummary.uniqueUsers >= 10
-  const decision: OperatingDecision = scenarioId === 'baseline' || result.monthlyContribution <= 0 || filteredRecords.length === 0
-    ? 'pause'
-    : result.roiPct !== null && result.roiPct >= 30 && result.capacity > 0 && result.expectedBookings >= result.capacity * 0.45 && evidenceReady
-      ? 'scale'
-      : 'pilot'
+  const decision: OperatingDecision = operatingDecision(scenarioId, result, filteredRecords.length)
   const decisionLabel = decision === 'scale'
     ? t('建议扩大', 'Ready to scale')
     : decision === 'pause'
@@ -299,15 +216,15 @@ export function AnalyticsPage() {
       : 'bg-amber-50 text-amber-900'
   const targetConversion = Math.max(12, Math.min(35, Math.round(inputs.conversionRate * 100)))
   const scaleGate = t(
-    `连续 4 周体验转化率 ≥ ${targetConversion}%，到课率 ≥ 75%，12 个月 ROI ≥ 30%，且至少 10 名独立参与者提交导览意向。`,
-    `For four consecutive weeks: conversion ≥ ${targetConversion}%, attendance ≥ 75%, 12-month ROI ≥ 30%, with guide intent from at least 10 unique participants.`,
+    `连续 4 周体验转化率 ≥ ${targetConversion}%，到课率 ≥ 75%，12 个月 ROI ≥ 30%，且 Study 01 至少 10 名真人参与者经过核验并完成经营数据人工复核；Demo 和账号数不能代替此证据。`,
+    `For four consecutive weeks: conversion ≥ ${targetConversion}%, attendance ≥ 75%, 12-month ROI ≥ 30%, with at least 10 verified human participants in Study 01 and manual review of operating evidence; Demo and account counts cannot substitute.`,
   )
   const pauseGate = t(
     `连续 4 周转化率低于 ${Math.max(8, targetConversion - 5)}%，或月度贡献不为正时，暂停扩大投入并复核价格、场次与成本。`,
     `Pause expansion if conversion stays below ${Math.max(8, targetConversion - 5)}% for four weeks or monthly contribution is not positive; review price, capacity and cost.`,
   )
   const recommendation = decision === 'scale'
-    ? t('当前方案满足收益、容量使用和导览意向样本门槛，可扩大为常规月度产品，并持续监测转化与到课。', 'The scenario meets revenue, capacity-use and guide-signal gates. Expand it into a regular monthly offer while monitoring conversion and attendance.')
+    ? t('情景达到数值阈值；扩大仍须以真实试验和人工复核为依据。', 'The scenario meets numerical thresholds. Expansion still requires verified real trials and manual review.')
     : decision === 'pause'
       ? t('当前假设尚不支持投入扩大。先通过导览收集更多意向，或下调固定成本、场次与启动投入后重新模拟。', 'The current assumptions do not support expansion. Gather more guide signals or reduce fixed cost, capacity and startup investment before modelling again.')
       : t('先进行 4 周、小容量试点；以匿名导览意向、预约转化、到课率和单客成本作为下次经营决策依据。', 'Run a four-week, limited-capacity pilot and use anonymous guide intent, booking conversion, attendance and unit cost for the next decision.')
@@ -413,8 +330,9 @@ export function AnalyticsPage() {
           <div className="mt-1 text-2xl font-semibold">{filteredRecords.length}<span className="ml-1 text-sm font-normal text-stone-500">/ {data.sampleSize}</span></div>
         </div>
         <div className="card analytics-kpi p-4">
-          <div className="text-xs text-stone-500">{t('当前批次：已确认 · 用户输入情感', 'Current cohort: confirmed · user sentiment')}</div>
+          <div className="text-xs text-stone-500">{t('当前批次：已确认 · 关键词表达倾向', 'Current cohort: confirmed · keyword expression trend')}</div>
           <div className="mt-1 text-2xl font-semibold">{confirmedCount} <span className="text-sm font-normal text-stone-500">· {sentimentStats.positive}/{sentimentStats.neutral}/{sentimentStats.negative}</span></div>
+          <p className="mt-1 text-xs text-stone-500">{t('表达条数：正向 / 中性 / 负向；不代表满意度。', 'Expressions: positive / neutral / negative; not satisfaction scores.')}</p>
         </div>
         <div className="card analytics-kpi p-4">
           <div className="text-xs text-stone-500">{t('当前情景收入指数', 'Current scenario revenue index')}</div>
@@ -622,6 +540,7 @@ export function AnalyticsPage() {
                   <div className="rounded-xl bg-white p-3"><span className="text-xs text-stone-500">{t('平均可用时长', 'Average available time')}</span><p className="mt-1 font-medium">{guideSignalSummary.averageStayHours ? `${guideSignalSummary.averageStayHours.toFixed(1)}h` : '—'}</p></div>
                   <div className="rounded-xl bg-white p-3"><span className="text-xs text-stone-500">{t('平均预算', 'Average budget')}</span><p className="mt-1 font-medium">{guideSignalSummary.averageBudget ? formatCurrency(guideSignalSummary.averageBudget) : '—'}</p></div>
                 </div>
+                <p className="text-xs leading-5 text-stone-500">{t('表达倾向来自关键词规则，不代表满意度调查或情绪判断。', 'Expression trends use keyword rules, not satisfaction surveys or emotion assessments.')}</p>
                 <p className="text-xs leading-5 text-stone-500">{t('同行偏好：', 'Party mix: ')}{topParties.map(([party, count]) => `${partyLabels[party] ?? party} ${count}`).join(' · ') || '—'}</p>
               </div>
             ) : (

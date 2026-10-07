@@ -1,6 +1,7 @@
 import { apiFetch } from '../cloud'
 import type { SpeechPlayback, SpeechRequest, TtsProvider, VisemeFrame } from './types'
 import { mapAzureVisemeToShape } from './visemeMapper'
+import { sanitizeSpeechText } from './speechText'
 
 export interface AzureTtsOptions {
   region: string
@@ -9,15 +10,8 @@ export interface AzureTtsOptions {
   voiceEn?: string
 }
 
-/**
- * 满足《婉娘Live2D数字人实施任务书》阶段D规范：
- * 1. 采用服务端签发的短时临时令牌（token），长期凭据绝不暴露至前端；
- * 2. 动态加载 Speech SDK，首屏体积零污染；
- * 3. 监听 visemeReceived 事件，将 Azure 0~21 号 ID 转换为 mouthOpen 与 mouthForm；
- * 4. 具备毫秒级时间轴与中止响应。
- */
 export class AzureVisemeTtsProvider implements TtsProvider {
-  readonly mode: 'viseme' = 'viseme'
+  readonly mode = 'viseme' as const
   private region: string
   private token: string
   private voiceZh: string
@@ -32,160 +26,105 @@ export class AzureVisemeTtsProvider implements TtsProvider {
     this.tokenFetchedAt = Date.now()
   }
 
-  /**
-   * 如 Token 快超过 9 分钟（Azure 临时 Token 寿命一般为 10 分钟），静默续期
-   */
-  private async ensureFreshToken(): Promise<string> {
-    const tenMinutes = 9 * 60 * 1000
-    if (Date.now() - this.tokenFetchedAt < tenMinutes) {
-      return this.token
-    }
-
-    try {
-      const res = await apiFetch('/api/tts/token')
-      if (res.ok) {
-        const data = await res.json()
-        if (data.token) {
-          this.token = data.token
-          this.tokenFetchedAt = Date.now()
-        }
-      }
-    } catch {
-      // 续期失败则沿用当前 token 尝试
-    }
+  private async ensureFreshToken(signal: AbortSignal): Promise<string> {
+    if (Date.now() - this.tokenFetchedAt < 9 * 60 * 1000) return this.token
+    const response = await apiFetch('/api/tts/token', { signal })
+    if (!response.ok) throw new Error('VOICE_TOKEN_UNAVAILABLE')
+    const data = await response.json()
+    if (typeof data.token !== 'string' || !data.token) throw new Error('VOICE_TOKEN_UNAVAILABLE')
+    this.token = data.token
+    this.tokenFetchedAt = Date.now()
     return this.token
   }
 
   async prepare(request: SpeechRequest, signal: AbortSignal): Promise<SpeechPlayback> {
-    if (signal.aborted) {
-      return {
-        play: async () => {},
-        stop: () => {},
-      }
-    }
-
-    // 动态按需加载 Azure Speech SDK
+    signal.throwIfAborted()
+    const cleanText = sanitizeSpeechText(request.text)
+    if (!cleanText) return { play: async () => {}, stop() {} }
     const SpeechSDK = await import('microsoft-cognitiveservices-speech-sdk')
-    const token = await this.ensureFreshToken()
-
-    const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, this.region)
-    speechConfig.speechSynthesisVoiceName = request.language === 'zh' ? this.voiceZh : this.voiceEn
-    speechConfig.speechSynthesisOutputFormat = SpeechSDK.SpeechSynthesisOutputFormat.Riff24Khz16BitMonoPcm
-
-    // 创建纯内存合成器（不直接绑定默认声卡，以便精确控制音频生命周期与 URL 播放）
-    const synthesizer = new SpeechSDK.SpeechSynthesizer(speechConfig, null as any)
-
+    signal.throwIfAborted()
+    const token = await this.ensureFreshToken(signal)
+    signal.throwIfAborted()
+    const config = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, this.region)
+    config.speechSynthesisVoiceName = request.language === 'zh' ? this.voiceZh : this.voiceEn
+    config.speechSynthesisOutputFormat = SpeechSDK.SpeechSynthesisOutputFormat.Riff24Khz16BitMonoPcm
+    const synthesizer = new SpeechSDK.SpeechSynthesizer(config, null as any)
     const visemes: VisemeFrame[] = []
-
     synthesizer.visemeReceived = (_sender, event) => {
-      // audioOffset 单位为 100-nanosecond ticks (1 tick = 10^-4 ms)
-      const offsetMs = Math.round(event.audioOffset / 10000)
-      const shape = mapAzureVisemeToShape(event.visemeId)
-
-      visemes.push({
-        offsetMs,
-        id: event.visemeId,
-        mouthOpen: shape.mouthOpen,
-        mouthForm: shape.mouthForm,
-      })
+      visemes.push({ offsetMs: Math.round(event.audioOffset / 10000), id: event.visemeId, ...mapAzureVisemeToShape(event.visemeId) })
     }
 
     return new Promise<SpeechPlayback>((resolve, reject) => {
-      if (signal.aborted) {
-        try {
-          synthesizer.close()
-        } catch {}
-        resolve({
-          play: async () => {},
-          stop: () => {},
-        })
-        return
+      let prepared = false
+      let ended = false
+      let audio: HTMLAudioElement | null = null
+      let audioUrl: string | null = null
+      let settlePlayback: ((error?: Error) => void) | null = null
+      const closeSynthesizer = () => { try { synthesizer.close() } catch { /* already closed */ } }
+      const cleanup = () => {
+        if (ended) return
+        ended = true
+        window.clearTimeout(timer)
+        signal.removeEventListener('abort', onAbort)
+        closeSynthesizer()
+        if (audio) {
+          audio.onplaying = audio.onended = audio.onerror = null
+          try { audio.pause() } catch { /* Continue releasing resources if the media element failed. */ }
+        }
+        if (audioUrl) URL.revokeObjectURL(audioUrl)
       }
-
-      signal.addEventListener('abort', () => {
-        try {
-          synthesizer.close()
-        } catch {}
-      })
-
-      synthesizer.speakTextAsync(
-        request.text,
-        (result) => {
-          if (signal.aborted) {
-            try {
-              synthesizer.close()
-            } catch {}
-            resolve({
-              play: async () => {},
-              stop: () => {},
-            })
+      const failPreparation = (error: Error) => {
+        if (prepared || ended) return
+        cleanup()
+        reject(error)
+      }
+      const onAbort = () => {
+        if (!prepared) failPreparation(new DOMException('Speech cancelled.', 'AbortError'))
+        else { cleanup(); settlePlayback?.() }
+      }
+      const timer = window.setTimeout(() => failPreparation(new DOMException('Speech synthesis timed out.', 'TimeoutError')), 45000)
+      signal.addEventListener('abort', onAbort, { once: true })
+      if (signal.aborted) { onAbort(); return }
+      try {
+        synthesizer.speakTextAsync(cleanText, (result) => {
+          if (ended || signal.aborted) return
+          if (result.reason !== SpeechSDK.ResultReason.SynthesizingAudioCompleted || !result.audioData) {
+            failPreparation(new Error('VOICE_SYNTHESIS_FAILED'))
             return
           }
-
-          if (result.reason === SpeechSDK.ResultReason.SynthesizingAudioCompleted && result.audioData) {
-            const blob = new Blob([result.audioData], { type: 'audio/wav' })
-            const audioUrl = URL.createObjectURL(blob)
-            const audio = new Audio(audioUrl)
-
-            let isEnded = false
-            let resolvePlayback: (() => void) | null = null
-
-            const stopPlayback = () => {
-              if (isEnded) return
-              isEnded = true
-              try {
-                audio.pause()
-                audio.currentTime = 0
-                URL.revokeObjectURL(audioUrl)
-                synthesizer.close()
-              } catch {}
-              if (resolvePlayback) resolvePlayback()
-            }
-
-            const playback: SpeechPlayback = {
+          try {
+            audioUrl = URL.createObjectURL(new Blob([result.audioData], { type: 'audio/wav' }))
+            audio = new Audio(audioUrl)
+            prepared = true
+            window.clearTimeout(timer)
+            closeSynthesizer()
+            resolve({
               visemes,
-              durationMs: visemes.length > 0 ? visemes[visemes.length - 1].offsetMs + 200 : undefined,
               play: (onStart) => {
-                if (signal.aborted) {
-                  stopPlayback()
-                  return Promise.resolve()
-                }
-
-                return new Promise<void>((res) => {
-                  resolvePlayback = res
-                  audio.onplay = () => onStart?.()
-
-                  audio.onended = () => {
-                    stopPlayback()
+                if (ended || signal.aborted) { cleanup(); return Promise.resolve() }
+                return new Promise<void>((done, fail) => {
+                  settlePlayback = (error) => {
+                    settlePlayback = null
+                    cleanup()
+                    if (error) fail(error)
+                    else done()
                   }
-
-                  audio.onerror = () => {
-                    stopPlayback()
-                  }
-
-                  audio.play().catch(() => {
-                    stopPlayback()
-                  })
+                  audio!.onplaying = () => { if (!ended && !signal.aborted) onStart?.() }
+                  audio!.onended = () => settlePlayback?.()
+                  audio!.onerror = () => settlePlayback?.(new Error('VOICE_PLAYBACK_ERROR'))
+                  audio!.play().catch(() => settlePlayback?.(new Error('VOICE_PLAYBACK_ERROR')))
                 })
               },
-              stop: stopPlayback,
-            }
-
-            resolve(playback)
-          } else {
-            try {
-              synthesizer.close()
-            } catch {}
-            reject(new Error(`Azure TTS 合成未完成: ${result.errorDetails || result.reason}`))
+              stop: () => { cleanup(); settlePlayback?.() },
+            })
+          } catch {
+            prepared = false
+            failPreparation(new Error('VOICE_AUDIO_UNAVAILABLE'))
           }
-        },
-        (error) => {
-          try {
-            synthesizer.close()
-          } catch {}
-          reject(new Error(`Azure TTS 合成异常: ${error}`))
-        },
-      )
+        }, () => failPreparation(new Error('VOICE_SYNTHESIS_FAILED')))
+      } catch {
+        failPreparation(new Error('VOICE_SYNTHESIS_FAILED'))
+      }
     })
   }
 }

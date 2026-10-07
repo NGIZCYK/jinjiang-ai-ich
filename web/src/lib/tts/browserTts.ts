@@ -1,33 +1,6 @@
 import type { SpeechPlayback, SpeechRequest, TtsProvider } from './types'
 
-/**
- * 文本语音净化器：剥离 Markdown 格式符号、链接与学术括号，还原为口语化自然文本
- */
-function sanitizeSpeechText(raw: string): string {
-  if (!raw) return ''
-  return raw
-    // 移除代码块与内联代码
-    .replace(/```[\s\S]*?```/g, '')
-    .replace(/`([^`]+)`/g, '$1')
-    // 移除 Markdown 标题、引用、分割线
-    .replace(/^#{1,6}\s+/gm, '')
-    .replace(/^>\s+/gm, '')
-    .replace(/^---+$/gm, '')
-    // 移除加粗与斜体标记
-    .replace(/\*\*([^*]+)\*\*/g, '$1')
-    .replace(/\*([^*]+)\*/g, '$1')
-    .replace(/__([^_]+)__/g, '$1')
-    .replace(/_([^_]+)_/g, '$1')
-    // 移除 Markdown 链接保留文字：[文字](url) -> 文字
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    // 移除列表标记与项目符号，避免念出“减号”或“星号”
-    .replace(/^[-*•]\s+/gm, '')
-    .replace(/^\d+[\.、]\s*/gm, '')
-    // 过滤掉学术括号标记（如“（文献线索）”、“（工艺经验）”、“（课程原型）”），使口语更自然
-    .replace(/[（(](?:文献线索|工艺经验|课程原型|待合作方确认|出处需复核|需进一步复核)[^）)]*[）)]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
+import { sanitizeSpeechText } from './speechText'
 
 let cachedVoices: SpeechSynthesisVoice[] = []
 
@@ -150,21 +123,26 @@ export class BrowserTtsProvider implements TtsProvider {
 
     // 异步解析当前环境的最优自然音色
     const voices = await getAvailableVoices()
+    if (signal.aborted) throw new DOMException('Speech cancelled.', 'AbortError')
     const selectedVoice = pickBestVoice(voices, request.language)
 
     let isStopped = false
     let currentUtterance: SpeechSynthesisUtterance | null = null
+    let settle: ((error?: Error) => void) | null = null
 
     const stopPlayback = () => {
       isStopped = true
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      const ownsUtterance = currentUtterance !== null
+      // cancel() does not reliably emit onend; release the waiting queue ourselves.
+      settle?.()
+      if (ownsUtterance && typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel()
       }
     }
 
     return {
       play: (onStart) => {
-        return new Promise<void>((resolve) => {
+        return new Promise<void>((resolve, reject) => {
           if (signal.aborted || isStopped) {
             resolve()
             return
@@ -180,34 +158,42 @@ export class BrowserTtsProvider implements TtsProvider {
           utterance.rate = request.language === 'zh' ? 0.88 : 0.90
           utterance.pitch = request.language === 'zh' ? 1.04 : 1.02
 
-          utterance.onstart = () => onStart?.()
-
-          const onAbort = () => {
-            stopPlayback()
-            resolve()
-          }
-
-          signal.addEventListener('abort', onAbort, { once: true })
-
-          utterance.onend = () => {
+          const onAbort = () => stopPlayback()
+          const startTimer = window.setTimeout(() => {
+            finish(new DOMException('Speech did not start.', 'TimeoutError'))
+            window.speechSynthesis.cancel()
+          }, 15000)
+          const finish = (error?: Error) => {
+            if (settle !== finish) return
+            settle = null
+            window.clearTimeout(startTimer)
             signal.removeEventListener('abort', onAbort)
+            utterance.onstart = null
+            utterance.onend = null
+            utterance.onerror = null
             currentUtterance = null
-            resolve()
+            if (error) reject(error)
+            else resolve()
           }
+          settle = finish
+          signal.addEventListener('abort', onAbort, { once: true })
+          utterance.onstart = () => {
+            window.clearTimeout(startTimer)
+            if (!signal.aborted && !isStopped && currentUtterance === utterance) onStart?.()
+          }
+          utterance.onend = () => finish()
 
           utterance.onerror = (event) => {
-            signal.removeEventListener('abort', onAbort)
-            currentUtterance = null
             // 'canceled' 或 'interrupted' 属于正常停止，不作为异常抛出
             if (event.error === 'canceled' || event.error === 'interrupted' || isStopped) {
-              resolve()
+              finish()
             } else {
-              // 其他错误静默 resolve，避免阻断队列后续播放
-              resolve()
+              finish(new Error('VOICE_PLAYBACK_ERROR'))
             }
           }
 
-          window.speechSynthesis.speak(utterance)
+          try { window.speechSynthesis.speak(utterance) }
+          catch { finish(new Error('VOICE_PLAYBACK_ERROR')) }
         })
       },
       stop: () => {

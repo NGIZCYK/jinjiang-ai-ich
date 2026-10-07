@@ -1,21 +1,20 @@
+import { keywordSentiment } from './keywordSentiment'
+import { buildGuideKnowledge, type GuideKnowledge } from '../../../supabase/functions/_shared/guideKnowledge.ts'
+import { parseGuideSources } from '../../../supabase/functions/_shared/guideContract.ts'
+import { normalizeCapabilities, capabilityChatMode, type GuideCapabilities, FALLBACK_CAPABILITIES } from './guideCapabilities'
+export type { GuideCapabilities } from './guideCapabilities'
 import { apiFetch } from './cloud'
-import { searchICH } from '../data/ichItems'
 import {
   analyzeGuideIntent,
   buildLocalSuzhouReply,
-  buildSuzhouContext,
-  getSuzhouGuideSource,
-  type GuideIntent,
 } from '../data/suzhouGuide'
-import type { GuideAction, GuidePartyType, GuideSignal, GuideSource, ICHItem } from '../types'
+import type { GuideAction, GuidePartyType, GuideSignal, GuideSource } from '../types'
 import { readGuideStream } from './guideStream'
 import type { Language } from './i18n'
 import { inferSemanticPerformance, type SemanticPerformance } from './semanticPerformance'
 
 export function sentimentOf(text: string): 'positive' | 'neutral' | 'negative' {
-  if (/喜欢|很棒|太美|感动|推荐|惊艳|好美|赞|love|great|beautiful|amazing|recommend/i.test(text)) return 'positive'
-  if (/差|不行|无聊|失望|太难|没意思|退款|bad|boring|disappoint|too difficult|frustrat/i.test(text)) return 'negative'
-  return 'neutral'
+  return keywordSentiment(text)
 }
 
 /**
@@ -49,64 +48,6 @@ export function extractGuideSignal(text: string, language: Language): Omit<Guide
     budget: budget && budget > 0 && budget <= 100_000 ? budget : undefined,
     partyType,
     sentiment: sentimentOf(text),
-  }
-}
-
-function sourceCategory(item: ICHItem): GuideSource['category'] {
-  if (item.tags.includes('方案') || item.tags.includes('体验设计')) return 'prototype'
-  if (item.tags.includes('工艺') || item.tags.includes('传统技法')) return 'practice'
-  return 'documented'
-}
-
-function pickContext(query: string, language: Language) {
-  const list = searchICH(query, language, 3)
-  const sources: GuideSource[] = list.map((item) => ({
-    id: item.id,
-    title: language === 'en' ? item.titleEn ?? item.title : item.title,
-    category: sourceCategory(item),
-    references: language === 'en' ? item.sourcesEn ?? item.sources : item.sources,
-  }))
-  const context = list
-    .map((item) => {
-      const title = language === 'en' ? item.titleEn ?? item.title : item.title
-      const summary = language === 'en' ? item.summaryEn ?? item.summary : item.summary
-      const body = language === 'en' ? item.bodyEn ?? item.body : item.body
-      const references = language === 'en' ? item.sourcesEn ?? item.sources : item.sources
-      return `[${sourceCategory(item).toUpperCase()}] ${title}\n${summary}\n${body}\nReferences: ${references.join('; ')}`
-    })
-    .join('\n\n')
-  const first = list[0]
-  const fallbackSnippet = first
-    ? `${language === 'en' ? first.titleEn ?? first.title : first.title}: ${language === 'en' ? first.summaryEn ?? first.summary : first.summary} ${language === 'en' ? first.bodyEn ?? first.body : first.body}`
-    : ''
-  return { context, sources, matched: list.length > 0, fallbackSnippet }
-}
-
-interface GuideKnowledge {
-  context: string
-  sources: GuideSource[]
-  matched: boolean
-  fallbackSnippet: string
-  intent: GuideIntent
-  huqiuAmbiguous: boolean
-  timeSensitive: boolean
-  firstVisit: boolean
-}
-
-function buildGuideKnowledge(query: string, language: Language): GuideKnowledge {
-  const project = pickContext(query, language)
-  const analysis = analyzeGuideIntent(query)
-  const cityContext = buildSuzhouContext(analysis, language)
-  const sources = cityContext
-    ? [...project.sources, getSuzhouGuideSource(language)]
-    : project.sources
-
-  return {
-    context: [project.context, cityContext].filter(Boolean).join('\n\n'),
-    sources,
-    matched: project.matched || Boolean(cityContext),
-    fallbackSnippet: project.fallbackSnippet,
-    ...analysis,
   }
 }
 
@@ -202,32 +143,7 @@ You may record an experience preference in My Stay to test the guest journey.`,
 
 export type ChatMode = 'deepseek' | 'demo' | 'fallback'
 
-export const GUIDE_API_VERSION = '2026.09.15-guide-v2'
-
-export interface GuideCapabilities {
-  apiVersion: string
-  stale: boolean
-  chat: {
-    provider: 'deepseek' | 'demo'
-    streaming: boolean
-  }
-  tts: {
-    provider: 'azure' | 'browser'
-    viseme: boolean
-  }
-  avatar: {
-    mode: 'live2d' | 'static'
-    modelConfigured: boolean
-  }
-}
-
-const FALLBACK_CAPABILITIES: GuideCapabilities = {
-  apiVersion: 'unavailable',
-  stale: true,
-  chat: { provider: 'demo', streaming: false },
-  tts: { provider: 'browser', viseme: false },
-  avatar: { mode: 'static', modelConfigured: false },
-}
+export { GUIDE_API_VERSION } from '../../../supabase/functions/_shared/guideContract.ts'
 
 export async function getGuideCapabilities(): Promise<GuideCapabilities> {
   try {
@@ -238,22 +154,7 @@ export async function getGuideCapabilities(): Promise<GuideCapabilities> {
     const contentType = response.headers.get('content-type') || ''
     if (!response.ok || !contentType.includes('application/json')) return { ...FALLBACK_CAPABILITIES }
 
-    const data = await response.json() as Partial<GuideCapabilities>
-    const apiVersion = typeof data.apiVersion === 'string' ? data.apiVersion : 'unknown'
-    const provider = data.chat?.provider === 'deepseek' ? 'deepseek' : 'demo'
-    const ttsProvider = data.tts?.provider === 'azure' ? 'azure' : 'browser'
-    const modelConfigured = Boolean(data.avatar?.modelConfigured)
-
-    return {
-      apiVersion,
-      stale: apiVersion !== GUIDE_API_VERSION,
-      chat: { provider, streaming: Boolean(data.chat?.streaming) },
-      tts: { provider: ttsProvider, viseme: Boolean(data.tts?.viseme) },
-      avatar: {
-        mode: data.avatar?.mode === 'live2d' && modelConfigured ? 'live2d' : 'static',
-        modelConfigured,
-      },
-    }
+    return normalizeCapabilities(await response.json())
   } catch {
     return { ...FALLBACK_CAPABILITIES }
   }
@@ -261,8 +162,7 @@ export async function getGuideCapabilities(): Promise<GuideCapabilities> {
 
 export async function getChatMode(): Promise<ChatMode> {
   const capabilities = await getGuideCapabilities()
-  if (capabilities.stale) return 'fallback'
-  return capabilities.chat.provider === 'deepseek' ? 'deepseek' : 'demo'
+  return capabilityChatMode(capabilities)
 }
 
 export interface WanNiangResult {
@@ -350,21 +250,17 @@ export async function askWanNiang(
         question,
         history,
         language,
-        context: knowledge.context,
-        intent: knowledge.intent,
-        huqiuAmbiguous: knowledge.huqiuAmbiguous,
-        timeSensitive: knowledge.timeSensitive,
       }),
       signal,
     })
     if (res.ok) {
-      const data = await res.json() as { content?: string; provider?: string }
+      const data = await res.json() as { content?: string; provider?: string; sources?: unknown }
       if (data.content && data.provider === 'deepseek') {
         return {
           content: data.content,
           mode: 'deepseek' as const,
           sentiment: sentimentOf(question),
-          sources: knowledge.sources,
+          sources: parseGuideSources(data.sources),
           action,
           performance: inferSemanticPerformance(question, data.content),
         }
@@ -411,10 +307,6 @@ export async function askWanNiangStream(
         question,
         history,
         language,
-        context: knowledge.context,
-        intent: knowledge.intent,
-        huqiuAmbiguous: knowledge.huqiuAmbiguous,
-        timeSensitive: knowledge.timeSensitive,
       }),
       signal,
     })
@@ -428,7 +320,7 @@ export async function askWanNiangStream(
 
       // 兼容旧版非流式 JSON 服务，避免把 JSON 或 SPA HTML 当成 SSE 后静默降级。
       if (contentType.includes('application/json')) {
-        const data = await response.json() as { content?: string; provider?: string }
+        const data = await response.json() as { content?: string; provider?: string; sources?: unknown }
         if (data.provider === 'deepseek' && data.content?.trim()) {
           const content = data.content.trim()
           callbacks.onMeta?.({ requestId: 'json_compat', provider: 'deepseek', language })
@@ -437,7 +329,7 @@ export async function askWanNiangStream(
             content,
             mode: 'deepseek',
             sentiment: sentimentOf(question),
-            sources: knowledge.sources,
+            sources: parseGuideSources(data.sources),
             action,
             performance: inferSemanticPerformance(question, content),
           }
@@ -448,9 +340,10 @@ export async function askWanNiangStream(
       }
 
       if (!contentType.includes('text/event-stream') || !response.body) {
-        throw new Error('导览服务版本过旧或响应格式不正确，请重新启动网页服务')
+        throw new Error('在线导览返回了不支持的格式，已保留本地导览；请检查服务配置。')
       }
 
+      let serverSources: GuideSource[] = []
       let accumulatedText = ''
       let displayedText = ''
       let pendingDelta = ''
@@ -463,6 +356,7 @@ export async function askWanNiangStream(
           window.clearTimeout(flushTimer)
           flushTimer = null
         }
+        if (signal?.aborted) { pendingDelta = ''; return }
         if (!pendingDelta) return
         const piece = pendingDelta
         pendingDelta = ''
@@ -482,21 +376,22 @@ export async function askWanNiangStream(
       }
 
       const reader = response.body.getReader()
-      await readGuideStream(reader, {
-        onMeta: (meta) => callbacks.onMeta?.(meta),
+      try { await readGuideStream(reader, {
+        onMeta: (meta) => { serverSources = parseGuideSources(meta.sources); callbacks.onMeta?.(meta) },
         onDelta: (delta, accumulated) => {
           accumulatedText = accumulated
           bufferDelta(delta)
         },
         onDone: (done) => {
           isDeepSeekDone = true
+          if (done.sources !== undefined) serverSources = parseGuideSources(done.sources)
           if (done.content) accumulatedText = done.content
         },
         onError: (error) => {
           streamError = error instanceof Error ? error : new Error(error.message)
         },
-      })
-      flushBufferedDelta()
+      }, signal) } finally { flushBufferedDelta() }
+      if (signal?.aborted) throw new DOMException('Request cancelled', 'AbortError')
 
       // 若服务端 done 内容比已展示内容更完整，补齐最后的尾段。
       if (accumulatedText.startsWith(displayedText) && accumulatedText.length > displayedText.length) {
@@ -512,7 +407,7 @@ export async function askWanNiangStream(
           content: accumulatedText,
           mode: 'deepseek',
           sentiment: sentimentOf(question),
-          sources: knowledge.sources,
+          sources: serverSources,
           action,
           performance: inferSemanticPerformance(question, accumulatedText),
         }
@@ -530,7 +425,7 @@ export async function askWanNiangStream(
           content: finalContent,
           mode: 'fallback',
           sentiment: sentimentOf(question),
-          sources: knowledge.sources,
+          sources: serverSources,
           action,
           performance: inferSemanticPerformance(question, finalContent),
         }
@@ -619,7 +514,7 @@ export function generateItinerary(prefer: string, language: Language = 'zh', con
 - Review the motif and material choices made during the session
 - Pack the practice sample and read its basic care notes
 
-> Curated note: Algorithmically orchestrated based on guest profile (${audience}), channel (${channel}) and exact duration (${totalMin} min). Retains review status before publishing to guest suite displays.`
+> Curated note: Generated by local rules and templates based on guest profile (${audience}), channel (${channel}) and exact duration (${totalMin} min). Retains review status before publishing to guest suite displays.`
   }
 
   return `# 苏绣主题住中文化体验行程（${totalMin} 分钟）
@@ -643,7 +538,7 @@ export function generateItinerary(prefer: string, language: Language = 'zh', con
 - 回看纹样、丝色和针法选择，记录个人体验感受
 - 整理练习样片并阅读基础养护说明
 
-> 策展核验：基于住客偏好（${audience}）、触点（${channel}）及输入时长（${totalMin} 分钟）动态生成，需通过非遗知识审核后方可推入客房信笺与水牌。`
+> 策展核验：基于住客偏好（${audience}）、触点（${channel}）及输入时长（${totalMin} 分钟）以本地规则和模板生成，需通过非遗知识审核后方可推入客房信笺与水牌。`
 }
 
 export function generateMarketingCopy(scene: string, language: Language = 'zh', context: GenerationContext = {}) {

@@ -7,26 +7,8 @@ export interface User {
   role: Role
 }
 
-export interface ICHItem {
-  id: string
-  title: string
-  titleEn?: string
-  summary: string
-  summaryEn?: string
-  body: string
-  bodyEn?: string
-  tags: string[]
-  sources: string[]
-  sourcesEn?: string[]
-  searchTerms?: string[]
-}
-
-export interface GuideSource {
-  id: string
-  title: string
-  category: 'documented' | 'practice' | 'prototype'
-  references: string[]
-}
+export type { ICHItem, GuideSource } from '../../supabase/functions/_shared/guideContract.ts'
+import type { GuideSource } from '../../supabase/functions/_shared/guideContract.ts'
 
 export interface GuideAction {
   type: 'record_preference'
@@ -132,7 +114,7 @@ export interface AnalyticsSnapshot {
     nameEn: string
     investment: number
     incrementalRevenue: number
-    roiPct: number
-    paybackMonths: number
+    roiPct: number | null
+    paybackMonths: number | null
   }[]
 }

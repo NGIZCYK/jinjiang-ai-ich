@@ -1,8 +1,34 @@
 # 锦江苏绣项目交接文档
 
-更新时间：2026-09-19  
-项目目录：`C:\Users\21701\Desktop\jinjiang-ai-ich`  
+## 2026-10-04 当前交接
+
+先读 [修复与验收记录](14_课程演示修复与验收记录.md) 和 [当前清单](13_技术问题复核清单.md)。本地修复、76 项前端测试、4 项 Python 测试以及两种构建已完成；待发布包由 `scripts/prepare-demo-release.ps1` 生成。后续云端检查只针对独立演示项目 `uxfxhqdfrzkafekrbzcf`，须先解决当前云端访问范围限制，不读取真实参与者记录。
+
+当前公网已有站点；2026-10-04 先前公开核查显示后端 v3、前端 v2、Origin 拒绝且模型 provider 为 demo。本轮未部署，不能将下方历史“已部署”或“尚未发布”视为当前各组件状态。运营密码尚未轮换；浏览器视觉和真实模型、双端闭环仍待完成。开发图片现位于 `assets-source/wanniang-puppet`。保持二维艺境和原脸形象，不恢复失败嘴形或新增雅凭。
+
+下方 2026-09-26 内容保留为历史交接；涉及旧测试数、部署判断和源码位置，以本节链接的最新记录覆盖。
+
+更新时间：2026-09-26（原 2026-09-19）
+项目目录：`C:\Users\21701\Desktop\jinjiang-ai-ich`
 技术栈：Vite、React、TypeScript、Tailwind、Supabase Auth/Postgres/Edge Functions、DeepSeek、Python 分析快照
+
+## 2026-09-26 变更摘要（先读这段）
+
+- **数字人动效**：口型贴片（viseme 驱动嘴形）经 6 组参数复测**证伪后停用**——`raw/mouths.png` 与 `raw/base.png` 异源，无法合成。
+  讲话动效改由**下颚律动**承担（`.puppet-jaw` + `--jaw-open`，`PuppetAvatar` 直写 CSS 变量，不经 React state）。
+  对外口径改为"**眨眼 + 下颚律动 + 语义表演**"，**不得再写"口型同步"**。
+  证据存档 `docs/evidence/mouth-sprite-falsification/`；说明见 `web/public/avatar/wanniang/README.md`。
+- **3D 路线**：A-Frame 与全部 360° 全景资产（约 27 MB）已删除。团队此前已实测"8K 全景全场景观看仍模糊、AI 味过重"，
+  且 8K 全 360° 摊到屏幕约 90° 视口后有效像素仅约 2048px，偏软属该投影固有上限。**不再投入 3D 重建**；
+  若未来重启需新制资产（实拍全景或 3DGS）。沉浸页以平面精修素材 + 交互展签承载，对外称"苏绣艺境"。
+- **共释放约 33.8 MB**：14 个 `lobby-*` 全景、`aframe.min.js`、`aframe.d.ts`、`textures.ts`、
+  3 个 `wanniang-*.mp4`、3 个废弃 `wanniang-*.png`、`mouths.webp`。
+  **保留** `wanniang-concierge-v2.png`（`StaticAvatar` 默认图）与 `home-heritage-film-20260915-v1.mp4`（`CinematicHero` 使用）。
+- **待办**：`web/dist` 仍是改动前的旧构建，发布前必须重新 `npm run build`。
+  本次改动已通过 `tsc -b`（退出码 0）与 22 项模块断言，但**未能执行 `npm test` / `npm run build`**
+  （沙箱禁止 esbuild 派生子进程，报 `spawn EPERM`）。
+- **仍未处理的 P0**（见 `docs/13_技术问题复核清单.md`）：前后端 API 版本常量不一致导致的假"服务已过期"横幅；
+  服务端丢弃 `body.context` 导致在线回答未使用非遗知识库。
 
 ## 当前结论
 

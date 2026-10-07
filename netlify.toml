@@ -1,9 +1,15 @@
 [build]
   base = "web"
-  # The published site is the isolated course-demo experience. Clear any
-  # dashboard VITE_* overrides so Vite reads the tracked .env.demo values.
-  command = "env -u VITE_SUPABASE_URL -u VITE_SUPABASE_PUBLISHABLE_KEY -u VITE_SHOW_DEMO_ACCOUNTS -u VITE_DEMO_GUEST_EMAIL -u VITE_DEMO_GUEST_PASSWORD -u VITE_DEMO_OPS_EMAIL -u VITE_DEMO_OPS_PASSWORD npm run build:demo"
+  command = """
+python -m pip install -r ../analytics/requirements.txt &&
+python -m unittest discover -s ../analytics -p 'test_*.py' &&
+python ../analytics/analyze.py &&
+npm run build:demo
+"""
   publish = "dist"
+
+[build.environment]
+  PYTHON_VERSION = "3.14"
 
 [[redirects]]
   from = "/*"

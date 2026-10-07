@@ -50,6 +50,19 @@ describe('PostgreSQL journey, authorization and state invariants',()=>{
  it('stores idempotent structured guide signals without exposing them to operations',async()=>{const key=request();const first=await signal(guest,key,['craft','experience']);expect(await signal(guest,key,['craft','experience'])).toBe(first);expect(await as(guest,'select * from guide_signals')).toHaveLength(1);expect(await as(other,'select * from guide_signals')).toHaveLength(0);expect(await as(ops,'select * from guide_signals')).toHaveLength(0)})
  it('aggregates guide intent by cohort and excludes demo activity',async()=>{await signal(guest,request(),['craft','experience']);await signal(demo,request(),['culture']);const stats=(await as<{data:{guideIntent:{total:number;uniqueUsers:number;topicCounts:Record<string,number>;partyCounts:Record<string,number>;sentimentCounts:Record<string,number>;averageStayHours:number;averageBudget:number}}}>(ops,"select trial_analytics('pilot-01') data"))[0].data;expect(stats.guideIntent).toEqual({total:1,uniqueUsers:1,topicCounts:{craft:1,experience:1},partyCounts:{family:1},sentimentCounts:{positive:1},averageStayHours:2,averageBudget:150})})
  it('validates guide signal fields and rejects operations as a signal source',async()=>{await expect(signal(guest,request(),['invented'])).rejects.toThrow('INVALID_GUIDE_SIGNAL');await expect(signal(guest,request(),['craft','craft'])).rejects.toThrow('INVALID_GUIDE_SIGNAL');await expect(signal(ops)).rejects.toThrow('GUEST_REQUIRED')})
+ it('computes two guests and their average budget on the server, excluding demo signals',async()=>{
+  const key=request()
+  const sql="select save_guide_signal($1,'zh',$2,2,$3,'solo',$4) id"
+  await as(guest,sql,[key,['craft'],100,'negative'])
+  await as(guest,sql,[key,['craft'],100,'negative'])
+  await as(other,sql,[request(),['experience'],200,'neutral'])
+  await as(demo,sql,[request(),['culture'],900,'positive'])
+  expect(await as(other,'select * from guide_signals')).toHaveLength(1)
+  expect(await as(ops,'select * from guide_signals')).toHaveLength(0)
+  const stats=(await as<{data:{counts:number[];guideIntent:{total:number;uniqueUsers:number;averageBudget:number;sentimentCounts:Record<string,number>}}}>(ops,"select trial_analytics('pilot-01') data"))[0].data
+  expect(stats.counts[0]).toBe(2)
+  expect(stats.guideIntent).toMatchObject({total:2,uniqueUsers:2,averageBudget:150,sentimentCounts:{negative:1,neutral:1}})
+ })
  it('does not put users who skipped exploration in downstream funnel',async()=>{await submit();const stats=(await as<{data:{counts:number[];statusCounts:Record<string,number>}}>(ops,"select trial_analytics('pilot-01') data"))[0].data;expect(stats.counts[4]).toBe(0);expect(stats.statusCounts.pending).toBe(1)})
  it('rejects a recommendation belonging to another user or another experience',async()=>{const rec=(await as<{id:string}>(other,'select save_recommendation($1,$2,$3) id',['scroll',{minutes:90,budget:200,party:'family',interest:'culture'},request()]))[0].id;await expect(as(guest,'select submit_intention($1,1,$2,$3)',[session,request(),rec])).rejects.toThrow('INVALID_RECOMMENDATION')})
  it('persists reviewer identity and forbids guest content approval',async()=>{await expect(as(guest,"select save_reviewed_content('copy','Title','Body','en','Checked')")).rejects.toThrow('FORBIDDEN');await as(ops,"select save_reviewed_content('copy','Title','Body','en','Checked')");expect((await as(ops,'select reviewer_id from reviewed_contents'))[0].reviewer_id).toBe(ops)})

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-14T10:19:26.609341",
+  "generatedAt": "2026-10-04T19:07:51.092311",
   "source": "ENT207 课程匿名合成样本；不含个人身份信息，非锦江真实经营数据。",
   "method": "pandas 特征整理；scikit-learn KMeans(k=3) 客群分层；收入与 ROI 为可调经营假设。",
   "sampleSize": 1200,
@@ -10849,14 +10849,73 @@
       "totalSpend": 873.0
     }
   ],
+  "assumptions": {
+    "schemaVersion": 1,
+    "currency": "CNY",
+    "periodMonths": 12,
+    "boundary": "Synthetic operating scenarios; not measured hotel revenue or attendance. Excludes tax, discounting and depreciation.",
+    "scenarios": [
+      {
+        "id": "baseline",
+        "name": "基线（无非遗模块）",
+        "nameEn": "Baseline · no heritage module",
+        "inputs": {
+          "baseMonthlyRevenue": 1000000,
+          "monthlyHotelGuests": 1000,
+          "conversionRate": 0,
+          "ticketUplift": 0,
+          "ticketPrice": 0,
+          "sessions": 0,
+          "seatsPerSession": 0,
+          "unitCost": 0,
+          "fixedMonthlyCost": 0,
+          "initialInvestment": 0
+        }
+      },
+      {
+        "id": "light-experience",
+        "name": "情景 A（轻体验包）",
+        "nameEn": "Scenario A · light experience",
+        "inputs": {
+          "baseMonthlyRevenue": 1000000,
+          "monthlyHotelGuests": 1000,
+          "conversionRate": 0.18,
+          "ticketUplift": 0.01,
+          "ticketPrice": 228,
+          "sessions": 16,
+          "seatsPerSession": 12,
+          "unitCost": 42,
+          "fixedMonthlyCost": 7000,
+          "initialInvestment": 180000
+        }
+      },
+      {
+        "id": "themed-room-workshop",
+        "name": "情景 B（主题房＋体验课）",
+        "nameEn": "Scenario B · themed room + workshop",
+        "inputs": {
+          "baseMonthlyRevenue": 1000000,
+          "monthlyHotelGuests": 1000,
+          "conversionRate": 0.32,
+          "ticketUplift": 0.03,
+          "ticketPrice": 398,
+          "sessions": 20,
+          "seatsPerSession": 12,
+          "unitCost": 68,
+          "fixedMonthlyCost": 16000,
+          "initialInvestment": 300000
+        }
+      }
+    ]
+  },
   "revenueScenarios": [
     {
       "id": "baseline",
       "name": "基线（无非遗模块）",
       "nameEn": "Baseline · no heritage module",
-      "baseRevenue": 100.0,
-      "ichAttachRate": 0.0,
-      "avgTicketUplift": 0.0,
+      "baseRevenue": 100,
+      "ichAttachRate": 0,
+      "avgTicketUplift": 0,
       "projectedRevenue": 100.0,
       "defaults": {
         "monthlyHotelGuests": 1000,
@@ -10872,10 +10931,10 @@
       "id": "light-experience",
       "name": "情景 A（轻体验包）",
       "nameEn": "Scenario A · light experience",
-      "baseRevenue": 100.0,
+      "baseRevenue": 100,
       "ichAttachRate": 0.18,
       "avgTicketUplift": 0.01,
-      "projectedRevenue": 106.7,
+      "projectedRevenue": 105.104,
       "defaults": {
         "monthlyHotelGuests": 1000,
         "ticketPrice": 228,
@@ -10888,12 +10947,12 @@
     },
     {
       "id": "themed-room-workshop",
-      "name": "情景 B（主题房+体验课）",
+      "name": "情景 B（主题房＋体验课）",
       "nameEn": "Scenario B · themed room + workshop",
-      "baseRevenue": 100.0,
+      "baseRevenue": 100,
       "ichAttachRate": 0.32,
       "avgTicketUplift": 0.03,
-      "projectedRevenue": 113.1,
+      "projectedRevenue": 112.552,
       "defaults": {
         "monthlyHotelGuests": 1000,
         "ticketPrice": 398,
@@ -10908,21 +10967,43 @@
   "roi": [
     {
       "id": "light-experience",
-      "name": "轻体验包",
-      "nameEn": "Light experience",
-      "investment": 18.0,
-      "incrementalRevenue": 12.1,
-      "roiPct": 67.2,
-      "paybackMonths": 9
+      "name": "情景 A（轻体验包）",
+      "nameEn": "Scenario A · light experience",
+      "currency": "CNY",
+      "periodMonths": 12,
+      "investment": 180000,
+      "eligibleGuests": 1000,
+      "demand": 180.0,
+      "capacity": 192,
+      "expectedBookings": 180.0,
+      "workshopRevenue": 41040.0,
+      "roomUpliftRevenue": 10000.0,
+      "incrementalRevenue": 51040.0,
+      "operatingCost": 14560.0,
+      "monthlyContribution": 36480.0,
+      "revenueIndex": 105.104,
+      "roiPct": 143.2,
+      "paybackMonths": 4.934210526315789
     },
     {
       "id": "themed-room-workshop",
-      "name": "主题房+体验课",
-      "nameEn": "Themed room + workshop",
-      "investment": 30.0,
-      "incrementalRevenue": 22.4,
-      "roiPct": 74.7,
-      "paybackMonths": 11
+      "name": "情景 B（主题房＋体验课）",
+      "nameEn": "Scenario B · themed room + workshop",
+      "currency": "CNY",
+      "periodMonths": 12,
+      "investment": 300000,
+      "eligibleGuests": 1000,
+      "demand": 320.0,
+      "capacity": 240,
+      "expectedBookings": 240,
+      "workshopRevenue": 95520,
+      "roomUpliftRevenue": 30000.0,
+      "incrementalRevenue": 125520.0,
+      "operatingCost": 32320,
+      "monthlyContribution": 93200.0,
+      "revenueIndex": 112.552,
+      "roiPct": 272.8,
+      "paybackMonths": 3.218884120171674
     }
   ]
 }

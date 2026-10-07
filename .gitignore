@@ -8,3 +8,7 @@ supabase/.temp/
 supabase/.branches/
 web/test-results/
 web/coverage/
+
+.cache/
+.venv/
+__pycache__/

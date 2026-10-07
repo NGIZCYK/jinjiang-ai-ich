@@ -18,8 +18,9 @@ from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "web" / "public" / "avatar" / "wanniang-puppet"
-RAW = OUT / "raw"
-PREVIEW = OUT / "preview"
+SOURCE = ROOT / "assets-source" / "wanniang-puppet"
+RAW = SOURCE / "raw"
+PREVIEW = SOURCE / "preview"
 
 BASE_W, BASE_H = 1024, 1472  # 裁掉底部 64px 水印后
 WATERMARK_CROP = 64
@@ -115,11 +116,14 @@ def ring_mean(arr: np.ndarray, box, ring: int = 12):
     return np.concatenate(parts).mean(axis=0)
 
 
-def color_match(patch: np.ndarray, src_box, base_arr, dst_box) -> np.ndarray:
-    """offset-only 校正：只平移肤色均值，保留饱和度/对比度关系，避免唇色失真。"""
+def color_match(patch: np.ndarray, src_box, base_arr, dst_box, k: float = 0.85) -> np.ndarray:
+    """offset-only 校正：只平移肤色均值，保留饱和度/对比度关系，避免唇色失真。
+
+    k 为校正强度（默认 0.85，保持现有行为）；调参脚本可传入 1.0 做对比。
+    """
     s_mean = ring_mean(patch, src_box)
     d_mean = ring_mean(base_arr, dst_box)
-    out = patch.astype(np.float32) + (d_mean - s_mean) * 0.85
+    out = patch.astype(np.float32) + (d_mean - s_mean) * k
     return np.clip(out, 0, 255).astype(np.uint8)
 
 
@@ -159,7 +163,7 @@ def process_parts(base: Image.Image) -> None:
     strip = Image.new("RGBA", (MOUTH_BOX["w"] * len(cells), MOUTH_BOX["h"]))
     for i, c in enumerate(cells):
         strip.paste(c, (i * MOUTH_BOX["w"], 0))
-    strip.save(OUT / "mouths.webp", "WEBP", quality=84)
+    strip.save(PREVIEW / "mouths.webp", "WEBP", quality=84)
 
     eyes_src = Image.open(RAW / "eyes.png")
     cells = []

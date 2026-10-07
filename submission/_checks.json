@@ -1,0 +1,170 @@
+{
+  "format": "docx",
+  "verdict": "pass",
+  "checks": [
+    {
+      "id": "package",
+      "status": "pass"
+    },
+    {
+      "id": "contains",
+      "status": "pass",
+      "text": "THISISIT2018"
+    },
+    {
+      "id": "contains",
+      "status": "pass",
+      "text": "Group 20"
+    },
+    {
+      "id": "contains",
+      "status": "pass",
+      "text": "2472682"
+    },
+    {
+      "id": "contains",
+      "status": "pass",
+      "text": "\u88ab\u5426\u6389\u7684\u66ff\u4ee3\u65b9\u6848"
+    },
+    {
+      "id": "contains",
+      "status": "pass",
+      "text": "\u7528\u6237\u73b0\u5728\u600e\u4e48\u529e"
+    },
+    {
+      "id": "contains",
+      "status": "pass",
+      "text": "\u5df2\u77e5\u9650\u5236"
+    }
+  ],
+  "summary": {
+    "paragraphs": 712,
+    "tables": [
+      {
+        "rows": 11,
+        "columns": 2
+      },
+      {
+        "rows": 6,
+        "columns": 2
+      },
+      {
+        "rows": 4,
+        "columns": 4
+      },
+      {
+        "rows": 5,
+        "columns": 3
+      },
+      {
+        "rows": 5,
+        "columns": 2
+      },
+      {
+        "rows": 8,
+        "columns": 4
+      },
+      {
+        "rows": 4,
+        "columns": 5
+      },
+      {
+        "rows": 5,
+        "columns": 2
+      },
+      {
+        "rows": 6,
+        "columns": 3
+      },
+      {
+        "rows": 9,
+        "columns": 5
+      },
+      {
+        "rows": 8,
+        "columns": 2
+      },
+      {
+        "rows": 6,
+        "columns": 2
+      },
+      {
+        "rows": 6,
+        "columns": 2
+      },
+      {
+        "rows": 5,
+        "columns": 2
+      },
+      {
+        "rows": 4,
+        "columns": 2
+      },
+      {
+        "rows": 5,
+        "columns": 3
+      },
+      {
+        "rows": 8,
+        "columns": 4
+      },
+      {
+        "rows": 6,
+        "columns": 3
+      },
+      {
+        "rows": 9,
+        "columns": 3
+      },
+      {
+        "rows": 7,
+        "columns": 2
+      },
+      {
+        "rows": 5,
+        "columns": 3
+      },
+      {
+        "rows": 4,
+        "columns": 3
+      },
+      {
+        "rows": 5,
+        "columns": 3
+      },
+      {
+        "rows": 10,
+        "columns": 3
+      },
+      {
+        "rows": 13,
+        "columns": 5
+      },
+      {
+        "rows": 6,
+        "columns": 4
+      },
+      {
+        "rows": 7,
+        "columns": 3
+      }
+    ],
+    "sections": [
+      {
+        "page_twips": {
+          "w": "11906",
+          "h": "16838"
+        },
+        "margins_twips": {
+          "top": "1134",
+          "right": "1134",
+          "bottom": "1134",
+          "left": "1134",
+          "header": "720",
+          "footer": "720",
+          "gutter": "0"
+        }
+      }
+    ]
+  }
+}

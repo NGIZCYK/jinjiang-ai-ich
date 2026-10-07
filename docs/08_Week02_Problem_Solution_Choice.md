@@ -14,6 +14,8 @@ tags:
 
 # ENT207TC Week 02 工作坊成果｜Part 1: Problem–Solution Choice
 
+> 2026-10-04 实现校正：本文件保留当时方案或课程初稿，不是现成功能验收。当前采用二维苏绣艺境、原脸立绘的眨眼／下颚律动／语义表演、规则／模板 Studio 和数字行为观察＋合成经营情景；A-Frame、Live2D 真实模型、防伪雅凭、茶艺交叉推荐规则及 Studio 在线生成均不作为已实现承诺。真人、导师、Figma、看板、个人贡献和提交证据须按实际日期补充，不能倒填。详见 [最新修复与验收记录](14_课程演示修复与验收记录.md)。
+
 > **课堂任务**：*Two or three problems, each with a proposed solution, ready to discuss with your mentor. (20 MINUTES · IN YOUR GROUP)*  
 > **项目名称**：锦江国际 · 姑苏非遗数字文化礼宾与住中体验闭环（Jinjiang AI ICH Concierge & Heritage Stay）  
 > **团队决策**：全组一致选定 **选项 1（高星文旅酒店非遗活态转化与 AI 文化礼宾）** 为本学期核心创业构建选题。

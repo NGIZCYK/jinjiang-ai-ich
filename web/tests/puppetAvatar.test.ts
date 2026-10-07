@@ -3,46 +3,12 @@ import {
   anchorToPercent,
   blinkInterval,
   EYE_ANCHOR,
-  MOUTH_ANCHOR,
-  mouthHysteresisMs,
   PUPPET_BASE_SIZE,
-  restMouthCell,
-  selectMouthCell,
   spritePositionX,
 } from '../src/components/avatar/puppetConfig'
 
-describe('selectMouthCell 口型帧映射', () => {
-  it('open 低于阈值时无论 form 都闭合', () => {
-    expect(selectMouthCell(0, 0)).toBe(0)
-    expect(selectMouthCell(0.11, 0.6)).toBe(0)
-    expect(selectMouthCell(0.119, -0.9)).toBe(0)
-  })
-  it('圆唇优先于开口度', () => {
-    expect(selectMouthCell(0.8, -0.35)).toBe(3)
-    expect(selectMouthCell(0.3, -0.5)).toBe(3)
-  })
-  it('大张开映射到 aa 格', () => {
-    expect(selectMouthCell(0.56, 0)).toBe(2)
-    expect(selectMouthCell(0.9, 0.1)).toBe(2)
-  })
-  it('讲话时展唇沿用微张格，不闪回静默 smile 格', () => {
-    expect(selectMouthCell(0.3, 0.4)).toBe(1)
-    expect(selectMouthCell(0.54, 0.31)).toBe(1)
-  })
-  it('其余中开映射到 a 格', () => {
-    expect(selectMouthCell(0.12, 0)).toBe(1)
-    expect(selectMouthCell(0.4, 0.1)).toBe(1)
-    expect(selectMouthCell(0.55, -0.29)).toBe(1)
-  })
-})
-
-describe('restMouthCell 静默嘴格', () => {
-  it('warm 情绪用抿笑格，其余闭合', () => {
-    expect(restMouthCell('warm')).toBe(4)
-    expect(restMouthCell('neutral')).toBe(0)
-    expect(restMouthCell('thoughtful')).toBe(0)
-  })
-})
+// 口型贴片用例已随功能停用一并移除（素材异源，无法合成，见 docs/13 的 P1-1）。
+// 讲话时的可见动效改由下颚律动承担（.puppet-jaw + --jaw-open），属 CSS 行为。
 
 describe('blinkInterval 眨眼调度区间', () => {
   it('speaking 比 idle 眨得更频繁', () => {
@@ -67,20 +33,13 @@ describe('blinkInterval 眨眼调度区间', () => {
   })
 })
 
-describe('mouthHysteresisMs 切格滞回', () => {
-  it('calm 30ms / lively 20ms', () => {
-    expect(mouthHysteresisMs('calm')).toBe(30)
-    expect(mouthHysteresisMs('lively')).toBe(20)
-  })
-})
-
 describe('anchorToPercent 锚点换算', () => {
-  it('嘴部锚点换算为相对 base 的百分比', () => {
-    const pos = anchorToPercent(MOUTH_ANCHOR)
-    expect(pos.left).toBeCloseTo(((MOUTH_ANCHOR.cx - MOUTH_ANCHOR.w / 2) / PUPPET_BASE_SIZE.width) * 100)
-    expect(pos.top).toBeCloseTo(((MOUTH_ANCHOR.cy - MOUTH_ANCHOR.h / 2) / PUPPET_BASE_SIZE.height) * 100)
-    expect(pos.width).toBeCloseTo((MOUTH_ANCHOR.w / PUPPET_BASE_SIZE.width) * 100)
-    expect(pos.aspect).toBeCloseTo(MOUTH_ANCHOR.w / MOUTH_ANCHOR.h)
+  it('眼部锚点换算为相对 base 的百分比', () => {
+    const pos = anchorToPercent({ ...EYE_ANCHOR, cx: EYE_ANCHOR.leftCx })
+    expect(pos.left).toBeCloseTo(((EYE_ANCHOR.leftCx - EYE_ANCHOR.w / 2) / PUPPET_BASE_SIZE.width) * 100)
+    expect(pos.top).toBeCloseTo(((EYE_ANCHOR.cy - EYE_ANCHOR.h / 2) / PUPPET_BASE_SIZE.height) * 100)
+    expect(pos.width).toBeCloseTo((EYE_ANCHOR.w / PUPPET_BASE_SIZE.width) * 100)
+    expect(pos.aspect).toBeCloseTo(EYE_ANCHOR.w / EYE_ANCHOR.h)
   })
   it('双眼锚点都在 base 画布内且左右不重叠', () => {
     const left = anchorToPercent({ ...EYE_ANCHOR, cx: EYE_ANCHOR.leftCx })
@@ -92,13 +51,15 @@ describe('anchorToPercent 锚点换算', () => {
 })
 
 describe('spritePositionX 精灵格定位', () => {
-  it('5 格精灵首尾格定位正确', () => {
-    expect(spritePositionX(0, 5)).toBe('0%')
-    expect(spritePositionX(4, 5)).toBe('100%')
-    expect(spritePositionX(2, 5)).toBe('50%')
-  })
-  it('2 格精灵与单格兜底', () => {
+  it('2 格眼部精灵首尾格定位正确', () => {
     expect(spritePositionX(1, 2)).toBe('100%')
+    expect(spritePositionX(0, 2)).toBe('0%')
+  })
+  it('单格精灵兜底为 0%', () => {
     expect(spritePositionX(0, 1)).toBe('0%')
+  })
+  it('多格精灵中间格居中', () => {
+    expect(spritePositionX(2, 5)).toBe('50%')
+    expect(spritePositionX(4, 5)).toBe('100%')
   })
 })

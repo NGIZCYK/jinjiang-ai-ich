@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { PuppetAvatarProps } from './avatarTypes'
+import { bindMouth } from './mouthBinding'
 import {
   anchorToPercent,
   blinkInterval,
@@ -11,9 +12,13 @@ import {
 } from './puppetConfig'
 
 /**
- * 婉娘 puppet 渲染器：原脸立绘 + 眨眼与克制的状态动作。
- * 旧口型贴片与原脸并非同源，静默时会出绿边、朗读时会出现不自然的嘴形，
- * 故默认不再叠加。待获得严格配准的素材后再恢复口型同步。
+ * 婉娘 puppet 渲染器：原脸立绘 + 眨眼、下颚律动与克制的状态动作。
+ *
+ * 口型贴片已停用：raw/mouths.png 与 raw/base.png 并非同源图像，原图下唇与唇角
+ * 无法被覆盖，且色域不一致（素材偏暖粉、base 偏中性橄榄），offset-only 色彩校正
+ * 无法消除；扩大嘴部盒只会把暖色块铺得更大。证伪过程见 docs/evidence/mouth-sprite-falsification/。
+ * 讲话时的可见动效改由下颚律动承担——不做贴片合成，因此不产生接缝。
+ * 若将来恢复口型，必须从 base 同源重绘嘴部帧。
  */
 export function PuppetAvatar({
   state,
@@ -22,6 +27,8 @@ export function PuppetAvatar({
   pace = 'calm',
   alt = '婉娘文化礼宾',
   className = '',
+  mouthOpen = 0,
+  mouthSource,
   assetBase = PUPPET_ASSET_BASE,
   onReady,
   onFallback,
@@ -29,6 +36,7 @@ export function PuppetAvatar({
   const [ready, setReady] = useState(false)
   const eyeLeftRef = useRef<HTMLDivElement | null>(null)
   const eyeRightRef = useRef<HTMLDivElement | null>(null)
+  const jawRef = useRef<HTMLDivElement | null>(null)
 
   const eyeLeftPos = useMemo(() => anchorToPercent({ ...EYE_ANCHOR, cx: EYE_ANCHOR.leftCx }), [])
   const eyeRightPos = useMemo(() => anchorToPercent({ ...EYE_ANCHOR, cx: EYE_ANCHOR.rightCx }), [])
@@ -72,6 +80,11 @@ export function PuppetAvatar({
     if (!ready) return
     let timer = 0
     let cancelled = false
+    const blinkTimers = new Set<number>()
+    const later = (callback: () => void, delay: number) => {
+      const id = window.setTimeout(() => { blinkTimers.delete(id); if (!cancelled) callback() }, delay)
+      blinkTimers.add(id)
+    }
 
     const setEye = (cell: number | null) => {
       for (const el of [eyeLeftRef.current, eyeRightRef.current]) {
@@ -87,10 +100,10 @@ export function PuppetAvatar({
 
     const blinkOnce = () => {
       setEye(EYE_CELLS.indexOf('half'))
-      window.setTimeout(() => {
+      later(() => {
         if (cancelled) return
         setEye(EYE_CELLS.indexOf('closed'))
-        window.setTimeout(() => {
+        later(() => {
           if (!cancelled) setEye(null)
         }, 90)
       }, 60)
@@ -105,12 +118,35 @@ export function PuppetAvatar({
         schedule()
       }, min + Math.random() * (max - min))
     }
+    setEye(null)
+    if (state === 'paused' || state === 'error') return
     schedule()
     return () => {
       cancelled = true
       window.clearTimeout(timer)
+      blinkTimers.forEach((id) => window.clearTimeout(id))
+      setEye(null)
     }
   }, [ready, state, pace])
+
+  // Subscribe directly to speech frames; no React render is needed per frame.
+  useEffect(() => {
+    const el = jawRef.current
+    if (!el) return
+    if (mouthSource) return bindMouth(el, mouthSource)
+  }, [mouthSource, ready])
+
+  useEffect(() => {
+    if (mouthSource || !jawRef.current) return
+    jawRef.current.style.setProperty('--jaw-open', Math.max(0, Math.min(1, Number.isFinite(mouthOpen) ? mouthOpen : 0)).toFixed(3))
+  }, [mouthSource, mouthOpen, ready])
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const reduce = () => { if (media.matches) { setReady(false); onFallback?.() } }
+    media.addEventListener('change', reduce)
+    return () => media.removeEventListener('change', reduce)
+  }, [onFallback])
 
   if (!ready) return null
 
@@ -126,38 +162,42 @@ export function PuppetAvatar({
 
       <div className="puppet-figure">
         <div className="puppet-canvas">
-          <img
-            src={`${assetBase}/base.webp`}
-            alt={alt}
-            className="puppet-base"
-            draggable={false}
-          />
-          <div
-            ref={eyeLeftRef}
-            className="puppet-part puppet-eye"
-            aria-hidden="true"
-            style={{
-              left: `${eyeLeftPos.left}%`,
-              top: `${eyeLeftPos.top}%`,
-              width: `${eyeLeftPos.width}%`,
-              aspectRatio: `${EYE_ANCHOR.w} / ${EYE_ANCHOR.h}`,
-              backgroundImage: `url(${assetBase}/eyes.webp)`,
-              backgroundSize: `${EYE_CELL_COUNT * 100}% 100%`,
-            }}
-          />
-          <div
-            ref={eyeRightRef}
-            className="puppet-part puppet-eye puppet-eye-right"
-            aria-hidden="true"
-            style={{
-              left: `${eyeRightPos.left}%`,
-              top: `${eyeRightPos.top}%`,
-              width: `${eyeRightPos.width}%`,
-              aspectRatio: `${EYE_ANCHOR.w} / ${EYE_ANCHOR.h}`,
-              backgroundImage: `url(${assetBase}/eyes.webp)`,
-              backgroundSize: `${EYE_CELL_COUNT * 100}% 100%`,
-            }}
-          />
+          {/* 下颚层：独立于 puppet-canvas 的呼吸动画与 puppet-figure 的点头动画，
+              只承担讲话时的下颌律动，避免多个 animation 争抢同一 transform。 */}
+          <div ref={jawRef} className="puppet-jaw">
+            <img
+              src={`${assetBase}/base.webp`}
+              alt={alt}
+              className="puppet-base"
+              draggable={false}
+            />
+            <div
+              ref={eyeLeftRef}
+              className="puppet-part puppet-eye"
+              aria-hidden="true"
+              style={{
+                left: `${eyeLeftPos.left}%`,
+                top: `${eyeLeftPos.top}%`,
+                width: `${eyeLeftPos.width}%`,
+                aspectRatio: `${EYE_ANCHOR.w} / ${EYE_ANCHOR.h}`,
+                backgroundImage: `url(${assetBase}/eyes.webp)`,
+                backgroundSize: `${EYE_CELL_COUNT * 100}% 100%`,
+              }}
+            />
+            <div
+              ref={eyeRightRef}
+              className="puppet-part puppet-eye puppet-eye-right"
+              aria-hidden="true"
+              style={{
+                left: `${eyeRightPos.left}%`,
+                top: `${eyeRightPos.top}%`,
+                width: `${eyeRightPos.width}%`,
+                aspectRatio: `${EYE_ANCHOR.w} / ${EYE_ANCHOR.h}`,
+                backgroundImage: `url(${assetBase}/eyes.webp)`,
+                backgroundSize: `${EYE_CELL_COUNT * 100}% 100%`,
+              }}
+            />
+          </div>
         </div>
       </div>
 

@@ -74,6 +74,13 @@ export interface AvatarStageProps {
   name?: string
   className?: string
   fallbackImage?: string
+  /**
+   * 开口度 0~1，由 useSpeechQueue 的 rAF 循环产出。
+   * 当前用途：驱动 puppet 的下颚律动（AvatarStage → PuppetAvatar，经 CSS 变量，
+   * 不触发 React 重渲染）；若将来接入真实 Live2D 运行时，本值应透传给其 setParameters。
+   */
+  /** Direct frame subscription; numeric mouthOpen remains the compatibility fallback. */
+  mouthSource?: MouthSource
   mouthOpen?: number
   mouthForm?: number
   ttsMode?: 'viseme' | 'browser' | 'unavailable'
@@ -91,8 +98,6 @@ export interface StaticAvatarProps {
   imageSrc?: string
   alt?: string
   className?: string
-  mouthOpen?: number
-  mouthForm?: number
   ttsMode?: 'viseme' | 'browser' | 'unavailable'
 }
 
@@ -103,6 +108,14 @@ export interface PuppetAvatarProps {
   pace?: AvatarPace
   alt?: string
   className?: string
+  /**
+   * 开口度 0~1，驱动下颚律动。
+   * 写入 puppet-jaw 元素的 --jaw-open 变量（0~1），形变在 CSS 内完成；
+   * 故意不走 React state，避免 60fps 重渲染。
+   */
+  /** Direct frame subscription; numeric mouthOpen remains the compatibility fallback. */
+  mouthSource?: MouthSource
+  mouthOpen?: number
   /** 部件资源目录，默认 /avatar/wanniang-puppet */
   assetBase?: string
   /** 全部部件载入完成时通知舞台移除静态兜底层。 */

@@ -20,6 +20,7 @@ export function AvatarStage({
   className = '',
   fallbackImage,
   mouthOpen = 0,
+  mouthSource,
   mouthForm = 0,
   ttsMode = 'browser',
   useLive2D = false,
@@ -71,8 +72,6 @@ export function AvatarStage({
           gesture={gesture}
           imageSrc={fallbackImage}
           alt={name}
-          mouthOpen={mouthOpen}
-          mouthForm={mouthForm}
           ttsMode={ttsMode}
         />
       )}
@@ -83,6 +82,8 @@ export function AvatarStage({
           gesture={gesture}
           pace={pace}
           alt={name}
+          mouthOpen={mouthOpen}
+          mouthSource={mouthSource}
           onReady={handlePuppetReady}
           onFallback={handlePuppetFallback}
         />

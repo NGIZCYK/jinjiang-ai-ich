@@ -1,0 +1,203 @@
+{
+  "crop": [
+    400,
+    350,
+    640,
+    540
+  ],
+  "scale": 2,
+  "combos": [
+    {
+      "label": "A_current",
+      "state": "speak_aa",
+      "file": "A_current__speak_aa.png",
+      "box": {
+        "cx": 512,
+        "cy": 432,
+        "w": 142,
+        "h": 96
+      },
+      "keyout": [
+        42.0,
+        70.0
+      ],
+      "match": 0.85
+    },
+    {
+      "label": "A_current",
+      "state": "warm",
+      "file": "A_current__warm.png",
+      "box": {
+        "cx": 512,
+        "cy": 432,
+        "w": 142,
+        "h": 96
+      },
+      "keyout": [
+        42.0,
+        70.0
+      ],
+      "match": 0.85
+    },
+    {
+      "label": "B_tighter_key",
+      "state": "speak_aa",
+      "file": "B_tighter_key__speak_aa.png",
+      "box": {
+        "cx": 512,
+        "cy": 432,
+        "w": 142,
+        "h": 96
+      },
+      "keyout": [
+        28.0,
+        56.0
+      ],
+      "match": 0.85
+    },
+    {
+      "label": "B_tighter_key",
+      "state": "warm",
+      "file": "B_tighter_key__warm.png",
+      "box": {
+        "cx": 512,
+        "cy": 432,
+        "w": 142,
+        "h": 96
+      },
+      "keyout": [
+        28.0,
+        56.0
+      ],
+      "match": 0.85
+    },
+    {
+      "label": "C_match100",
+      "state": "speak_aa",
+      "file": "C_match100__speak_aa.png",
+      "box": {
+        "cx": 512,
+        "cy": 432,
+        "w": 142,
+        "h": 96
+      },
+      "keyout": [
+        42.0,
+        70.0
+      ],
+      "match": 1.0
+    },
+    {
+      "label": "C_match100",
+      "state": "warm",
+      "file": "C_match100__warm.png",
+      "box": {
+        "cx": 512,
+        "cy": 432,
+        "w": 142,
+        "h": 96
+      },
+      "keyout": [
+        42.0,
+        70.0
+      ],
+      "match": 1.0
+    },
+    {
+      "label": "D_wider",
+      "state": "speak_aa",
+      "file": "D_wider__speak_aa.png",
+      "box": {
+        "cx": 512,
+        "cy": 432,
+        "w": 210,
+        "h": 96
+      },
+      "keyout": [
+        28.0,
+        56.0
+      ],
+      "match": 1.0
+    },
+    {
+      "label": "D_wider",
+      "state": "warm",
+      "file": "D_wider__warm.png",
+      "box": {
+        "cx": 512,
+        "cy": 432,
+        "w": 210,
+        "h": 96
+      },
+      "keyout": [
+        28.0,
+        56.0
+      ],
+      "match": 1.0
+    },
+    {
+      "label": "E_wider_taller",
+      "state": "speak_aa",
+      "file": "E_wider_taller__speak_aa.png",
+      "box": {
+        "cx": 512,
+        "cy": 440,
+        "w": 230,
+        "h": 130
+      },
+      "keyout": [
+        28.0,
+        56.0
+      ],
+      "match": 1.0
+    },
+    {
+      "label": "E_wider_taller",
+      "state": "warm",
+      "file": "E_wider_taller__warm.png",
+      "box": {
+        "cx": 512,
+        "cy": 440,
+        "w": 230,
+        "h": 130
+      },
+      "keyout": [
+        28.0,
+        56.0
+      ],
+      "match": 1.0
+    },
+    {
+      "label": "F_taller_origkey",
+      "state": "speak_aa",
+      "file": "F_taller_origkey__speak_aa.png",
+      "box": {
+        "cx": 512,
+        "cy": 440,
+        "w": 230,
+        "h": 130
+      },
+      "keyout": [
+        42.0,
+        70.0
+      ],
+      "match": 1.0
+    },
+    {
+      "label": "F_taller_origkey",
+      "state": "warm",
+      "file": "F_taller_origkey__warm.png",
+      "box": {
+        "cx": 512,
+        "cy": 440,
+        "w": 230,
+        "h": 130
+      },
+      "keyout": [
+        42.0,
+        70.0
+      ],
+      "match": 1.0
+    }
+  ]
+}

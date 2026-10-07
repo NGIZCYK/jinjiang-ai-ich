@@ -3,6 +3,7 @@ import type { MouthSource } from '../components/avatar/avatarTypes'
 import { BrowserTtsProvider } from '../lib/tts/browserTts'
 import { detectTtsMode, getTtsProvider } from '../lib/tts/ttsFactory'
 import type { SpeechPlayback, SpeechRequest, TtsProvider } from '../lib/tts/types'
+import { logVoiceRequest, voiceErrorType } from '../lib/serviceDiagnostics'
 import {
   getApproximateFallbackViseme,
   getRestViseme,
@@ -92,7 +93,9 @@ export function useSpeechQueue({
   const mouthSource = useMemo<MouthSource>(() => ({ subscribe: subscribeMouth }), [subscribeMouth])
 
   useEffect(() => {
-    void detectTtsMode().then(setTtsMode)
+    let cancelled = false
+    void detectTtsMode().then((mode) => { if (!cancelled) setTtsMode(mode) })
+    return () => { cancelled = true }
   }, [])
 
   useEffect(() => {
@@ -189,9 +192,20 @@ export function useSpeechQueue({
 
       let playback: SpeechPlayback | null = null
       let didStart = false
+      const startedAt = performance.now()
+      let outcome: 'success' | 'cancelled' | 'error' = 'success'
+      let errorType: string | undefined
 
       try {
-        playback = await activeProvider.prepare(nextRequest, controller.signal)
+        try {
+          playback = await activeProvider.prepare(nextRequest, controller.signal)
+        } catch (error) {
+          if (controller.signal.aborted || activeProvider.mode !== 'viseme') throw error
+          logVoiceRequest(nextRequest.id, activeProvider.mode, startedAt, 'error', voiceErrorType(error))
+          activeProvider = defaultBrowserTtsProvider
+          setTtsMode(activeProvider.mode)
+          playback = await activeProvider.prepare(nextRequest, controller.signal)
+        }
         if (controller.signal.aborted || runIdRef.current !== runId) {
           playback.stop()
           continue
@@ -205,9 +219,14 @@ export function useSpeechQueue({
           onSentenceStart?.(nextRequest)
           startMouthAnimation(playback!, controller, runId)
         })
-      } catch {
+      } catch (error) {
+        outcome = controller.signal.aborted ? 'cancelled' : 'error'
+        errorType = voiceErrorType(error)
         // 单句合成失败时继续后续队列，页面文本回答不受影响。
       } finally {
+        playback?.stop()
+        if (controller.signal.aborted || runIdRef.current !== runId) outcome = 'cancelled'
+        logVoiceRequest(nextRequest.id, activeProvider.mode, startedAt, outcome, errorType)
         if (runIdRef.current === runId) stopAnimation()
         if (currentAbortRef.current === controller) currentAbortRef.current = null
         if (currentPlaybackRef.current === playback) currentPlaybackRef.current = null
