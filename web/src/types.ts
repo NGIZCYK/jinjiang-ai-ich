@@ -23,6 +23,7 @@ export interface ChatMessage {
   language?: 'zh' | 'en'
   sentiment?: 'positive' | 'neutral' | 'negative'
   sources?: GuideSource[]
+  answerSource?: 'deepseek' | 'local' | 'deepseek-partial'
   action?: GuideAction
   createdAt: number
 }

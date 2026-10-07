@@ -1,6 +1,7 @@
 import { GUIDE_API_VERSION } from '../../../supabase/functions/_shared/guideContract.ts'
 export interface GuideCapabilities {
   apiVersion: string
+  serviceRevision?: string
   /** A version notice alone must not disable a compatible online protocol. */
   stale: boolean
   available: boolean
@@ -21,6 +22,7 @@ export function normalizeCapabilities(value: unknown): GuideCapabilities {
   const modelConfigured = data.avatar?.modelConfigured === true
   return {
     apiVersion, stale: apiVersion !== GUIDE_API_VERSION, available: true,
+    ...(typeof data.serviceRevision === 'string' ? { serviceRevision: data.serviceRevision } : {}),
     chat: { provider: data.chat.provider, streaming: data.chat.streaming === true },
     tts: { provider: data.tts?.provider === 'azure' ? 'azure' : 'browser', viseme: data.tts?.viseme === true },
     avatar: { mode: data.avatar?.mode === 'live2d' && modelConfigured ? 'live2d' : 'static', modelConfigured },

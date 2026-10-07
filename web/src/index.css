@@ -3400,7 +3400,7 @@ textarea:focus-visible {
 }
 
 .guide-message-tools {
-  @apply mt-1.5 flex items-center gap-2 pl-1;
+  @apply mt-1.5 flex flex-wrap items-center gap-2 pl-1;
 }
 
 .guide-message-tools button {
@@ -4034,6 +4034,11 @@ textarea:focus-visible {
 .guide-assistant-message {
   width: min(82%, 48rem);
   max-width: 100%;
+}
+
+.guide-answer-source {
+  color: var(--muted, #68756d);
+  font-size: 0.75rem;
 }
 
 .guide-speaker {

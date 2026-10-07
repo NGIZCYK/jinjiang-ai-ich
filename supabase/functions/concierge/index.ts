@@ -1,7 +1,7 @@
 import { parseOperatingBrief } from '../_shared/operatingBrief.ts'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
-import { GUIDE_API_VERSION as API_VERSION } from '../_shared/guideContract.ts'
+import { GUIDE_API_VERSION as API_VERSION, GUIDE_SERVICE_REVISION } from '../_shared/guideContract.ts'
 import { buildGuideKnowledge } from '../_shared/guideKnowledge.ts'
 import { allowedOrigins, corsHeaders } from '../_shared/origins.ts'
 const origins=allowedOrigins(Deno.env.get('ALLOWED_ORIGINS'))
@@ -17,7 +17,7 @@ async function handleConciergeRequest(req: Request): Promise<Response> {
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors})
  const path=new URL(req.url).pathname.split('/concierge/')[1]||''
  const apiKey=Deno.env.get('DEEPSEEK_API_KEY'), azureKey=Deno.env.get('AZURE_SPEECH_KEY'),region=Deno.env.get('AZURE_SPEECH_REGION')
- if(path==='capabilities'&&req.method==='GET')return json({apiVersion:API_VERSION,chat:{provider:apiKey?'deepseek':'demo',streaming:true},tts:{provider:azureKey&&region?'azure':'browser',viseme:!!(azureKey&&region)},avatar:{mode:'static',modelConfigured:false}},200,cors)
+ if(path==='capabilities'&&req.method==='GET')return json({apiVersion:API_VERSION,serviceRevision:GUIDE_SERVICE_REVISION,chat:{provider:apiKey?'deepseek':'demo',streaming:true},tts:{provider:azureKey&&region?'azure':'browser',viseme:!!(azureKey&&region)},avatar:{mode:'static',modelConfigured:false}},200,cors)
  if(path==='chat/status')return json({apiVersion:API_VERSION,provider:apiKey?'deepseek':'demo',streaming:true},200,cors)
  if(path==='tts/status')return json({provider:azureKey&&region?'azure':'browser'},200,cors)
  const token=req.headers.get('Authorization')||''

@@ -1,4 +1,5 @@
 export const GUIDE_API_VERSION = '2026.09.19-guide-v3'
+export const GUIDE_SERVICE_REVISION = '2026.10.07-concierge-r1'
 export interface ICHItem {
   id: string; title: string; titleEn?: string; summary: string; summaryEn?: string
   body: string; bodyEn?: string; tags: string[]; sources: string[]; sourcesEn?: string[]; searchTerms?: string[]

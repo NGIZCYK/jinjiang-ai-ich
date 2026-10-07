@@ -1,4 +1,4 @@
-export const DEMO_BACKEND = 'https://uxfxhqdfrzkafekrbzcf.supabase.co'
+export const DEMO_BACKEND = 'https://jhosvgldwgndpudwentv.supabase.co'
 /** Public demo is never built against the formal project, even if hosting env overrides the local file. */
 export function validateDemoBuild(env: Record<string, string | undefined>) {
   if (env.VITE_SUPABASE_URL?.replace(/\/$/, '') !== DEMO_BACKEND) throw new Error('Demo build requires the isolated demo backend.')

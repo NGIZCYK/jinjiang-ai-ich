@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-04T19:07:51.092311",
+  "generatedAt": "2026-10-07T10:44:25.548223",
   "source": "ENT207 课程匿名合成样本；不含个人身份信息，非锦江真实经营数据。",
   "method": "pandas 特征整理；scikit-learn KMeans(k=3) 客群分层；收入与 ROI 为可调经营假设。",
   "sampleSize": 1200,

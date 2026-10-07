@@ -166,6 +166,7 @@ export async function getChatMode(): Promise<ChatMode> {
 }
 
 export interface WanNiangResult {
+  answerSource: 'deepseek' | 'local' | 'deepseek-partial'
   content: string
   mode: 'deepseek' | 'demo' | 'fallback'
   sentiment: 'positive' | 'neutral' | 'negative'
@@ -223,6 +224,7 @@ function getLocalFallbackReply(
   return {
     content,
     mode: forcedFallback ? ('fallback' as const) : ('demo' as const),
+    answerSource: 'local',
     sentiment: sentimentOf(question),
     sources: knowledge.sources,
     action,
@@ -259,6 +261,7 @@ export async function askWanNiang(
         return {
           content: data.content,
           mode: 'deepseek' as const,
+          answerSource: 'deepseek',
           sentiment: sentimentOf(question),
           sources: parseGuideSources(data.sources),
           action,
@@ -328,6 +331,7 @@ export async function askWanNiangStream(
           const result: WanNiangResult = {
             content,
             mode: 'deepseek',
+            answerSource: 'deepseek',
             sentiment: sentimentOf(question),
             sources: parseGuideSources(data.sources),
             action,
@@ -406,6 +410,7 @@ export async function askWanNiangStream(
         const result: WanNiangResult = {
           content: accumulatedText,
           mode: 'deepseek',
+          answerSource: 'deepseek',
           sentiment: sentimentOf(question),
           sources: serverSources,
           action,
@@ -424,6 +429,7 @@ export async function askWanNiangStream(
         const result: WanNiangResult = {
           content: finalContent,
           mode: 'fallback',
+          answerSource: 'deepseek-partial',
           sentiment: sentimentOf(question),
           sources: serverSources,
           action,

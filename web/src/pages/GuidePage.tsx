@@ -301,6 +301,7 @@ export function GuidePage() {
     const segmenter = new SentenceSegmenter({ language: requestLanguage })
     const streamSpeechId = `stream_${Date.now()}`
     let streamSentenceIdx = 0
+    let onlineResponse = false
 
     try {
       const result = await askWanNiangStream(
@@ -309,6 +310,7 @@ export function GuidePage() {
         requestLanguage,
         {
           onMeta: () => {
+            onlineResponse = true
             if (!activeRef.current || controller.signal.aborted) return
             setReplyMode('deepseek')
             if (activeRef.current && !isKnownVersionMismatch(capabilities)) setServiceNotice(null)
@@ -361,6 +363,7 @@ export function GuidePage() {
         language: requestLanguage,
         sentiment: result.sentiment,
         sources: result.sources,
+        answerSource: result.answerSource,
         action: result.action,
       })
       setStreamingText(null)
@@ -390,6 +393,7 @@ export function GuidePage() {
             content: partial,
             language: requestLanguage,
             sentiment: 'neutral',
+            answerSource: onlineResponse ? 'deepseek-partial' : 'local',
           })
         }
       } else {
@@ -634,6 +638,12 @@ export function GuidePage() {
                   </div>
                   {isAssistant && (
                     <div className="guide-message-tools">
+                      {m.answerSource && <span className="guide-answer-source">
+                        {m.answerSource === 'deepseek' ? copy.deepseek
+                          : m.answerSource === 'deepseek-partial'
+                            ? (language === 'zh' ? 'DeepSeek 部分回答 · 已中断' : 'Partial DeepSeek answer · Interrupted')
+                            : copy.demo}
+                      </span>}
                       <button
                         type="button"
                         onClick={() =>

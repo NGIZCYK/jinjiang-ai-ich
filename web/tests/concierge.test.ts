@@ -5,7 +5,7 @@ import { runInNewContext } from 'node:vm'
 import ts from 'typescript'
 import { parseOperatingBrief } from '../../supabase/functions/_shared/operatingBrief'
 import { readGuideStream } from '../src/lib/guideStream'
-import { GUIDE_API_VERSION } from '../../supabase/functions/_shared/guideContract'
+import { GUIDE_API_VERSION, GUIDE_SERVICE_REVISION } from '../../supabase/functions/_shared/guideContract'
 import { buildGuideKnowledge } from '../../supabase/functions/_shared/guideKnowledge'
 import { allowedOrigins, corsHeaders } from '../../supabase/functions/_shared/origins'
 
@@ -42,7 +42,7 @@ beforeEach(() => {
   runInNewContext(compiled, {
     exports: {}, require: (name: string) => {
       if (name.includes('operatingBrief')) return { parseOperatingBrief }
-      if (name.includes('guideContract')) return { GUIDE_API_VERSION }
+      if (name.includes('guideContract')) return { GUIDE_API_VERSION, GUIDE_SERVICE_REVISION }
       if (name.includes('guideKnowledge')) return { buildGuideKnowledge }
       if (name.includes('origins')) return { allowedOrigins, corsHeaders }
       return { createClient: () => client }

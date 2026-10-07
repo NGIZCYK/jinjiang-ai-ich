@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, afterAll, describe, expect, it, vi } from 'vitest'
 import { readGuideStream } from '../src/lib/guideStream'
 import { DEMO_ORIGIN } from '../../supabase/functions/_shared/origins'
-import { GUIDE_API_VERSION } from '../../supabase/functions/_shared/guideContract'
+import { GUIDE_API_VERSION, GUIDE_SERVICE_REVISION } from '../../supabase/functions/_shared/guideContract'
 const fake = vi.hoisted(() => ({ signedIn: true, role: 'ops', quota: false, rpc: vi.fn() }))
 vi.mock('@supabase/supabase-js', () => ({createClient: () => ({
   auth:{getUser:async () => ({data:{user:fake.signedIn?{id:'test-user'}:null},error:null})},
@@ -32,7 +32,7 @@ describe('Edge Function with simulated auth, database and provider (no cloud req
     expect(preflight.status).toBe(204);expect(preflight.headers.get('Access-Control-Allow-Origin')).toBe(DEMO_ORIGIN)
     fake.signedIn=false
     const caps=await handler(new Request(url,{headers:{Origin:DEMO_ORIGIN}}))
-    expect((await caps.json()).apiVersion).toBe(GUIDE_API_VERSION)
+    expect(await caps.json()).toMatchObject({ apiVersion: GUIDE_API_VERSION, serviceRevision: GUIDE_SERVICE_REVISION })
     expect((await handler(new Request(url,{headers:{Origin:DEMO_ORIGIN+'.attacker.test'}}))).status).toBe(403)
     expect(fake.rpc).not.toHaveBeenCalled()
   })

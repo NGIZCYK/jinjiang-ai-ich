@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { resolve, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { DEMO_BACKEND } from './check-live-site.mjs'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const dist = join(root, 'web', 'dist')
 function files(dir) { return readdirSync(dir, {withFileTypes:true}).flatMap(e => e.isDirectory() ? files(join(dir,e.name)) : [join(dir,e.name)]) }
@@ -12,7 +13,7 @@ const privateValues = env.split(/\r?\n/).flatMap(line => {
   return value ? [value] : []
 })
 const checks = {
-  isolatedDemoBackend: text.includes('https://uxfxhqdfrzkafekrbzcf.supabase.co') && !text.includes('https://itfpnfaieurelroxbrvy.supabase.co'),
+  isolatedDemoBackend: text.includes(DEMO_BACKEND) && ['uxfxhqdfrzkafekrbzcf', 'itfpnfaieurelroxbrvy'].every(ref => !text.includes(`https://${ref}.supabase.co`)),
   operationsCredentialsAbsent: privateValues.every(value => !text.includes(value)) && !/VITE_DEMO_OPS_(PASSWORD|EMAIL)/.test(text),
   materialInterfaceIncluded: ['silk-study','silk-view-nav','silk-light-options'].every(marker => text.includes(marker)),
   developmentAssetsAbsent: !existsSync(join(dist,'avatar','wanniang-puppet','raw')) && !existsSync(join(dist,'avatar','wanniang-puppet','preview')),

@@ -5,6 +5,7 @@
 python -m pip install -r ../analytics/requirements.txt &&
 python -m unittest discover -s ../analytics -p 'test_*.py' &&
 python ../analytics/analyze.py &&
+npm run test &&
 env -u VITE_SUPABASE_URL -u VITE_SUPABASE_PUBLISHABLE_KEY -u VITE_SHOW_DEMO_ACCOUNTS -u VITE_DEMO_GUEST_EMAIL -u VITE_DEMO_GUEST_PASSWORD -u VITE_DEMO_OPS_EMAIL -u VITE_DEMO_OPS_PASSWORD npm run build:demo &&
 node ../scripts/check-demo-build.mjs
 """
