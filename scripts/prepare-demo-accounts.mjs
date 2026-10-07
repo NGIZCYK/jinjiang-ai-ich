@@ -1,7 +1,6 @@
 // Initial setup of the explicitly authorized replacement demo project.
-// Service key enters via stdin only. Private operator credentials stay in ignored cache.
+// Service key enters via stdin only. Both account presets are public course-demo credentials.
 import { createRequire } from 'node:module'
-import { randomBytes } from 'node:crypto'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { DEMO_BACKEND } from './check-live-site.mjs'
@@ -23,7 +22,8 @@ async function main() {
   const envValue = name => demoEnv.match(new RegExp(`^${name}=(.+)$`, 'm'))?.[1].trim()
   const publicKey = envValue('VITE_SUPABASE_PUBLISHABLE_KEY')
   const guestEmail = envValue('VITE_DEMO_GUEST_EMAIL'), guestPassword = envValue('VITE_DEMO_GUEST_PASSWORD')
-  requireOk(publicKey && guestEmail && guestPassword)
+  const opsEmail = envValue('VITE_DEMO_OPS_EMAIL'), opsPassword = envValue('VITE_DEMO_OPS_PASSWORD')
+  requireOk(publicKey && guestEmail && guestPassword && opsEmail && opsPassword)
   let saved
   try { saved = JSON.parse(await readFile(output, 'utf8')) }
   catch (error) { if (error.code !== 'ENOENT') throw error }
@@ -33,7 +33,7 @@ async function main() {
   await mkdir(resolve(ROOT, '.cache/migration'), { recursive: true })
   const expected = [
     { role: 'guest', email: guestEmail, password: guestPassword, name: '公开演示住客' },
-    { role: 'ops', email: 'ops-demo@hotel.local', password: `Ops!${randomBytes(24).toString('hex')}`, name: '演示运营' },
+    { role: 'ops', email: opsEmail, password: opsPassword, name: '演示运营' },
   ]
   for (let i = saved.accounts.length; i < expected.length; i++) {
     const account = expected[i]
@@ -77,7 +77,7 @@ async function main() {
   localEnv = localEnv.replace(/^DEMO_OPS_(?:EMAIL|PASSWORD)=.*\r?\n?/gm, '').trimEnd()
   await writeFile(localEnvPath, `${localEnv}\nDEMO_OPS_EMAIL=${ops.email}\nDEMO_OPS_PASSWORD=${ops.password}\n`, { mode: 0o600 })
   await writeFile(resolve(ROOT, '.cache/migration/运营登录凭据.md'),
-    `# 新演示项目运营登录\n\n仅适用于 ${TARGET_REF}。旧密码不能登录本项目。\n\n官网：https://idyllic-bubblegum-1f5a5c.netlify.app/auth\n\n邮箱：${ops.email}\n\n密码：${ops.password}\n\n运营账号手工登录。此文件已被 Git 忽略，不得公开。\n`, { mode: 0o600 })
+    `# 新演示项目运营登录\n\n仅适用于 ${TARGET_REF}。旧密码不能登录本项目。\n\n官网：https://idyllic-bubblegum-1f5a5c.netlify.app/auth\n\n邮箱：${ops.email}\n\n密码：${ops.password}\n\n用户已授权将此运营演示账号放回官网课程演示卡片，点击可填入。服务端密钥仍不公开。此本地文件被 Git 忽略。\n`, { mode: 0o600 })
   const report = { projectRef: TARGET_REF, rebuiltWithoutOldData: true, accounts: 2, slots: rows[0].demo_slots,
     loginAndRolesVerified: true, operatorPasswordRegenerated: true, serverKeyStored: false, checkedAt: new Date().toISOString() }
   await writeFile(resolve(ROOT, '.cache/migration/demo-setup-report.json'), JSON.stringify(report, null, 2))

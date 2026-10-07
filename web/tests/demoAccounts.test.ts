@@ -15,15 +15,17 @@ describe('public demo-account configuration', () => {
     expect(readDemoAccounts({ ...complete, VITE_SHOW_DEMO_ACCOUNTS: undefined })).toEqual([])
   })
 
-  it('requires only complete guest access', () => {
-    expect(readDemoAccounts({ ...complete, VITE_DEMO_OPS_PASSWORD: '' })).toHaveLength(1)
+  it('requires both complete demo accounts', () => {
+    expect(readDemoAccounts({ ...complete, VITE_DEMO_OPS_PASSWORD: '' })).toEqual([])
+    expect(readDemoAccounts({ ...complete, VITE_DEMO_OPS_EMAIL: ' ' })).toEqual([])
     expect(readDemoAccounts({ ...complete, VITE_DEMO_GUEST_EMAIL: '  ' })).toEqual([])
   })
 
-  it('never exposes an operator even if stale public credentials are configured', () => {
+  it('provides one guest and one operator with their own destinations', () => {
     const accounts = readDemoAccounts(complete)
     expect(accounts.map(({ role, email, landingPath }) => ({ role, email, landingPath }))).toEqual([
       { role: 'guest', email: 'guest@example.test', landingPath: '/my' },
+      { role: 'ops', email: 'ops@example.test', landingPath: '/operations' },
     ])
   })
 

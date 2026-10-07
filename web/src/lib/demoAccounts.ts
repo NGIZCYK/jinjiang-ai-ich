@@ -23,7 +23,9 @@ export function readDemoAccounts(env: DemoEnv): readonly DemoAccount[] {
 
   const guestEmail = textValue(env.VITE_DEMO_GUEST_EMAIL)
   const guestPassword = textValue(env.VITE_DEMO_GUEST_PASSWORD)
-  if (!guestEmail || !guestPassword) return []
+  const opsEmail = textValue(env.VITE_DEMO_OPS_EMAIL)
+  const opsPassword = textValue(env.VITE_DEMO_OPS_PASSWORD)
+  if (!guestEmail || !guestPassword || !opsEmail || !opsPassword) return []
 
   return [
     {
@@ -37,7 +39,17 @@ export function readDemoAccounts(env: DemoEnv): readonly DemoAccount[] {
       descriptionZh: '保存探索卡、提交体验意向并查看处理结果',
       descriptionEn: 'Save an exploration card, submit an interest and view its status',
     },
-
+    {
+      id: 'ops',
+      role: 'ops',
+      email: opsEmail,
+      password: opsPassword,
+      landingPath: '/operations',
+      labelZh: '运营演示',
+      labelEn: 'Operations demo',
+      descriptionZh: '处理演示意向并查看运营数据',
+      descriptionEn: 'Process demonstration requests and review operations data',
+    },
   ]
 }
 

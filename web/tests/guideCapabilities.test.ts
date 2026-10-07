@@ -26,14 +26,15 @@ describe('capability and release boundaries', () => {
   it.each([null, {}, {chat:{provider:'made-up'}}, 'HTML'])('falls back on unusable capabilities %j', value => {
     expect(capabilityChatMode(normalizeCapabilities(value))).toBe('fallback')
   })
-  it('blocks formal backend and privileged credentials in a demo build', () => {
+  it('requires two demo accounts while blocking other backends', () => {
     expect(DEMO_BACKEND).toBe('https://jhosvgldwgndpudwentv.supabase.co')
     expect(CHECK_BACKEND).toBe(DEMO_BACKEND)
-    const env = {VITE_SUPABASE_URL:DEMO_BACKEND, VITE_SHOW_DEMO_ACCOUNTS:'true',VITE_DEMO_GUEST_EMAIL:'guest@example.test',VITE_DEMO_GUEST_PASSWORD:'public-test'}
+    const env = {VITE_SUPABASE_URL:DEMO_BACKEND, VITE_SHOW_DEMO_ACCOUNTS:'true',VITE_DEMO_GUEST_EMAIL:'guest@example.test',VITE_DEMO_GUEST_PASSWORD:'public-test',VITE_DEMO_OPS_EMAIL:'ops@example.test',VITE_DEMO_OPS_PASSWORD:'ops-public-test'}
     expect(() => validateDemoBuild(env)).not.toThrow()
     expect(() => validateDemoBuild({...env,VITE_SUPABASE_URL:'https://formal.example.test'})).toThrow()
     expect(() => validateDemoBuild({...env,VITE_SUPABASE_URL:'https://uxfxhqdfrzkafekrbzcf.supabase.co'})).toThrow()
     expect(() => validateDemoBuild({...env,VITE_SUPABASE_URL:'https://itfpnfaieurelroxbrvy.supabase.co'})).toThrow()
-    expect(() => validateDemoBuild({...env,VITE_DEMO_OPS_PASSWORD:'private-test'})).toThrow()
+    expect(() => validateDemoBuild({...env,VITE_DEMO_OPS_PASSWORD:''})).toThrow()
+    expect(() => validateDemoBuild({...env,VITE_DEMO_OPS_EMAIL:''})).toThrow()
   })
 })

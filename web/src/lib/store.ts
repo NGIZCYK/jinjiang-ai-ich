@@ -16,7 +16,12 @@ interface AppState {
 }
 let started = false
 let authVersion = 0
-async function loadIdentity(id?: string) {
+let pendingIdentity: { id?: string; promise: Promise<void> } | null = null
+function loadIdentity(id?: string) {
+ if (pendingIdentity && pendingIdentity.id === id) return pendingIdentity.promise
+ const pending = { id, promise: Promise.resolve() }
+ pendingIdentity = pending
+ pending.promise = (async () => {
  const version = ++authVersion
  useAppStore.setState({ user:null, ready:false, messages:[], guideSignals:loadGuideSignals(),contents:[],authError:'' })
  if (!id || !cloud) { useAppStore.setState({ ready:true }); return }
@@ -27,6 +32,8 @@ async function loadIdentity(id?: string) {
  if (version !== authVersion) return
  useAppStore.setState({ ready:true, batch:data.batch_id, user:{ id:data.id,name:data.name,role:data.role,email:session.session?.user.email || '' } })
  if (data.role==='ops') void useAppStore.getState().refreshContents().catch(() => {})
+ })().finally(() => { if (pendingIdentity === pending) pendingIdentity = null })
+ return pending.promise
 }
 export const useAppStore = create<AppState>((set,get) => ({
  user:null,ready:!cloud,authError:'',batch:'demo',messages:[],guideSignals:loadGuideSignals(),contents:[],

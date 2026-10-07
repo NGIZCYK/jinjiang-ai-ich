@@ -58,7 +58,7 @@ where id = '<AUTH_USER_UUID>';
 
 仓库根目录的 `netlify.toml` 设置 `web` 为构建目录、`dist` 为发布目录（解析为 `web/dist`），并配置 SPA 回退。构建按以下顺序执行，任一步失败都阻止发布：安装 Python 依赖 → 4 项 Python 测试 → 生成统计 JSON → `npm run test` → 清除旧托管变量覆盖后执行 `build:demo` → `scripts/check-demo-build.mjs` 产物检查。Python 版本为 3.14。
 
-官网为 https://idyllic-bubblegum-1f5a5c.netlify.app 。静态发布已经成功，不能据此认定后台模型、保存和账号隔离已验收。Supabase Auth Site URL 应设置为该官网，重定向地址只保留实际需要的官网及本地地址。Netlify 控制台删除旧 `VITE_DEMO_OPS_*` 和与演示配置冲突的 `VITE_SUPABASE_*`、住客演示变量；公开构建使用仓库 `web/.env.demo`，运营账号手工登录。
+官网为 https://idyllic-bubblegum-1f5a5c.netlify.app 。静态发布已经成功，不能据此认定后台模型、保存和账号隔离已验收。Supabase Auth Site URL 应设置为该官网，重定向地址只保留实际需要的官网及本地地址。Netlify 控制台删除与演示配置冲突的旧托管变量；公开构建使用仓库 `web/.env.demo`。用户已明确要求课程演示恢复住客、运营两个账号卡片，点击仅填入，提交后才登录。
 
 线上验收顺序：注册住客账号（默认 Demo）→ 运营在任务开始前分配 `Study 01` → 住客提交结构化导览需求、保存探索卡和推荐、提交意向 → 运营确认 → 住客刷新查看状态 → 运营标记“模拟流程已完成” → 住客提交一次数字流程反馈 → 运营看板选择 `Study 01` 查看漏斗和导览聚合。
 
@@ -68,15 +68,17 @@ where id = '<AUTH_USER_UUID>';
 
 公开账号自填功能必须使用一个与正式测试项目完全分离的 Supabase 项目。对独立项目执行全部迁移与 `seed.sql`，创建一名住客和一名运营演示用户，再按第 4 节将运营用户设为 `ops`。独立部署 `concierge`，将公开站点域名加入 `ALLOWED_ORIGINS`，并使用单独、低额度的模型密钥。
 
-在公开站点的部署环境中配置以下浏览器可见变量，不要把具体值写进仓库：
+当前课程演示的两组浏览器可见变量配置在仓库 `web/.env.demo`，供 Netlify 一致构建：
 
 ```env
 VITE_SHOW_DEMO_ACCOUNTS=true
 VITE_DEMO_GUEST_EMAIL=<public-demo-guest-email>
 VITE_DEMO_GUEST_PASSWORD=<public-demo-guest-password>
+VITE_DEMO_OPS_EMAIL=<public-demo-ops-email>
+VITE_DEMO_OPS_PASSWORD=<public-demo-ops-password>
 ```
 
-这些变量会进入前端构建产物，不能视为秘密。登录页只有在开关为 `true` 且住客账号值完整时显示住客卡。运营手工登录，运营凭据禁止配置为 `VITE_*`。Netlify 固定执行 `build:demo` 并校验独立演示后端；删除旧 `VITE_DEMO_OPS_*` 托管变量后再构建。正式测试部署应省略这些变量或设置 `VITE_SHOW_DEMO_ACCOUNTS=false`。演示前核验“住客登录 → 退出 → 运营登录 → 退出 → 住客登录”，演示后关闭入口或轮换演示密码。QA 验收仅清理本次创建的专用账号及关联记录，禁止整库重置或重新 seed。
+这些变量会进入前端构建产物，属于用户授权公开的课程演示账号。登录页在开关为 `true` 且两组值完整时显示住客与运营卡片，点击只填入，不自动登录。Netlify 固定执行 `build:demo`，校验独立演示后台和两个账号预设，并拒绝服务端管理密钥进入产物。正式测试部署应省略这些变量或设置 `VITE_SHOW_DEMO_ACCOUNTS=false`。演示前核验“住客登录 → 退出 → 运营登录 → 退出 → 住客登录”。QA 验收仅清理本次创建的专用账号及关联记录，禁止整库重置或重新 seed。
 
 当前本地 Origin 白名单已精确包含官网；部署后仍需检查真实预检、登录后的回复和来源。2026-10-04 的历史记录见 [发布前验收](docs/14_课程演示修复与验收记录.md)；2026-10-07 已获准执行隔离演示项目的后台发布与专用 QA 账号验收，实际完成情况以本轮验收记录为准。
 
@@ -126,6 +128,6 @@ npm.cmd exec --cache .cache/npm --yes --package supabase@2.120.0 -- supabase db 
 
 新项目关闭新表自动授权，service_role 没有业务表 CRUD 权限；脚本通过 `QA_SUPABASE_CLI` 指定已安装 CLI 的绝对路径，用管理查询进行限于本次 UUID 的角色设置和清理，不扩张 Data API 授权。每次查询都显式指定新 ref；仅身份创建/删除使用 Auth Admin。部分失败可用 `--resume` 继续三个已有账号，`--cleanup` 在账号 metadata 与 manifest 匹配后清理专属业务引用及账号，并再次核验残留为 0。
 
-用户最新决定不保留旧数据，本轮已改为架构重建。`scripts/prepare-demo-accounts.mjs` 在新项目中建立公开住客和私有运营，首次初始化 42 个演示场次。仅在新项目无场次时初始化；重复运行按私有 manifest 恢复，不再 seed。旧源项目不删除、不导入。新运营使用新密码，本地凭据位于 Git 忽略的 `.cache/migration/运营登录凭据.md`；严禁上传该文件或设为 `VITE_*`。
+用户决定不保留旧数据，本轮已改为架构重建。`scripts/prepare-demo-accounts.mjs` 在新项目中建立住客和运营，首次初始化 42 个演示场次。仅在新项目无场次时初始化；重复运行按本地 manifest 恢复，不再 seed。旧源项目不删除、不导入。随后用户明确要求恢复两个公开课程演示入口；现沿用这两名账号，在 `web/.env.demo` 声明预设并允许点击填入。本地备份仍位于 Git 忽略的 `.cache/migration/运营登录凭据.md`，服务端管理密钥仍不进入前端。
 
 最新前端回归为 139 项，另有 4 项 Python 测试；构建与产物检查通过。实际后台及浏览器验收见 [新账户重建记录](docs/21_新账户后台迁移记录_20261007.md)。

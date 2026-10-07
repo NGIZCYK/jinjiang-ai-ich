@@ -6,15 +6,22 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const dist = join(root, 'web', 'dist')
 function files(dir) { return readdirSync(dir, {withFileTypes:true}).flatMap(e => e.isDirectory() ? files(join(dir,e.name)) : [join(dir,e.name)]) }
 const text = files(dist).filter(p => /\.(js|css|html|json)$/.test(p)).map(p => readFileSync(p,'utf8')).join('\n')
+const publicEnv = readFileSync(join(root,'web','.env.demo'),'utf8')
+const publicValue = name => publicEnv.match(new RegExp(`^${name}=(.+)$`, 'm'))?.[1].trim()
+const approvedDemoValues = ['GUEST','OPS'].flatMap(role => ['EMAIL','PASSWORD'].map(field => publicValue(`VITE_DEMO_${role}_${field}`)))
 const env = existsSync(join(root,'web','.env.demo.local')) ? readFileSync(join(root,'web','.env.demo.local'),'utf8') : ''
 const privateValues = env.split(/\r?\n/).flatMap(line => {
   const match=line.match(/^(?:VITE_)?DEMO_OPS_(?:PASSWORD|EMAIL)=(.*)$/)
   const value=match?.[1]?.trim().replace(/^['"]|['"]$/g,'')
-  return value ? [value] : []
+  return value && !approvedDemoValues.includes(value) ? [value] : []
+})
+const privilegedJwt = [...text.matchAll(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g)].some(([jwt]) => {
+  try { return JSON.parse(Buffer.from(jwt.split('.')[1], 'base64url').toString()).role === 'service_role' } catch { return false }
 })
 const checks = {
   isolatedDemoBackend: text.includes(DEMO_BACKEND) && ['uxfxhqdfrzkafekrbzcf', 'itfpnfaieurelroxbrvy'].every(ref => !text.includes(`https://${ref}.supabase.co`)),
-  operationsCredentialsAbsent: privateValues.every(value => !text.includes(value)) && !/VITE_DEMO_OPS_(PASSWORD|EMAIL)/.test(text),
+  demoAccountsIncluded: approvedDemoValues.every(value => Boolean(value) && text.includes(value)),
+  privateCredentialsAbsent: privateValues.every(value => !text.includes(value)) && !privilegedJwt && !/sb_secret_[A-Za-z0-9_-]{16,}/.test(text),
   materialInterfaceIncluded: ['silk-study','silk-view-nav','silk-light-options'].every(marker => text.includes(marker)),
   developmentAssetsAbsent: !existsSync(join(dist,'avatar','wanniang-puppet','raw')) && !existsSync(join(dist,'avatar','wanniang-puppet','preview')),
   runtimePortraitPresent: ['base.webp','eyes.webp'].every(name => existsSync(join(dist,'avatar','wanniang-puppet',name))),
