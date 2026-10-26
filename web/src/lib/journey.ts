@@ -25,6 +25,12 @@ export const DEFAULT_NEEDS: Needs = { minutes: 90, budget: 150, party: 'solo', i
 export const MOTIFS = [['gate','阊门城楼','Changmen gate'],['bridge','古桥人物','Bridge & figures'],['boats','运河水纹','Canal ripples'],['market','市街层次','Market layers']]
 export const PALETTES = [['jade','黛青','Jade','#46665e'],['ivory','初白','Ivory','#ded6bf'],['rose','海棠','Rose','#a66e73'],['gold','秋金','Gold','#aa854b'],['indigo','靛蓝','Indigo','#52617c']]
 export const LEVELS = ['full','1/4','1/16','1/32']
+export function toggleExplorationChoice(draft: Exploration, field: 'motif' | 'palette' | 'levels', value: string): Exploration {
+  if (field === 'levels') {
+    return { ...draft, levels: draft.levels.includes(value) ? draft.levels.filter(level => level !== value) : [...draft.levels, value] }
+  }
+  return { ...draft, [field]: draft[field] === value ? '' : value }
+}
 export function progress(e: Exploration) {
   return [MOTIFS.some(m => m[0] === e.motif), PALETTES.some(p => p[0] === e.palette) && new Set(e.levels.filter(l => LEVELS.includes(l))).size >= 2, ['relative','universal'].includes(e.answer)].filter(Boolean).length
 }

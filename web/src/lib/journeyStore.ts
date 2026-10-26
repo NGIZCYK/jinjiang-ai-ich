@@ -32,10 +32,12 @@ export const useJourneyStore=create<JourneyState>((set,get)=>({
  async saveExploration(body){await rpc('save_exploration',{p_body:body});set({exploration:body,owner:useAppStore.getState().user?.id??null});await get().refresh()},
 }))
 const DRAFT='jj_v2_exploration_draft'
-export function readDraft():Exploration {
- try { const x=JSON.parse(sessionStorage.getItem(DRAFT)||'null'); if(x&&typeof x.motif==='string'&&typeof x.palette==='string'&&Array.isArray(x.levels)&&typeof x.answer==='string')return x }catch{}
- return {...EMPTY_EXPLORATION,levels:[]}
+function storedDraft():Exploration|null {
+ try { const x=JSON.parse(sessionStorage.getItem(DRAFT)||'null'); if(x&&typeof x.motif==='string'&&typeof x.palette==='string'&&Array.isArray(x.levels)&&x.levels.every((level:unknown)=>typeof level==='string')&&typeof x.answer==='string')return x }catch{}
+ return null
 }
+export function hasDraft(){return storedDraft()!==null}
+export function readDraft():Exploration{return storedDraft()??{...EMPTY_EXPLORATION,levels:[]}}
 export function writeDraft(x:Exploration){try{sessionStorage.setItem(DRAFT,JSON.stringify(x))}catch{}}
 export function clearDraft(){sessionStorage.removeItem(DRAFT)}
 export async function loadPublicCatalog(){if(!cloud)return; const {data,error}=await requireCloud().from('experiences').select('*').eq('active',true);if(!error&&data)useJourneyStore.setState({catalog:data})}

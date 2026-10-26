@@ -32,6 +32,12 @@ describe('PostgreSQL journey, authorization and state invariants',()=>{
  it('isolates guest records and blocks direct event writes',async()=>{await submit();expect(await as(other,'select * from bookings')).toHaveLength(0);await expect(as(guest,"insert into events values($1,'pilot-01','completed',now())",[guest])).rejects.toThrow();await expect(as(guest,"select trial_analytics('pilot-01')")).rejects.toThrow('FORBIDDEN')})
  it('persists exploration, but does not allow operations to read personal cards',async()=>{await as(guest,'select save_exploration($1)',[exploration]);expect((await as(guest,'select completed from explorations'))[0].completed).toBe(true);expect(await as(ops,'select * from explorations')).toHaveLength(0)})
  it('rejects malformed exploration rather than trusting completed flags',async()=>{await expect(as(guest,'select save_exploration($1)',[{...exploration,levels:['fake']}])).rejects.toThrow('INVALID_LEVEL');await expect(as(guest,'select save_exploration($1)',[null])).rejects.toThrow('INVALID_EXPLORATION')})
+ it.each(['motif','palette','levels','answer'])('persists a cleared %s and marks the card incomplete',async field=>{
+  await as(guest,'select save_exploration($1)',[exploration])
+  const cleared={...exploration,[field]:field==='levels'?[]:''}
+  await as(guest,'select save_exploration($1)',[cleared])
+  expect((await as(guest,'select body,completed from explorations'))[0]).toEqual({body:cleared,completed:false})
+ })
  it('validates recommendation against the server catalog',async()=>{await expect(as(guest,'select save_recommendation($1,$2,$3)',['workshop',{minutes:20,budget:200,party:'solo',interest:'experience'},request()])).rejects.toThrow('NO_MATCH');await expect(as(guest,'select save_recommendation($1,$2,$3)',['workshop',{minutes:90,budget:200,party:'business',interest:'experience'},request()])).rejects.toThrow('NO_MATCH')})
  it('makes duplicate network retries idempotent and rejects a second active request',async()=>{const key=request();const a=await submit(guest,1,key);expect(await submit(guest,1,key)).toBe(a);await expect(submit()).rejects.toThrow('DUPLICATE_INTENTION')})
  it('prevents an unauthorized actor from changing another request',async()=>{const id=await submit();await expect(as(other,"select transition_booking($1,'cancelled')",[id])).rejects.toThrow('FORBIDDEN');await expect(as(guest,"select transition_booking($1,'confirmed')",[id])).rejects.toThrow('FORBIDDEN')})
