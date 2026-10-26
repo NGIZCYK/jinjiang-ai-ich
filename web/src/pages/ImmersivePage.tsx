@@ -12,7 +12,6 @@ type Detail = {
   tags: string[]
   observe: string
   stay: string
-  source: string
 }
 
 const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
@@ -24,7 +23,6 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
       tags: ['姑苏胜景', '数字纹理', '微距观察'],
       observe: '选择画面中的四个点位，比较水波、人物与商铺的纹理方向和色阶变化；需要时再开启 3x 微距镜。',
       stay: '把感兴趣的点位带入婉娘导览继续提问，或在“我的行程”中记录工坊体验意向。',
-      source: '图像参照《姑苏繁华图》公开著录的城市风貌；年代、出处与具体针法说明在正式发布前仍需逐条复核。',
     },
     silk: {
       title: '识线：从蚕茧、劈丝到丝光',
@@ -33,7 +31,6 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
       tags: ['材料序列', '相对细度', '策展取色'],
       observe: '从上方切换蚕茧、劈丝、取色与丝光。劈丝可与整股基准比较，取色可预览线束颜色，丝光可切换三种受光方向；示意均用于概念观察。',
       stay: '选中的色样可作为入门练习的配色参考；实体材料与教学方式以后续合作工坊方案为准。',
-      source: '色样由项目数字图像提取；劈丝层级为概念比较，不代表统一标准或实际线径测量。',
     },
     workbench: {
       title: '试针：传统绣台与第一针',
@@ -42,7 +39,6 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
       tags: ['传统绣绷', '四步工序', '入门体验'],
       observe: '按次序查看四个流程节点，留意绷面张力、丝线方向与落针节奏如何共同影响成绣效果。',
       stay: '原型建议以 90 分钟完成一枚基础练习样片；师资、材料和成品形式仍需与合作方确认。',
-      source: '流程整理自公开工艺资料，作为酒店文化体验课程的信息原型，不等同于完整专业工艺规程。',
     },
   },
   en: {
@@ -53,7 +49,6 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
       tags: ['Suzhou cityscape', 'Digital texture', 'Macro study'],
       observe: 'Select one of four points to compare directional texture and tonal transitions across water, figures and shopfronts. Open the 3x loupe only when needed.',
       stay: 'Continue the selected topic with Wanniang or save an atelier preference in My Stay.',
-      source: 'The scene refers to published records of Prosperous Suzhou. Dates, provenance and any stitch attribution require review before public release.',
     },
     silk: {
       title: 'Thread: From Cocoon and Splitting to Lustre',
@@ -62,7 +57,6 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
       tags: ['Material sequence', 'Relative fineness', 'Curated palette'],
       observe: 'Use the navigation above to explore Cocoon, Splitting, Palette and Lustre. Compare fineness with a full-strand baseline, preview a colour, then change the illustrated light direction. These illustrations support conceptual observation.',
       stay: 'A selected palette can inform an introductory practice piece; physical materials and teaching depend on a future atelier partner.',
-      source: 'Swatches are extracted from project imagery. Splitting levels are conceptual comparisons, not universal standards or measured diameters.',
     },
     workbench: {
       title: 'Stitch: The Workbench and a First Stitch',
@@ -71,7 +65,6 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
       tags: ['Embroidery frame', 'Four-step flow', 'Introductory session'],
       observe: 'Move through the four steps and notice how surface tension, thread direction and stitch rhythm shape the result together.',
       stay: 'The prototype proposes a 90-minute introduction resulting in a small practice sample. Tutor, materials and finish remain to be confirmed.',
-      source: 'The flow is organised from public craft references as a hotel-experience information prototype, not a complete professional specification.',
     },
   },
 }
@@ -86,7 +79,6 @@ const PAGE_COPY = {
     open: '展开展签',
     observe: '如何观看',
     stay: '住中延伸',
-    source: '内容说明',
     routeEyebrow: 'THE GUEST JOURNEY',
     routeTitle: '从驻足，到理解，再到亲手尝试。',
     route: [
@@ -94,8 +86,6 @@ const PAGE_COPY = {
       ['02', '识线', '比较材料、色样与相对细度，观察丝光变化。'],
       ['03', '试针', '认识上绷与配线，了解基础练习样片的制作。'],
     ],
-    technical: '原型与内容边界',
-    technicalBody: '页面为课程数字原型。图像用于文化叙事与工艺观察，正式发布前需补充逐条出处、版权授权，并由苏绣从业者复核具体技艺表述。',
   },
   en: {
     eyebrow: 'JINJIANG SUZHOU · HERITAGE ATELIER',
@@ -106,7 +96,6 @@ const PAGE_COPY = {
     open: 'Open label',
     observe: 'How to look',
     stay: 'Extend the stay',
-    source: 'Content note',
     routeEyebrow: 'THE GUEST JOURNEY',
     routeTitle: 'From pause, to understanding, to making.',
     route: [
@@ -114,8 +103,6 @@ const PAGE_COPY = {
       ['02', 'Thread', 'Compare materials, swatches and relative fineness to observe silk lustre.'],
       ['03', 'Stitch', 'Explore mounting and thread selection, then see how a practice sample is made.'],
     ],
-    technical: 'Prototype and content boundaries',
-    technicalBody: 'This is a course prototype. Images support cultural storytelling and craft observation. Public release requires itemised sources, image permissions and practitioner review of technical claims.',
   },
 } as const
 
@@ -193,10 +180,6 @@ export function ImmersivePage() {
                 </div>
               </>
             )}
-            <details className="immersive-label-source">
-              <summary>{copy.source}</summary>
-              <p>{detail.source}</p>
-            </details>
           </aside>
         ) : (
           <button className="immersive-label-trigger" type="button" onClick={() => setDetailsOpen(true)}>
@@ -229,10 +212,6 @@ export function ImmersivePage() {
         </div>
       </section>
 
-      <details className="immersive-boundary-note">
-        <summary>{copy.technical}</summary>
-        <p>{copy.technicalBody}</p>
-      </details>
     </div>
   )
 }

@@ -31,8 +31,6 @@ export function Layout() {
         opsLinks: ['内容工作台', '运营洞察'],
         opsLabel: '运营空间',
         login: '登录', logout: '退出',
-        prototype: '课程原型与内容说明',
-        footer: '课程原型 · 内容依据公开资料与项目知识卡整理，正式发布前需补齐逐条出处、授权与传承人复核；页面数据不代表锦江真实经营结果',
       }
     : {
         brand: 'Jinjiang Suzhou',
@@ -42,8 +40,6 @@ export function Layout() {
         opsLinks: ['Content Studio', 'Operations'],
         opsLabel: 'Operations',
         login: 'Sign in', logout: 'Sign out',
-        prototype: 'Prototype & content notes',
-        footer: 'Course prototype · Content is compiled from public sources and project knowledge cards. Publication requires source-level review, authorization and practitioner sign-off; data is not Jinjiang operating data.',
       }
   const guestLinks = [
     { to: '/', label: copy.guestLinks[0], end: true },
@@ -179,10 +175,6 @@ export function Layout() {
             <strong>{copy.brand}</strong>
             <span>{copy.descriptor}</span>
           </div>
-          <details className="prototype-note">
-            <summary>{copy.prototype}</summary>
-            <p>{copy.footer}</p>
-          </details>
           <span className="footer-location">SUZHOU · CHINA</span>
         </div>
       </footer>

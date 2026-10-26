@@ -83,13 +83,11 @@ export function CinematicHero({
 
   const copy = language === 'zh'
     ? {
-        film: '文化影像 · 课程原型 · 授权待复核',
         pause: '暂停影像',
         play: '继续播放',
         static: '静态模式',
       }
     : {
-        film: 'Cultural film · Prototype · Rights pending',
         pause: 'Pause film',
         play: 'Resume film',
         static: 'Still mode',
@@ -138,7 +136,6 @@ export function CinematicHero({
 
       <div className="home-film-console">
         <div className="home-film-meta">
-          <span>{copy.film}</span>
           <strong>{staticMode || videoFailed ? copy.static : timeLabel}</strong>
         </div>
         <div className="home-film-progress" aria-hidden="true">
