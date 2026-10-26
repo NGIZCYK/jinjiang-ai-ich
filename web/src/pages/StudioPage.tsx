@@ -51,7 +51,7 @@ export function StudioPage() {
         channel: '触达渠道',
         time: '可用停留时间',
         context: '传播情景',
-        hint: '使用本地规则与模板，按客群、触点和总时长生成草稿；服务可履约性需人工确认。',
+        hint: '结合住客兴趣、触达渠道与可用时长，整理可编辑的体验内容。',
         itinerary: '住客体验行程',
         marketing: '酒店推广文案',
         generateItinerary: '生成苏绣微旅行建议',
@@ -74,8 +74,8 @@ export function StudioPage() {
         approved: '已审核通过',
         revision: '需补充考据',
         inventory: '工坊席位状态',
-        inventoryVal: '原型时段 · 非真实库存',
-        check: '发布前质检：作品出处需逐条复核；劈丝仅作相对分级；价格、师资与容量不得当作已确认服务。',
+        inventoryVal: '体验时段预览',
+        check: '发布前检查作品信息、工艺表述与体验安排。',
         recent: '近期保存记录',
         none: '生成并保存后，内容将在此陈列。',
         login: '请先登录后再保存到「我的行程」',
@@ -97,7 +97,7 @@ export function StudioPage() {
         channel: 'Touchpoint Channel',
         time: 'Available Duration',
         context: 'Context & Theme',
-        hint: 'Local rules and templates generate this draft from guest, touchpoint and duration inputs; a person confirms feasibility.',
+        hint: 'Shape an editable experience draft around guest interests, touchpoints and available time.',
         itinerary: 'Guest Itinerary',
         marketing: 'Hotel Promotion',
         generateItinerary: 'Generate Su Embroidery Itinerary',
@@ -120,8 +120,8 @@ export function StudioPage() {
         approved: 'Approved & Verified',
         revision: 'Needs Revision',
         inventory: 'Atelier Capacity',
-        inventoryVal: 'Prototype times · not live inventory',
-        check: 'Pre-publish check: review every attribution; label silk levels as relative; do not present price, tutor or capacity as confirmed.',
+        inventoryVal: 'Experience time preview',
+        check: 'Before publication, check artwork information, craft descriptions and experience details.',
         recent: 'Recent Saves',
         none: 'Saved curation items will appear here.',
         login: 'Please sign in before saving to My Journey.',
@@ -423,7 +423,7 @@ export function StudioPage() {
                     <h2 className="font-semibold text-stone-900">{copy.verification}</h2>
                   </div>
                   <p className="mt-1 text-xs text-stone-500">
-                    {language === 'zh' ? '核对文博出处、技艺表述与服务假设；系统不会代替人工背书。' : 'Review provenance, craft language and service assumptions; the system does not replace human sign-off.'}
+                    {language === 'zh' ? '核对作品信息、技艺表述与体验安排，完成内容审核。' : 'Check artwork information, craft descriptions and experience details before approving the content.'}
                   </p>
                 </div>
                 <span className={`rounded-full px-3 py-1 text-xs font-medium ${
@@ -466,7 +466,7 @@ export function StudioPage() {
                 <ul className="mt-2 space-y-1.5 text-xs text-amber-800">
                   <li className="flex items-start gap-2">
                     <span className="text-jade font-bold">✓</span>
-                    <span>{language === 'zh' ? '出处：页面为参照《姑苏繁华图》公开著录的数字演绎，不表述为馆藏绣品复制。' : 'Provenance: label the scene as a digital interpretation referencing published records, not a museum textile replica.'}</span>
+                    <span>{language === 'zh' ? '作品信息：核对《姑苏繁华图》的名称、作者及数字演绎说明。' : 'Artwork information: check the scroll title, artist and digital interpretation.'}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-jade font-bold">✓</span>
@@ -474,7 +474,7 @@ export function StudioPage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-jade font-bold">✓</span>
-                    <span>{language === 'zh' ? '服务边界：时段、容量、价格、师资与茶歇均标注为原型假设，正式上线前另行确认。' : 'Service boundary: mark time, capacity, price, tutor and refreshments as prototype assumptions until confirmed.'}</span>
+                    <span>{language === 'zh' ? '体验安排：核对时段、容量、费用与参与流程。' : 'Experience details: check times, capacity, prices and the participation flow.'}</span>
                   </li>
                 </ul>
               </div>
@@ -579,7 +579,7 @@ export function StudioPage() {
                       {language === 'zh' ? '苏州锦江 · 苏绣文化体验建议函' : 'Su Embroidery Experience Note · Jinjiang Suzhou'}
                     </h3>
                     <div className="mt-1 text-[11px] text-stone-500 font-serif">
-                      {language === 'zh' ? '住客触点内容预览 · 课程原型' : 'Guest touchpoint preview · course prototype'}
+                      {language === 'zh' ? '住客触点内容预览' : 'Guest touchpoint preview'}
                     </div>
                   </div>
 
@@ -587,8 +587,8 @@ export function StudioPage() {
                   <div className="mt-5 space-y-3 font-serif text-xs leading-relaxed text-stone-700">
                     <p className="indent-6">
                       {language === 'zh'
-                        ? '江南雨落，丝缕生辉。我们依照你的停留时长，整理了一份从观绣、识线到试针的文化体验建议。实际场次与服务内容请以礼宾确认结果为准。'
-                        : 'Silk catches the light in Jiangnan rain. Based on your available time, here is a cultural journey from observation to thread and first stitch. Actual services require concierge confirmation.'}
+                        ? '江南雨落，丝缕生辉。我们依照你的停留时长，整理了一份从观绣、识线到试针的文化体验建议。你可以从感兴趣的主题开始，逐步发现苏绣细节。'
+                        : 'Silk catches the light in Jiangnan rain. Based on your available time, here is a cultural journey from observation to thread and first stitch. Begin with your interests and discover the details of Su embroidery.'}
                     </p>
                     <div className="rounded-xl bg-amber-50/50 p-4 border border-amber-200/40 my-3 font-sans">
                       <div className="text-[11px] font-semibold text-amber-900 mb-1">
@@ -613,7 +613,7 @@ export function StudioPage() {
                         {language === 'zh' ? '审核状态：' : 'Status: '}
                         {verificationStatus === 'approved'
                           ? (language === 'zh' ? '人工复核通过' : 'Human review approved')
-                          : (language === 'zh' ? '待复核' : 'Review pending')}
+                          : (language === 'zh' ? '待审核' : 'Review pending')}
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -622,7 +622,7 @@ export function StudioPage() {
                         <div className="text-[10px] text-stone-400">谨呈</div>
                       </div>
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg border-2 border-vermilion bg-vermilion-light text-[10px] font-bold text-vermilion font-serif shadow-xs">
-                        {language === 'zh' ? '内容\n原型' : 'CONTENT\nDRAFT'}
+                        {language === 'zh' ? '内容\n预览' : 'CONTENT\nDRAFT'}
                       </div>
                     </div>
                   </div>
@@ -659,7 +659,7 @@ export function StudioPage() {
                     </div>
                     <div className="flex justify-between border-b border-stone-800 pb-2">
                       <span className="text-stone-400">{language === 'zh' ? '体验状态' : 'Experience Status'}</span>
-                      <span className="font-semibold text-amber-200">{language === 'zh' ? '课程原型 · 待运营确认' : 'Prototype · pending review'}</span>
+                      <span className="font-semibold text-amber-200">{language === 'zh' ? '可记录体验意向' : 'Record experience interest'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-stone-400">{language === 'zh' ? '席位限制' : 'Capacity'}</span>

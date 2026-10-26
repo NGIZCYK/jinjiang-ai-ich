@@ -41,9 +41,9 @@ export function recommend(needs: Needs, catalog: Experience[] = CATALOG) {
     .sort((a,b) => Number(b.interests.includes(needs.interest)) - Number(a.interests.includes(needs.interest)) || b.minutes - a.minutes)
 }
 export function reasonFor(e: Experience, n: Needs, lang: Locale) {
-  return lang === 'zh' ? `${e.minutes} 分钟，演示费用 ¥${e.price}/人，符合你的时间和单人预算${e.interests.includes(n.interest) ? '，也与你选择的兴趣相符' : '；可作为替代体验'}。` : `${e.minutes} min and ¥${e.price}/person fit your time and per-person budget${e.interests.includes(n.interest) ? ', matching your interest' : '; an alternative experience'}.`
+  return lang === 'zh' ? `${e.minutes} 分钟，费用 ¥${e.price}/人，符合你的时间和单人预算${e.interests.includes(n.interest) ? '，也与你选择的兴趣相符' : '；可作为替代体验'}。` : `${e.minutes} min and ¥${e.price}/person fit your time and per-person budget${e.interests.includes(n.interest) ? ', matching your interest' : '; an alternative experience'}.`
 }
-export const STATUS: Record<BookingStatus, [string,string]> = { pending:['待处理','Pending'], confirmed:['已确认','Confirmed'], completed:['模拟流程已完成','Simulation completed'], cancelled:['已撤回','Withdrawn'], declined:['未通过','Declined'] }
+export const STATUS: Record<BookingStatus, [string,string]> = { pending:['待处理','Pending'], confirmed:['已确认','Confirmed'], completed:['流程已完成','Journey completed'], cancelled:['已撤回','Withdrawn'], declined:['未通过','Declined'] }
 export function statusLabel(s: BookingStatus, l: Locale) { return STATUS[s][l === 'zh' ? 0 : 1] }
 export function titleFor(id: string, l: Locale, catalog = CATALOG) { const e = catalog.find(x => x.id === id); return e ? e[l === 'zh' ? 'title_zh' : 'title_en'] : id }
 export function slotTime(iso: string, l: Locale) { return new Intl.DateTimeFormat(l === 'zh' ? 'zh-CN' : 'en-GB', { timeZone: 'Asia/Shanghai', month:'short',day:'numeric',hour:'2-digit',minute:'2-digit' }).format(new Date(iso)) + (l === 'zh' ? '（北京时间）' : ' (Shanghai)') }

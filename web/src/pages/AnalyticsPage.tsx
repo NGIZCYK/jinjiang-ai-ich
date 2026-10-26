@@ -216,8 +216,8 @@ export function AnalyticsPage() {
       : 'bg-amber-50 text-amber-900'
   const targetConversion = Math.max(12, Math.min(35, Math.round(inputs.conversionRate * 100)))
   const scaleGate = t(
-    `连续 4 周体验转化率 ≥ ${targetConversion}%，到课率 ≥ 75%，12 个月 ROI ≥ 30%，且 Study 01 至少 10 名真人参与者经过核验并完成经营数据人工复核；Demo 和账号数不能代替此证据。`,
-    `For four consecutive weeks: conversion ≥ ${targetConversion}%, attendance ≥ 75%, 12-month ROI ≥ 30%, with at least 10 verified human participants in Study 01 and manual review of operating evidence; Demo and account counts cannot substitute.`,
+    `连续 4 周体验转化率 ≥ ${targetConversion}%，到课率 ≥ 75%，12 个月 ROI ≥ 30%，且 Study 01 至少 10 名真人参与者经过核验并完成经营数据人工复核。`,
+    `For four consecutive weeks: conversion ≥ ${targetConversion}%, attendance ≥ 75%, 12-month ROI ≥ 30%, with at least 10 verified human participants in Study 01 and manual review of operating evidence.`,
   )
   const pauseGate = t(
     `连续 4 周转化率低于 ${Math.max(8, targetConversion - 5)}%，或月度贡献不为正时，暂停扩大投入并复核价格、场次与成本。`,
@@ -298,7 +298,7 @@ export function AnalyticsPage() {
       </div>
 
       <TrialDashboard onData={setTrialData} />
-      <h2>{t('经营情景模拟 · 合成样本与假设', 'Business simulation · synthetic samples and assumptions')}</h2>
+      <h2>{t('经营情景预测', 'Business scenario forecast')}</h2>
       <section className="card analytics-executive">
         <div className="analytics-executive-copy">
           <div className="analytics-executive-label">
@@ -306,7 +306,7 @@ export function AnalyticsPage() {
             <strong className={decisionClass}>{decisionLabel}</strong>
           </div>
           <h2>{recommendation}</h2>
-          <p>{t('结论由当前课程样本、匿名导览意向与可调整经营假设共同生成，不代表锦江真实经营数据。', 'This conclusion combines course-sample data, anonymous guide intent and adjustable assumptions; it is not Jinjiang operating data.')}</p>
+          <p>{t('结合住客意向、客群特征与经营参数，比较当前方案的投入与预期回报。', 'Compare investment and expected returns using guest interests, segments and operating parameters.')}</p>
         </div>
         <dl className="analytics-executive-metrics">
           <div>
@@ -332,7 +332,7 @@ export function AnalyticsPage() {
         <div className="card analytics-kpi p-4">
           <div className="text-xs text-stone-500">{t('当前批次：已确认 · 关键词表达倾向', 'Current cohort: confirmed · keyword expression trend')}</div>
           <div className="mt-1 text-2xl font-semibold">{confirmedCount} <span className="text-sm font-normal text-stone-500">· {sentimentStats.positive}/{sentimentStats.neutral}/{sentimentStats.negative}</span></div>
-          <p className="mt-1 text-xs text-stone-500">{t('表达条数：正向 / 中性 / 负向；不代表满意度。', 'Expressions: positive / neutral / negative; not satisfaction scores.')}</p>
+          <p className="mt-1 text-xs text-stone-500">{t('关键词表达条数：正向 / 中性 / 负向。', 'Keyword expressions: positive / neutral / negative.')}</p>
         </div>
         <div className="card analytics-kpi p-4">
           <div className="text-xs text-stone-500">{t('当前情景收入指数', 'Current scenario revenue index')}</div>
@@ -390,7 +390,7 @@ export function AnalyticsPage() {
             <p className="eyebrow">REVENUE + ROI SIMULATION</p>
             <h2 className="mt-1 font-semibold">{t('营收与 ROI 决策模拟', 'Revenue and ROI decision simulation')}</h2>
           </div>
-          <p className="text-xs text-stone-500">{t('人民币/月；所有数值均为可调整的课程经营假设。', 'CNY per month; every value is an adjustable course assumption.')}</p>
+          <p className="text-xs text-stone-500">{t('人民币/月；调整参数可比较不同经营方案。', 'CNY per month; adjust the inputs to compare operating scenarios.')}</p>
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
@@ -489,7 +489,6 @@ export function AnalyticsPage() {
       <div className="analytics-method-note">
         <strong>{t('分析口径', 'Method note')}</strong>
         <span>{data.method}</span>
-        <small>{data.source}</small>
       </div>
       </div>
       )}
@@ -540,7 +539,7 @@ export function AnalyticsPage() {
                   <div className="rounded-xl bg-white p-3"><span className="text-xs text-stone-500">{t('平均可用时长', 'Average available time')}</span><p className="mt-1 font-medium">{guideSignalSummary.averageStayHours ? `${guideSignalSummary.averageStayHours.toFixed(1)}h` : '—'}</p></div>
                   <div className="rounded-xl bg-white p-3"><span className="text-xs text-stone-500">{t('平均预算', 'Average budget')}</span><p className="mt-1 font-medium">{guideSignalSummary.averageBudget ? formatCurrency(guideSignalSummary.averageBudget) : '—'}</p></div>
                 </div>
-                <p className="text-xs leading-5 text-stone-500">{t('表达倾向来自关键词规则，不代表满意度调查或情绪判断。', 'Expression trends use keyword rules, not satisfaction surveys or emotion assessments.')}</p>
+                <p className="text-xs leading-5 text-stone-500">{t('按关键词规则汇总正向、中性与负向表达。', 'Keyword rules group expressions as positive, neutral or negative.')}</p>
                 <p className="text-xs leading-5 text-stone-500">{t('同行偏好：', 'Party mix: ')}{topParties.map(([party, count]) => `${partyLabels[party] ?? party} ${count}`).join(' · ') || '—'}</p>
               </div>
             ) : (
@@ -568,12 +567,11 @@ export function AnalyticsPage() {
                   <p className="rounded-xl border border-white/80 bg-white/65 p-3"><strong>{t('扩大门槛：', 'Scale gate: ')}</strong>{aiBrief.scaleGate}</p>
                   <p className="rounded-xl border border-white/80 bg-white/65 p-3"><strong>{t('暂停条件：', 'Pause gate: ')}</strong>{aiBrief.pauseGate}</p>
                 </div>
-                <p className="mt-3 text-[0.7rem] leading-5 text-stone-500">{aiBrief.limitation}</p>
               </div>
             ) : (
               <div className="flex h-full min-h-48 flex-col justify-center">
                 <p className="text-sm font-semibold text-jade-dark">{t('基于当前筛选、ROI 假设与导览意向生成运营简报', 'Create an operating brief from current filters, ROI assumptions and guide intent')}</p>
-                <p className="mt-2 text-xs leading-5 text-stone-600">{t('AI 只接收聚合指标，不接收住客聊天原文；输出会明确标注课程合成数据的限制。', 'AI receives aggregate metrics only, never guest chat text; the output states the limits of course synthetic data.')}</p>
+                <p className="mt-2 text-xs leading-5 text-stone-600">{t('结合聚合指标，整理经营建议、关键指标与下一步行动。', 'Use aggregate metrics to prepare operating recommendations, key measures and next steps.')}</p>
                 {aiBriefError && <p className="mt-3 rounded-xl bg-rose-50 p-3 text-xs text-rose-800">{aiBriefError}</p>}
               </div>
             )}

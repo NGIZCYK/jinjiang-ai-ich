@@ -17,7 +17,7 @@ export function PremiumHomePage() {
         lead: '以苏绣为线索，让大堂中的一次驻足、客房里的一段静赏与婉娘的一次交谈，成为可感知、可理解、可继续参与的苏州记忆。',
         meet: '咨询婉娘',
         explore: '开始探索',
-        heroNote: '锦江苏州文化礼宾原型 · 苏绣主题住中体验',
+        heroNote: '锦江苏州文化礼宾 · 苏绣主题住中体验',
         journeyEyebrow: 'A CURATED STAY',
         journeyTitle: '一段住中旅程，三次与苏绣相遇。',
         journeyLead: '不把非遗做成孤立的展板，而是让它自然地出现在抵达、停留与参与的节奏里。',
@@ -38,7 +38,7 @@ export function PremiumHomePage() {
         conciergeCta: '开始交谈',
         collectionEyebrow: 'LOBBY COLLECTION',
         collectionTitle: '五幅苏绣风格数字展陈。',
-        collectionLead: '以花鸟、瑞禽与江南意象构成大堂轮换展陈。以下均为课程原型中的数字创作，不作为馆藏复制或出处证明。',
+        collectionLead: '以花鸟、瑞禽与江南意象构成大堂轮换展陈，在色彩、纹理与构图中感受苏绣之美。',
         previous: '上一幅展陈图',
         next: '下一幅展陈图',
         pause: '将鼠标停留在作品上可暂停轮换',
@@ -49,7 +49,7 @@ export function PremiumHomePage() {
         lead: 'Su embroidery connects a moment in the lobby, a quiet encounter in the guest room and a conversation with Wanniang into one considered memory of place.',
         meet: 'Meet Wanniang',
         explore: 'Enter the embroidery atelier',
-        heroNote: 'Jinjiang Suzhou cultural-concierge prototype · A heritage stay',
+        heroNote: 'Jinjiang Suzhou cultural concierge · A heritage stay',
         journeyEyebrow: 'A CURATED STAY',
         journeyTitle: 'One stay, three encounters with Su embroidery.',
         journeyLead: 'Heritage is not treated as a detached display. It enters the natural rhythm of arrival, pause and participation.',
@@ -70,7 +70,7 @@ export function PremiumHomePage() {
         conciergeCta: 'Begin a conversation',
         collectionEyebrow: 'LOBBY COLLECTION',
         collectionTitle: 'Five digital studies inspired by Su embroidery.',
-        collectionLead: 'Flora, birds and Jiangnan motifs form a rotating lobby collection. These are original digital works for the course prototype, not museum reproductions or provenance claims.',
+        collectionLead: 'Flora, birds and Jiangnan motifs form a rotating lobby collection, exploring the colour, texture and composition of Su embroidery.',
         previous: 'Previous artwork',
         next: 'Next artwork',
         pause: 'Hover over the artwork to pause the rotation',
@@ -78,18 +78,18 @@ export function PremiumHomePage() {
 
   const artworks = language === 'zh'
     ? [
-        { src: '/assets/suxiu-cats-lobby-art.webp', index: '01', title: '花下双猫', note: '苏绣风格数字创作 · 非馆藏复制', alt: '苏绣风格双猫与牡丹数字展陈画' },
-        { src: '/assets/suxiu-crane-magnolia.webp', index: '02', title: '鹤与玉兰', note: '苏绣风格数字创作 · 非馆藏复制', alt: '苏绣风格白鹤与玉兰数字展陈画' },
-        { src: '/assets/suxiu-koi-lotus.webp', index: '03', title: '莲池双鲤', note: '苏绣风格数字创作 · 非馆藏复制', alt: '苏绣风格双鲤与荷叶数字展陈画' },
-        { src: '/assets/suxiu-ducks-crabapple.webp', index: '04', title: '海棠鸳鸯', note: '苏绣风格数字创作 · 非馆藏复制', alt: '苏绣风格鸳鸯与海棠数字展陈画' },
-        { src: '/assets/suxiu-kingfisher-wisteria.webp', index: '05', title: '紫藤翠鸟', note: '苏绣风格数字创作 · 非馆藏复制', alt: '苏绣风格翠鸟、紫藤与荷叶数字展陈画' },
+        { src: '/assets/suxiu-cats-lobby-art.webp', index: '01', title: '花下双猫', note: '苏绣风格数字创作', alt: '苏绣风格双猫与牡丹数字展陈画' },
+        { src: '/assets/suxiu-crane-magnolia.webp', index: '02', title: '鹤与玉兰', note: '苏绣风格数字创作', alt: '苏绣风格白鹤与玉兰数字展陈画' },
+        { src: '/assets/suxiu-koi-lotus.webp', index: '03', title: '莲池双鲤', note: '苏绣风格数字创作', alt: '苏绣风格双鲤与荷叶数字展陈画' },
+        { src: '/assets/suxiu-ducks-crabapple.webp', index: '04', title: '海棠鸳鸯', note: '苏绣风格数字创作', alt: '苏绣风格鸳鸯与海棠数字展陈画' },
+        { src: '/assets/suxiu-kingfisher-wisteria.webp', index: '05', title: '紫藤翠鸟', note: '苏绣风格数字创作', alt: '苏绣风格翠鸟、紫藤与荷叶数字展陈画' },
       ]
     : [
-        { src: '/assets/suxiu-cats-lobby-art.webp', index: '01', title: 'Cats beneath Peonies', note: 'Original digital study · Not a museum reproduction', alt: 'Su embroidery-inspired artwork of two cats and peonies' },
-        { src: '/assets/suxiu-crane-magnolia.webp', index: '02', title: 'Crane & Magnolia', note: 'Original digital study · Not a museum reproduction', alt: 'Su embroidery-inspired artwork of a white crane and magnolia' },
-        { src: '/assets/suxiu-koi-lotus.webp', index: '03', title: 'Koi beneath Lotus', note: 'Original digital study · Not a museum reproduction', alt: 'Su embroidery-inspired artwork of koi and lotus' },
-        { src: '/assets/suxiu-ducks-crabapple.webp', index: '04', title: 'Mandarin Ducks & Crabapple', note: 'Original digital study · Not a museum reproduction', alt: 'Su embroidery-inspired artwork of mandarin ducks beneath crabapple' },
-        { src: '/assets/suxiu-kingfisher-wisteria.webp', index: '05', title: 'Kingfisher & Wisteria', note: 'Original digital study · Not a museum reproduction', alt: 'Su embroidery-inspired artwork of a kingfisher, wisteria and lotus' },
+        { src: '/assets/suxiu-cats-lobby-art.webp', index: '01', title: 'Cats beneath Peonies', note: 'Original digital study', alt: 'Su embroidery-inspired artwork of two cats and peonies' },
+        { src: '/assets/suxiu-crane-magnolia.webp', index: '02', title: 'Crane & Magnolia', note: 'Original digital study', alt: 'Su embroidery-inspired artwork of a white crane and magnolia' },
+        { src: '/assets/suxiu-koi-lotus.webp', index: '03', title: 'Koi beneath Lotus', note: 'Original digital study', alt: 'Su embroidery-inspired artwork of koi and lotus' },
+        { src: '/assets/suxiu-ducks-crabapple.webp', index: '04', title: 'Mandarin Ducks & Crabapple', note: 'Original digital study', alt: 'Su embroidery-inspired artwork of mandarin ducks beneath crabapple' },
+        { src: '/assets/suxiu-kingfisher-wisteria.webp', index: '05', title: 'Kingfisher & Wisteria', note: 'Original digital study', alt: 'Su embroidery-inspired artwork of a kingfisher, wisteria and lotus' },
       ]
 
   const artwork = artworks[artIndex] ?? artworks[0]

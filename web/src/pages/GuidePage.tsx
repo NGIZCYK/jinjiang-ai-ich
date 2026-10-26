@@ -1,7 +1,6 @@
 import { isKnownVersionMismatch } from '../lib/serviceCompatibility'
 import { capabilityChatMode } from '../lib/guideCapabilities'
 import { RecommendationPanel } from '../components/RecommendationPanel'
-import { FloatingWanNiangAssistant } from '../components/FloatingWanNiangAssistant'
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AvatarStage } from '../components/avatar/AvatarStage'
@@ -79,7 +78,7 @@ function SourceDisclosure({ sources, language }: { sources?: GuideSource[]; lang
   const category = {
     documented: language === 'zh' ? '文献线索' : 'Documented lead',
     practice: language === 'zh' ? '工艺经验' : 'Craft practice',
-    prototype: language === 'zh' ? '原型设想' : 'Prototype assumption',
+    prototype: language === 'zh' ? '体验方案' : 'Experience concept',
   }
   return (
     <details className="guide-sources">
@@ -142,7 +141,7 @@ export function GuidePage() {
         collapseStage: '收起礼宾', expandStage: '展开礼宾', signalSaveFailed: '导览可以继续，但本次结构化兴趣标签未写入测试统计。请检查网络后重新发送需求。',
         avatarEyebrow: '当代江南文化礼宾', avatarIdle: '静候您的问题', avatarListening: '正在倾听您的提问', avatarThinking: '正在整理相关线索', avatarSpeaking: '正在为您讲解', avatarPaused: '已暂停',
         suggestions: ['苏绣为什么细腻？', '第一次去苏州有哪些推荐景点？', '帮我安排 2 小时苏绣体验', '体验时段如何选择？'],
-        greeting: '你好，我是婉娘。除了苏绣工艺与项目体验，我也可以和你聊苏州景点、美食、交通与行程规划。涉及本项目时，我会区分文献线索、工艺经验和课程原型；涉及票价、营业时间等实时信息，会提醒你查询官方最新信息。',
+        greeting: '你好，我是婉娘。可以和我聊聊苏绣工艺、苏州景点、美食、交通与行程规划，也可以告诉我你的兴趣和可用时间，一起找到适合这段停留的体验。',
       }
     : {
         title: 'Wanniang Cultural Concierge', name: 'Wanniang', lead: 'A contemporary cultural guide attuned to Su embroidery and the rhythm of a Suzhou stay.', status: 'Private cultural concierge',
@@ -158,7 +157,7 @@ export function GuidePage() {
         collapseStage: 'Collapse Host', expandStage: 'Expand Host', signalSaveFailed: 'The guide can continue, but this structured intent was not added to study metrics. Check the connection and send the request again.',
         avatarEyebrow: 'CONTEMPORARY JIANGNAN CONCIERGE', avatarIdle: 'Awaiting your question', avatarListening: 'Listening to your question…', avatarThinking: 'Preparing relevant context…', avatarSpeaking: 'Explaining in voice', avatarPaused: 'Paused',
         suggestions: ['Why is Su embroidery so intricate?', 'What should a first-time visitor see in Suzhou?', 'Plan a 2-hour Su embroidery experience', 'How do I choose a workshop time?'],
-        greeting: 'Hello, I am Wanniang. I can help with Su embroidery, Suzhou sights, food, transport and stay planning. For this project I distinguish documented leads, craft practice and prototype assumptions; for time-sensitive details I will suggest checking current official information.',
+        greeting: 'Hello, I am Wanniang. Ask me about Su embroidery, Suzhou sights, food, transport and stay planning. Share your interests and available time, and we can find an experience for your stay.',
       }
   const visibleMessages = useMemo(
     () => messages.filter((message) => (message.language ?? 'zh') === language),
@@ -672,7 +671,6 @@ export function GuidePage() {
                         <p>
                           {m.action.slot}
                           {m.action.durationMinutes ? ` · ${m.action.durationMinutes} ${language === 'zh' ? '分钟' : 'min'}` : ''}
-                          {' · '}{language === 'zh' ? '场次与内容待合作方确认' : 'Time and inclusions require partner confirmation'}
                         </p>
                       </div>
                       <Link to={`/my?slot=${encodeURIComponent(m.action.slot)}&course=suxiu-class${m.action.durationMinutes ? `&duration=${m.action.durationMinutes}` : ''}`}>
@@ -750,11 +748,6 @@ export function GuidePage() {
         </section>
       </div>
       <RecommendationPanel />
-      <FloatingWanNiangAssistant
-        active={loading || speechQueue.phase !== 'idle'}
-        disabled={loading}
-        onPrompt={(prompt) => void send(prompt)}
-      />
     </div>
   )
 }

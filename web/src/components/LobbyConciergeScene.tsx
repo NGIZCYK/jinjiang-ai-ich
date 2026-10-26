@@ -64,8 +64,8 @@ const ARTWORK_SPOTS: ArtworkSpot[] = [
     labelEn: 'Changmen Gate & Bastion',
     techniqueZh: '纹理观察 · 青砖垛口',
     techniqueEn: 'Texture Study · Masonry',
-    descZh: '数字演绎以平齐线性肌理表现城楼砖石；对应针法需由合作工坊进一步复核。',
-    descEn: 'This digital study uses aligned linear texture for the masonry; the stitch attribution still requires practitioner review.',
+    descZh: '比较城楼砖石的平齐线性肌理，观察线向与明暗如何共同塑造建筑轮廓。',
+    descEn: 'Compare aligned linear textures in the masonry and how line direction and shade shape the building.',
   },
   {
     id: 'bridge',
@@ -76,8 +76,8 @@ const ARTWORK_SPOTS: ArtworkSpot[] = [
     labelEn: 'Stone Arch Bridge Crowd',
     techniqueZh: '人物细节 · 细丝示意',
     techniqueEn: 'Figure Detail · Fine-thread Study',
-    descZh: '聚焦桥上人物的衣褶、姿态与空间层次；细丝等级用于交互示意，不代表原作实测。',
-    descEn: 'Focus on clothing folds, gestures and spatial depth. Thread levels are illustrative, not measurements of an original textile.',
+    descZh: '聚焦桥上人物的衣褶、姿态与空间层次，比较细密线条与色阶变化。',
+    descEn: 'Focus on clothing folds, gestures and spatial depth, comparing fine lines and tonal transitions.',
   },
   {
     id: 'boats',
@@ -101,7 +101,7 @@ const ARTWORK_SPOTS: ArtworkSpot[] = [
     techniqueZh: '层次过渡 · 粉墙黛瓦',
     techniqueEn: 'Layered Gradient · Roofscape',
     descZh: '观察商铺、招牌与粉墙黛瓦的色阶关系；本页呈现的是数字纹理练习而非馆藏绣品复制。',
-    descEn: 'Observe tonal transitions across shops and roofs. This is a digital texture study, not a reproduction of a museum textile.',
+    descEn: 'Observe tonal transitions across shops and roofs, and compare texture direction and spatial layers.',
   },
 ]
 
@@ -129,8 +129,8 @@ const SILK_GALLERY_VIEWS: SilkGalleryView[] = [
     image: '/assets/suxiu-silk-03-cocoons.webp',
     captionZh: '观察茧体表面细密交叠的纹理，认识丝线的材料起点。',
     captionEn: 'Observe the closely interwoven surface of a cocoon, the material starting point of silk.',
-    leadZh: '照片展示茧体表面，用于材料认知；缫丝过程需结合工坊演示理解，图片不作为具体产地、年代或工坊来源证明。',
-    leadEn: 'This photograph shows cocoon surfaces for material learning. Reeling requires an atelier demonstration; the image does not establish an origin, date or atelier.',
+    leadZh: '观察茧体表面细密交叠的纹理，认识丝线从原料到缫丝的材料旅程。',
+    leadEn: 'Observe the closely interwoven cocoon surface and explore the material journey from cocoon to silk thread.',
   },
   {
     id: 'splitting',
@@ -141,8 +141,8 @@ const SILK_GALLERY_VIEWS: SilkGalleryView[] = [
     image: '/assets/suxiu-silk-02-splitting.webp',
     captionZh: '从针线近景认识劈丝概念，再用示意线比较相对细度。',
     captionEn: 'A needle-and-thread close-up introduces splitting; illustrated lines compare relative fineness.',
-    leadZh: '借助针具与丝线近景引出劈丝概念；实际分丝手法、材料结构与用线尺度需结合合作工坊演示确认。',
-    leadEn: 'A needle-and-thread close-up introduces silk splitting. Technique, material structure and working scale remain subject to atelier demonstration.',
+    leadZh: '从针具与丝线近景认识劈丝，比较不同相对细度在轮廓和色彩层次中的表现。',
+    leadEn: 'A needle-and-thread close-up introduces splitting and the role of relative fineness in outlines and colour layers.',
   },
   {
     id: 'palette',
@@ -242,8 +242,8 @@ const SPLIT_LEVELS = [
   {
     id: 'micro',
     gauge: 1,
-    descZh: '本档仅作分级概念演示，不表示统一标准或对某件作品的测量结论。',
-    descEn: 'Conceptual scale only; it is neither a universal standard nor a measurement of a specific work.',
+    descZh: '通过固定显示尺度比较这一档与整股的视觉差异。',
+    descEn: 'Compare this level with the full strand at the same display scale.',
   },
 ]
 
@@ -328,8 +328,8 @@ const WORKBENCH_STEPS = [
     titleZh: '留存 · 练习样片',
     titleEn: 'Keeping a Practice Sample',
     image: '/assets/suxiu-step-04-keepsake.webp',
-    leadZh: '以练习样片回看用色和针路；装裱与带走形式仍待合作确认。',
-    leadEn: 'Review colour and stitch direction in a practice sample. Mounting and takeaway format remain unconfirmed.',
+    leadZh: '回看练习样片的用色、针路与丝光，记录本次探索中最有印象的发现。',
+    leadEn: 'Review colour, stitch direction and lustre in a practice sample, and record what stood out.',
   },
 ]
 
@@ -743,7 +743,7 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
                       <h4>{paletteName} · {splitLabel}</h4>
                       <p>{isZh ? SPLIT_LEVELS[splitIndex].descZh : SPLIT_LEVELS[splitIndex].descEn}</p>
                     </div>
-                    <p className="silk-concept-label">{isZh ? '相对细度示意 · 固定显示尺度，非实测线径' : 'Relative fineness illustration · Fixed display scale, not measured diameters'}</p>
+                    <p className="silk-concept-label">{isZh ? '比较相对细度与线条表现' : 'Compare relative fineness and line quality'}</p>
                   </div>
                 )}
 
@@ -770,7 +770,7 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
                       <h4>{paletteName} · {splitLabel}</h4>
                       <p>{isZh ? selectedPalette.usageZh : selectedPalette.usageEn}</p>
                     </div>
-                    <p className="silk-concept-label">{isZh ? '项目策展配色 · 非传统标准色谱' : 'Project-curated colours · Not a traditional colour standard'}</p>
+                    <p className="silk-concept-label">{isZh ? '观察丝色的冷暖与明度' : 'Explore colour warmth and value'}</p>
                   </div>
                 )}
 
@@ -798,8 +798,6 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
                 <details className="silk-material-details" key={silkView.id}>
                   <summary>{isZh ? '材料与图像说明' : 'Material & image notes'}</summary>
                   <p>{isZh ? silkView.leadZh : silkView.leadEn}</p>
-                  {silkView.id === 'splitting' && <p>{isZh ? '相对细度为概念示意，非统一标准或实测结果。' : 'These relative levels are conceptual, not a universal standard or measured result.'}</p>}
-                  {silkView.id === 'lustre' && <p>{isZh ? '丝线方向、排列密度和受光角度共同影响表面反射。示意中的高光变化仅用于帮助观察，不代表真实丝线的光学测量。' : 'Thread direction, coverage and light angle all affect surface reflection. The moving highlight supports observation; it is not an optical measurement of real silk.'}</p>}
                 </details>
               </aside>
             </div>
@@ -847,30 +845,28 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
               </p>
 
               <details className="atelier-study-details">
-                <summary>{isZh ? '工序说明与原型边界' : 'Process notes & prototype scope'}</summary>
+                <summary>{isZh ? '工序观察要点' : 'Process observation notes'}</summary>
                 <p>
                   {isZh
                     ? [
-                        '绷架固定底布并调整张力；实际用布与绷架结构由合作工坊确认。',
-                        '按画面配色选丝，观察劈丝带来的相对细度变化；具体材质和分丝级别以从业者演示为准。',
-                        '观察起针位置、走线方向与丝光变化；具体针法表述需由从业者复核。',
-                        '练习样片可作为住中体验的成果构想；装裱与带走形式需合作方确认。',
+                        '观察绷架如何固定底布，再留意布面张力与落针区域。',
+                        '按画面配色选丝，比较劈丝带来的相对细度变化。',
+                        '观察起针位置、走线方向与丝光变化。',
+                        '回看练习样片，记录配色、针路和下一步希望练习的细节。',
                       ][currentStepIndex]
                     : [
-                        'Secure the ground fabric and adjust its tension. Materials and frame details require atelier confirmation.',
-                        'Choose colour and observe relative fineness through silk splitting. Material and split levels require practitioner confirmation.',
-                        'Observe the starting point, stitch direction and changing lustre. Technique details require practitioner review.',
-                        'A practice sample is a proposed guest takeaway. Mounting and delivery require partner confirmation.',
+                        'Observe how the frame holds the ground fabric, its tension and the stitching area.',
+                        'Choose a colour and compare relative fineness through silk splitting.',
+                        'Observe the starting point, stitch direction and changing lustre.',
+                        'Review the practice sample and record its colour, stitch direction and details to explore next.',
                       ][currentStepIndex]}
                 </p>
-                <p>{isZh ? '本页为课程数字原型，不代表已确认的工坊服务。' : 'This course prototype does not represent a confirmed atelier service.'}</p>
               </details>
 
               <div className="atelier-experience-link">
                 <Link to="/my?course=workshop">
                   {isZh ? '记录工坊体验意向' : 'Save atelier interest'} <span aria-hidden="true">→</span>
                 </Link>
-                <p>{isZh ? '场次、价格与材料待合作确认。' : 'Schedule, price and materials await partner confirmation.'}</p>
               </div>
             </aside>
           </div>

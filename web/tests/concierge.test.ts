@@ -97,10 +97,12 @@ describe('chat and recommendation regression boundaries', () => {
     expect(modelRequest()).not.toHaveProperty('response_format')
     expect(response.headers.get('X-Request-Id')).toBeNull()
   })
-  it('retains recommendation validation and the existing explanation instruction', async () => {
+  it('keeps recommendation validation and requests a fuller grounded explanation', async () => {
     const needs = { minutes: 15, budget: 0, party: 'solo' }
     expect((await call('recommendation/explain', { experienceId: 'scroll', needs })).status).toBe(200)
-    expect(modelRequest().messages[1].content).toContain('Keep the exact duration and demo price.')
+    expect(modelRequest().messages[1].content).toContain('Keep the exact duration and per-person catalog price.')
+    expect(modelRequest().messages[1].content).toContain('three short paragraphs')
+    expect(modelRequest().messages[1].content).toContain('Do not invent dates, inventory, instructors, benefits or confirmed bookings.')
     expect(modelRequest()).not.toHaveProperty('response_format')
     upstream.mockClear()
     expect((await call('recommendation/explain', { experienceId: 'scroll', needs: { ...needs, minutes: 1 } })).status).toBe(400)

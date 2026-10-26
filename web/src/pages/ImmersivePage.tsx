@@ -19,7 +19,7 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
     artwork: {
       title: '观绣：《姑苏繁华图》数字纹理演绎',
       eyebrow: '01 · OBSERVE',
-      body: '本页参照清代画家徐扬《姑苏繁华图》所呈现的城市风貌，以数字纹理重新组织阊门、运河、桥梁与市井人物。它引导住客观察构图、色阶与丝光表现的可能性，并非馆藏画作的苏绣复制品。',
+      body: '参照清代画家徐扬《姑苏繁华图》中的城市风貌，以数字纹理呈现阊门、运河、桥梁与市井人物。观察构图、色阶与丝光，发现画面细节与苏州故事之间的联系。',
       tags: ['姑苏胜景', '数字纹理', '微距观察'],
       observe: '选择画面中的四个点位，比较水波、人物与商铺的纹理方向和色阶变化；需要时再开启 3x 微距镜。',
       stay: '把感兴趣的点位带入婉娘导览继续提问，或在“我的行程”中记录工坊体验意向。',
@@ -30,7 +30,7 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
       body: '从蚕茧到丝光，观察材料、色样与相对细度如何影响绣面的视觉表现。',
       tags: ['材料序列', '相对细度', '策展取色'],
       observe: '从上方切换蚕茧、劈丝、取色与丝光。劈丝可与整股基准比较，取色可预览线束颜色，丝光可切换三种受光方向；示意均用于概念观察。',
-      stay: '选中的色样可作为入门练习的配色参考；实体材料与教学方式以后续合作工坊方案为准。',
+      stay: '选中的色样可作为入门练习的配色参考；也可以继续了解配线与起针的过程。',
     },
     workbench: {
       title: '试针：传统绣台与第一针',
@@ -38,14 +38,14 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
       body: '循着上绷、配线、起针与留存四步，认识一枚练习样片的制作过程。',
       tags: ['传统绣绷', '四步工序', '入门体验'],
       observe: '按次序查看四个流程节点，留意绷面张力、丝线方向与落针节奏如何共同影响成绣效果。',
-      stay: '原型建议以 90 分钟完成一枚基础练习样片；师资、材料和成品形式仍需与合作方确认。',
+      stay: '用 90 分钟探索上绷、配线、起针与回看，把观察到的细节连接到基础练习。',
     },
   },
   en: {
     artwork: {
       title: 'Observe: A Digital Interpretation of Prosperous Suzhou',
       eyebrow: '01 · OBSERVE',
-      body: 'Referencing the cityscape recorded in Xu Yang’s Qing-dynasty scroll Prosperous Suzhou, this digital study reorganises Changmen Gate, canals, bridges and street life through textile-like texture. It is an interpretive learning piece, not an embroidered reproduction of a museum work.',
+      body: 'Referencing Xu Yang’s Qing-dynasty scroll Prosperous Suzhou, this digital study explores Changmen Gate, canals, bridges and street life through textile-like texture. Follow composition, tonal layers and lustre to connect visual details with stories of the city.',
       tags: ['Suzhou cityscape', 'Digital texture', 'Macro study'],
       observe: 'Select one of four points to compare directional texture and tonal transitions across water, figures and shopfronts. Open the 3x loupe only when needed.',
       stay: 'Continue the selected topic with Wanniang or save an atelier preference in My Stay.',
@@ -56,7 +56,7 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
       body: 'From cocoon to lustre, explore how materials, colour and relative thread fineness shape the embroidered surface.',
       tags: ['Material sequence', 'Relative fineness', 'Curated palette'],
       observe: 'Use the navigation above to explore Cocoon, Splitting, Palette and Lustre. Compare fineness with a full-strand baseline, preview a colour, then change the illustrated light direction. These illustrations support conceptual observation.',
-      stay: 'A selected palette can inform an introductory practice piece; physical materials and teaching depend on a future atelier partner.',
+      stay: 'A selected palette can inform an introductory practice piece; continue with thread selection and the first-stitch process.',
     },
     workbench: {
       title: 'Stitch: The Workbench and a First Stitch',
@@ -64,7 +64,7 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
       body: 'Follow mounting, thread selection, the first stitch and keeping a practice sample.',
       tags: ['Embroidery frame', 'Four-step flow', 'Introductory session'],
       observe: 'Move through the four steps and notice how surface tension, thread direction and stitch rhythm shape the result together.',
-      stay: 'The prototype proposes a 90-minute introduction resulting in a small practice sample. Tutor, materials and finish remain to be confirmed.',
+      stay: 'Spend 90 minutes exploring mounting, thread selection, the first stitch and review, connecting observation with introductory practice.',
     },
   },
 }

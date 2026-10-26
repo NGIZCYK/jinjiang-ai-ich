@@ -44,6 +44,12 @@ export function pick<T>(language: Language, zh: T, en: T) {
   return language === 'zh' ? zh : en
 }
 
-export function localizedUserName(user: Pick<User, 'name'>, _language: Language) {
+export function localizedUserName(user: Pick<User, 'name'>, language: Language) {
+  const accountNames: Record<string, [string, string]> = {
+    '公开演示住客': ['住客账户', 'Guest account'],
+    '演示住客': ['住客账户', 'Guest account'],
+    '演示运营': ['运营账户', 'Operations account'],
+  }
+  if (accountNames[user.name]) return accountNames[user.name][language === 'zh' ? 0 : 1]
   return user.name
 }
