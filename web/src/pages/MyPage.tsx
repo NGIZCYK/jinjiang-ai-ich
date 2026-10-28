@@ -9,7 +9,7 @@ import { localizedUserName } from '../lib/i18n'
 
 function FeedbackForm({booking}:{booking:JourneyBooking}){
  const {t}=useCopy();const [rating,setRating]=useState(5);const [comment,setComment]=useState('');const action=useAction()
- if(booking.feedback?.length)return <Notice>{t('反馈已记录','Feedback recorded')}: {booking.feedback[0].rating}/5 · {booking.feedback[0].comment}</Notice>
+ if(booking.feedback)return <Notice>{t('反馈已记录','Feedback recorded')}: {booking.feedback.rating}/5 · {booking.feedback.comment}</Notice>
  return <form className="feedback-form" onSubmit={e=>{e.preventDefault();void action.run(async()=>{await rpc('submit_feedback',{p_booking:booking.id,p_rating:rating,p_comment:comment});await useJourneyStore.getState().refresh()},t('感谢反馈。','Thank you for your feedback.'))}}><label>{t('数字流程评分','Digital journey rating')}<select className="input" value={rating} onChange={e=>setRating(Number(e.target.value))}>{[5,4,3,2,1].map(n=><option key={n} value={n}>{n}/5</option>)}</select></label><label>{t('哪里有帮助，哪里不清楚？','What helped? What was unclear?')}<textarea className="input" maxLength={1000} value={comment} onChange={e=>setComment(e.target.value)}/></label><button className="btn-primary" disabled={action.busy}>{t('提交一次反馈','Submit feedback once')}</button>{action.message&&<Notice error={action.failed}>{action.message}</Notice>}</form>
 }
 export function BookingHistory({id}:{id:string}) {

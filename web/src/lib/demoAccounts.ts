@@ -5,7 +5,7 @@ export interface DemoAccount {
   readonly role: DemoAccountRole
   readonly email: string
   readonly password: string
-  readonly landingPath: '/my' | '/operations'
+  readonly landingPath: '/'
   readonly labelZh: string
   readonly labelEn: string
   readonly descriptionZh: string
@@ -33,7 +33,7 @@ export function readDemoAccounts(env: DemoEnv): readonly DemoAccount[] {
       role: 'guest',
       email: guestEmail,
       password: guestPassword,
-      landingPath: '/my',
+      landingPath: '/',
       labelZh: '住客账户',
       labelEn: 'Guest account',
       descriptionZh: '保存探索卡、提交体验意向并查看处理结果',
@@ -44,7 +44,7 @@ export function readDemoAccounts(env: DemoEnv): readonly DemoAccount[] {
       role: 'ops',
       email: opsEmail,
       password: opsPassword,
-      landingPath: '/operations',
+      landingPath: '/',
       labelZh: '运营账户',
       labelEn: 'Operations account',
       descriptionZh: '处理体验意向并查看运营数据',
@@ -53,9 +53,8 @@ export function readDemoAccounts(env: DemoEnv): readonly DemoAccount[] {
   ]
 }
 
-export function resolveLoginTarget(next: string | null, role: DemoAccountRole | undefined) {
-  if (next?.startsWith('/') && !next.startsWith('//')) return next
-  return role === 'ops' ? '/operations' : '/my'
+export function resolveLoginTarget() {
+  return '/'
 }
 
 export const demoAccounts = readDemoAccounts(import.meta.env)

@@ -100,6 +100,6 @@ describe('login identity and destination', () => {
     profile.resolve({ data: { id: 'demo-user', name: 'Demo', role, batch_id: 'demo' }, error: null })
     await expect(login).resolves.toEqual({ ok: true })
     expect(useAppStore.getState()).toMatchObject({ ready: true, user: { role } })
-    expect(resolveLoginTarget(null, useAppStore.getState().user?.role)).toBe(role === 'ops' ? '/operations' : '/my')
+    expect(resolveLoginTarget()).toBe('/')
   })
 })

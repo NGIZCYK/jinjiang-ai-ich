@@ -12,7 +12,8 @@ export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' 
 export interface JourneyBooking {
   id: string; user_id: string; session_id: string; party_size: number; status: BookingStatus;
   reason: string; created_at: string; batch_id: string; recommendation_id: string | null;
-  sessions: { starts_at: string; experience_id: string }; feedback?: { rating: number; comment: string }[]
+  // feedback.booking_id is a primary key: the embedded relation is one object or null.
+  sessions: { starts_at: string; experience_id: string }; feedback?: { rating: number; comment: string } | null
 }
 export interface SavedRecommendation { id: string; experience_id: string; needs: Needs; created_at: string }
 export const CATALOG: Experience[] = [

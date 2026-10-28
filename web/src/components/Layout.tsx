@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { localizedUserName, useLanguage } from '../lib/i18n'
 import { useAppStore } from '../lib/store'
+import { PageErrorBoundary } from './PageErrorBoundary'
 
 export function Layout() {
   const user = useAppStore((s) => s.user)
@@ -167,7 +168,7 @@ export function Layout() {
         </nav>
       </header>
       <main id="main-content" className={`site-main ${isHome ? 'site-main-home' : ''}`}>
-        <Outlet />
+        <PageErrorBoundary key={location.pathname} language={language}><Outlet /></PageErrorBoundary>
       </main>
       <footer className="site-footer">
         <div className="site-footer-inner">

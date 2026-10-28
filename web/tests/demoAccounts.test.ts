@@ -21,19 +21,15 @@ describe('public demo-account configuration', () => {
     expect(readDemoAccounts({ ...complete, VITE_DEMO_GUEST_EMAIL: '  ' })).toEqual([])
   })
 
-  it('provides one guest and one operator with their own destinations', () => {
+  it('provides one guest and one operator who both land on the homepage', () => {
     const accounts = readDemoAccounts(complete)
     expect(accounts.map(({ role, email, landingPath }) => ({ role, email, landingPath }))).toEqual([
-      { role: 'guest', email: 'guest@example.test', landingPath: '/my' },
-      { role: 'ops', email: 'ops@example.test', landingPath: '/operations' },
+      { role: 'guest', email: 'guest@example.test', landingPath: '/' },
+      { role: 'ops', email: 'ops@example.test', landingPath: '/' },
     ])
   })
 
-  it('uses the authenticated role for default routing and rejects external redirects', () => {
-    expect(resolveLoginTarget(null, 'guest')).toBe('/my')
-    expect(resolveLoginTarget(null, 'ops')).toBe('/operations')
-    expect(resolveLoginTarget('/analytics?batch=demo', 'ops')).toBe('/analytics?batch=demo')
-    expect(resolveLoginTarget('//example.com', 'ops')).toBe('/operations')
-    expect(resolveLoginTarget('https://example.com', 'guest')).toBe('/my')
+  it('always uses the homepage after authentication', () => {
+    expect(resolveLoginTarget()).toBe('/')
   })
 })
