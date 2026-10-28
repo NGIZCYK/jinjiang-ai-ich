@@ -13,6 +13,9 @@ class AnalysisRegression(unittest.TestCase):
         frame, groups = segment(make_sample())
         self.assertEqual(sum(g['sampleCount'] for g in groups), len(frame))
         self.assertEqual({g['id'] for g in groups}, {'business-efficiency', 'culture-led', 'family-leisure'})
+        leisure = next(g for g in groups if g['id'] == 'family-leisure')
+        self.assertEqual(leisure['name'], '休闲探索型')
+        self.assertEqual(leisure['nameEn'], 'Leisure explorers')
 
     def test_roi_is_computed_from_shared_inputs_in_cny(self):
         rows = {r['id']: r for r in roi_table()}

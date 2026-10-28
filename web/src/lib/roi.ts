@@ -17,23 +17,23 @@ export function calculateScenario(inputs: SimulationInputs, eligibleShare: numbe
   const incrementalRevenue = workshopRevenue + roomUpliftRevenue
   const operatingCost = expectedBookings * value(inputs.unitCost) + value(inputs.fixedMonthlyCost)
   const monthlyContribution = incrementalRevenue - operatingCost
+  const unitContribution = value(inputs.ticketPrice) - value(inputs.unitCost)
+  const uncoveredFixedCost = value(inputs.fixedMonthlyCost) - roomUpliftRevenue
+  const breakEvenBookings = uncoveredFixedCost <= 0 ? 0 : unitContribution > 0 ? Math.ceil(uncoveredFixedCost / unitContribution) : null
   return { eligibleGuests, demand, capacity, expectedBookings, workshopRevenue, roomUpliftRevenue,
     incrementalRevenue, operatingCost, monthlyContribution, revenueIndex: base > 0 ? 100 * (1 + incrementalRevenue / base) : 100,
     roiPct: investment > 0 ? (monthlyContribution * assumptions.periodMonths - investment) / investment * 100 : null,
-    paybackMonths: investment > 0 && monthlyContribution > 0 ? investment / monthlyContribution : null }
+    paybackMonths: investment > 0 && monthlyContribution > 0 ? investment / monthlyContribution : null,
+    unitContribution, breakEvenBookings, breakEvenWithinCapacity: breakEvenBookings !== null && breakEvenBookings <= capacity }
 }
-export interface VerifiedStudyEvidence {
-  batch: string; verifiedHumanParticipants: number; consecutiveWeeks: number
-  conversionRate: number; attendanceRate: number; reviewed: boolean
+export function sensitivityCases(inputs: SimulationInputs, eligibleShare: number) {
+  return (['conversionRate','unitCost'] as const).flatMap(parameter => [.8,1,1.2].map(factor => {
+    const adjusted = { ...inputs, [parameter]: parameter === 'conversionRate' ? Math.min(1, inputs[parameter] * factor) : inputs[parameter] * factor }
+    return { parameter, factor, inputs: adjusted, result: calculateScenario(adjusted, eligibleShare) }
+  }))
 }
-/** Digital account counts alone cannot supply this evidence; no automatic verification in this prototype. */
-export function scaleEvidenceReady(evidence: VerifiedStudyEvidence | undefined, targetConversion: number): boolean {
-  return Boolean(evidence && evidence.batch === 'pilot-01' && evidence.reviewed
-    && evidence.verifiedHumanParticipants >= 10 && evidence.consecutiveWeeks >= 4
-    && evidence.conversionRate >= targetConversion && evidence.attendanceRate >= .75)
-}
-export function operatingDecision(id: string, result: ReturnType<typeof calculateScenario>, sampleCount: number, evidence?: VerifiedStudyEvidence, targetConversion = .12): 'pause' | 'pilot' | 'scale' {
-  if (id === 'baseline' || result.monthlyContribution <= 0 || sampleCount <= 0) return 'pause'
-  return result.roiPct !== null && result.roiPct >= 30 && result.capacity > 0
-    && result.expectedBookings >= result.capacity * .45 && scaleEvidenceReady(evidence, targetConversion) ? 'scale' : 'pilot'
+export function preferredScenario<T extends { id: string; result: ReturnType<typeof calculateScenario> }>(rows: T[], sampleCount: number): T | null {
+  if (sampleCount <= 0) return null
+  return [...rows].filter(row => row.id !== 'baseline' && row.result.expectedBookings > 0 && row.result.monthlyContribution > 0)
+    .sort((a,b) => (a.result.roiPct !== null && b.result.roiPct !== null ? b.result.roiPct - a.result.roiPct : 0) || b.result.monthlyContribution - a.result.monthlyContribution)[0] ?? null
 }

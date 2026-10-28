@@ -61,6 +61,9 @@ export interface GeneratedContent {
   content: string
   language?: 'zh' | 'en'
   createdAt: number
+  reviewStatus?: 'approved'
+  auditNotes?: string
+  reviewerId?: string
 }
 
 export interface AnalyticsSnapshot {

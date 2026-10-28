@@ -1,583 +1,99 @@
-import { scenarioInputs, calculateScenario, operatingDecision, type SimulationInputs } from '../lib/roi'
-import { TrialDashboard, type TrialData } from '../components/TrialDashboard'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { AnalyticsSnapshot } from '../types'
-import { requestOperatingBrief, type AiOperatingBrief, type OperatingDecision } from '../lib/analytics'
+import { TrialDashboard, type TrialData } from '../components/TrialDashboard'
+import { Notice } from '../components/JourneyCommon'
 import { useLanguage } from '../lib/i18n'
+import { ROI_ASSUMPTIONS, calculateScenario, scenarioInputs, sensitivityCases, preferredScenario, type SimulationInputs } from '../lib/roi'
+import { requestOperatingBrief, type AiOperatingBrief } from '../lib/analytics'
+import { behaviorExport, forecastExport } from '../lib/analyticsExport'
+import { downloadText } from '../lib/export'
 
-const SNAPSHOT_URL = '/analytics/analytics_snapshot.json'
-
-type Filters = {
-  segmentId: string
-  minStayHours: number
-  minRoomSpend: number
-  minInterest: number
-}
-
-function Bar({ value, max }: { value: number; max: number }) {
-  const pct = Math.max(4, Math.min(100, Math.round((value / Math.max(max, 1)) * 100)))
-  return (
-    <div className="mt-1 h-2 w-full rounded-full bg-stone-100">
-      <div className="h-2 rounded-full bg-jade transition-[width] duration-300" style={{ width: `${pct}%` }} />
-    </div>
-  )
-}
-
-function NumberField({
-  label,
-  value,
-  suffix,
-  step = 1,
-  onChange,
-}: {
-  label: string
-  value: number
-  suffix: string
-  step?: number
-  onChange: (value: number) => void
-}) {
-  return (
-    <label className="block">
-      <span className="mb-1 block text-xs font-medium text-stone-700">{label}</span>
-      <div className="relative">
-        <input
-          className="input pr-12"
-          min="0"
-          step={step}
-          type="number"
-          value={value}
-          onChange={(event) => onChange(Math.max(0, Number(event.target.value) || 0))}
-        />
-        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-stone-400">{suffix}</span>
-      </div>
-    </label>
-  )
-}
-
-export function AnalyticsPage() {
-  const { language } = useLanguage()
-  const [data, setData] = useState<AnalyticsSnapshot | null>(null)
-  const [loadError, setLoadError] = useState('')
-  const [reloadKey, setReloadKey] = useState(0)
-  const [scenarioId, setScenarioId] = useState('themed-room-workshop')
-  const [filters, setFilters] = useState<Filters>({ segmentId: 'all', minStayHours: 0, minRoomSpend: 0, minInterest: 0 })
-  const [inputs, setInputs] = useState<SimulationInputs | null>(null)
-  const [aiBrief, setAiBrief] = useState<AiOperatingBrief | null>(null)
-  const [aiBriefLoading, setAiBriefLoading] = useState(false)
-  const [aiBriefError, setAiBriefError] = useState('')
-  const [trialData, setTrialData] = useState<TrialData | null>(null)
-  const [showAdvanced, setShowAdvanced] = useState(false)
-  const isZh = language === 'zh'
-  const t = (zh: string, en: string) => isZh ? zh : en
-
-  useEffect(() => {
-    const controller = new AbortController()
-    setLoadError('')
-    void fetch(SNAPSHOT_URL, { signal: controller.signal, cache: 'no-store' })
-      .then(async (response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
-        return response.json() as Promise<AnalyticsSnapshot>
-      })
-      .then((snapshot) => {
-        const initialScenarioId = snapshot.revenueScenarios.some((item) => item.id === 'themed-room-workshop')
-          ? 'themed-room-workshop'
-          : snapshot.revenueScenarios[0].id
-        setData(snapshot)
-        setScenarioId(initialScenarioId)
-        setInputs(scenarioInputs(snapshot, initialScenarioId))
-      })
-      .catch((error: unknown) => {
-        if (error instanceof DOMException && error.name === 'AbortError') return
-        setLoadError(error instanceof Error ? error.message : '无法读取分析快照')
-      })
-    return () => controller.abort()
-  }, [reloadKey])
-
-  const guideSignalSummary = trialData?.guideIntent ?? {
-    total: 0,
-    uniqueUsers: 0,
-    topicCounts: {},
-    partyCounts: {},
-    sentimentCounts: {},
-    averageStayHours: null,
-    averageBudget: null,
-  }
-  const sentimentStats = {
-    positive: guideSignalSummary.sentimentCounts.positive ?? 0,
-    neutral: guideSignalSummary.sentimentCounts.neutral ?? 0,
-    negative: guideSignalSummary.sentimentCounts.negative ?? 0,
-  }
-
-  const filteredRecords = useMemo(() => {
-    if (!data) return []
-    return data.records.filter((record) => (
-      (filters.segmentId === 'all' || record.segmentId === filters.segmentId)
-      && record.stayHours >= filters.minStayHours
-      && record.roomSpend >= filters.minRoomSpend
-      && record.interest >= filters.minInterest
-    ))
-  }, [data, filters])
-
-  const filteredSegments = useMemo(() => {
-    if (!data) return []
-    const allAverageSpend = data.records.reduce((sum, record) => sum + record.totalSpend, 0) / data.records.length
-    return data.segments.map((segment) => {
-      const records = filteredRecords.filter((record) => record.segmentId === segment.id)
-      const average = (key: 'totalSpend' | 'stayHours' | 'roomSpend' | 'interest') => records.length
-        ? records.reduce((sum, record) => sum + record[key], 0) / records.length
-        : 0
-      return {
-        ...segment,
-        sampleCount: records.length,
-        share: filteredRecords.length ? records.length / filteredRecords.length : 0,
-        avgSpendIndex: records.length ? average('totalSpend') / allAverageSpend : 0,
-        avgStayHours: average('stayHours'),
-        avgRoomSpend: average('roomSpend'),
-        avgInterest: average('interest'),
-      }
-    }).filter((segment) => segment.sampleCount > 0)
-  }, [data, filteredRecords])
-
-  const eligibleShare = data && data.records.length ? filteredRecords.length / data.records.length : 0
-  const activeScenario = data?.revenueScenarios.find((item) => item.id === scenarioId) ?? data?.revenueScenarios[0]
-  const result = inputs ? calculateScenario(inputs, eligibleShare) : null
-  const scenarioResults = useMemo(() => {
-    if (!data || !inputs) return []
-    return data.revenueScenarios.map((scenario) => ({
-      ...scenario,
-      result: calculateScenario(scenario.id === scenarioId ? inputs : scenarioInputs(data, scenario.id), eligibleShare),
-    }))
-  }, [data, eligibleShare, inputs, scenarioId])
-  const maxRevenueIndex = Math.max(100, ...scenarioResults.map((item) => item.result.revenueIndex))
-  const maxShare = Math.max(1, ...filteredSegments.map((segment) => segment.share))
-  const confirmedCount = trialData?.statusCounts.confirmed ?? 0
-  const primarySegment = filteredSegments.reduce<typeof filteredSegments[number] | null>((best, segment) => {
-    if (!best) return segment
-    const segmentScore = segment.share * segment.avgInterest * segment.avgSpendIndex
-    const bestScore = best.share * best.avgInterest * best.avgSpendIndex
-    return segmentScore > bestScore ? segment : best
-  }, null)
-  const topicLabels: Record<string, string> = isZh
-    ? { craft: '工艺', experience: '体验课', culture: '文化故事' }
-    : { craft: 'Craft', experience: 'Workshop', culture: 'Culture' }
-  const partyLabels: Record<string, string> = isZh
-    ? { solo: '独自出行', family: '亲子/家庭', business: '商务', unspecified: '未标注' }
-    : { solo: 'Solo', family: 'Family', business: 'Business', unspecified: 'Unspecified' }
-  const topTopics = Object.entries(guideSignalSummary.topicCounts).sort(([, a], [, b]) => b - a).slice(0, 3)
-  const topParties = Object.entries(guideSignalSummary.partyCounts).sort(([, a], [, b]) => b - a).slice(0, 2)
-
-  function selectScenario(nextId: string) {
-    if (!data) return
-    clearAiBrief()
-    setScenarioId(nextId)
-    setInputs(scenarioInputs(data, nextId))
-  }
-
-  function changeInput(key: keyof SimulationInputs, value: number) {
-    clearAiBrief()
-    setInputs((current) => current ? { ...current, [key]: value } : current)
-  }
-
-  function clearAiBrief() {
-    setAiBrief(null)
-    setAiBriefError('')
-  }
-
-  if (!data || !inputs || !activeScenario || !result) {
-    return (
-      <div className="card p-6">
-        <p className="eyebrow">ANALYSIS PIPELINE</p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">{t('商业分析看板', 'Commercial insights')}</h1>
-        {loadError ? (
-          <div className="mt-4 rounded-xl bg-rose-50 p-4 text-sm text-rose-800">
-            <p>{t('无法读取 Python 分析快照：', 'Unable to load the Python analysis snapshot: ')}{loadError}</p>
-            <button className="btn-ghost mt-3" onClick={() => setReloadKey((value) => value + 1)}>{t('重新读取', 'Retry')}</button>
-          </div>
-        ) : <p className="mt-4 text-sm text-stone-600">{t('正在读取 Python 分析快照…', 'Loading the Python analysis snapshot…')}</p>}
-      </div>
-    )
-  }
-
-  // 异步生成简报时固定当前快照，避免状态更新后出现空值或混用新旧参数。
-  const currentSnapshot = data
-  const currentScenario = activeScenario
-  const currentResult = result
-
-  const decision: OperatingDecision = operatingDecision(scenarioId, result, filteredRecords.length)
-  const decisionLabel = decision === 'scale'
-    ? t('建议扩大', 'Ready to scale')
-    : decision === 'pause'
-      ? t('暂缓投入', 'Pause investment')
-      : t('建议试点', 'Pilot recommended')
-  const decisionClass = decision === 'scale'
-    ? 'bg-jade-light text-jade-dark'
-    : decision === 'pause'
-      ? 'bg-rose-50 text-rose-800'
-      : 'bg-amber-50 text-amber-900'
-  const targetConversion = Math.max(12, Math.min(35, Math.round(inputs.conversionRate * 100)))
-  const scaleGate = t(
-    `连续 4 周体验转化率 ≥ ${targetConversion}%，到课率 ≥ 75%，12 个月 ROI ≥ 30%，且 Study 01 至少 10 名真人参与者经过核验并完成经营数据人工复核。`,
-    `For four consecutive weeks: conversion ≥ ${targetConversion}%, attendance ≥ 75%, 12-month ROI ≥ 30%, with at least 10 verified human participants in Study 01 and manual review of operating evidence.`,
-  )
-  const pauseGate = t(
-    `连续 4 周转化率低于 ${Math.max(8, targetConversion - 5)}%，或月度贡献不为正时，暂停扩大投入并复核价格、场次与成本。`,
-    `Pause expansion if conversion stays below ${Math.max(8, targetConversion - 5)}% for four weeks or monthly contribution is not positive; review price, capacity and cost.`,
-  )
-  const recommendation = decision === 'scale'
-    ? t('情景达到数值阈值；扩大仍须以真实试验和人工复核为依据。', 'The scenario meets numerical thresholds. Expansion still requires verified real trials and manual review.')
-    : decision === 'pause'
-      ? t('当前假设尚不支持投入扩大。先通过导览收集更多意向，或下调固定成本、场次与启动投入后重新模拟。', 'The current assumptions do not support expansion. Gather more guide signals or reduce fixed cost, capacity and startup investment before modelling again.')
-      : t('先进行 4 周、小容量试点；以匿名导览意向、预约转化、到课率和单客成本作为下次经营决策依据。', 'Run a four-week, limited-capacity pilot and use anonymous guide intent, booking conversion, attendance and unit cost for the next decision.')
-  const executionActions = [
-    {
-      title: t('试点对象与排期', 'Pilot audience and schedule'),
-      body: t(
-        `${primarySegment ? primarySegment.name : '当前筛选客群'} · 每周约 ${Math.max(1, Math.ceil(inputs.sessions / 4))} 场，每场 ${inputs.seatsPerSession} 席；先执行 4 周。`,
-        `${primarySegment ? primarySegment.nameEn : 'Current filtered segment'} · about ${Math.max(1, Math.ceil(inputs.sessions / 4))} sessions each week, ${inputs.seatsPerSession} seats per session, for four weeks.`,
-      ),
-    },
-    {
-      title: t('首要观察指标', 'Primary metrics'),
-      body: t(
-        `目标转化 ${targetConversion}%；预估承接 ${result.expectedBookings.toFixed(0)} 人/月；同步记录到课率和单客材料成本。`,
-        `Target conversion ${targetConversion}%; expected ${result.expectedBookings.toFixed(0)} monthly bookings; also track attendance and unit material cost.`,
-      ),
-    },
-    { title: t('扩大门槛', 'Scale gate'), body: scaleGate },
-    { title: t('暂停条件', 'Pause condition'), body: pauseGate },
-  ]
-
-  async function generateAiBrief() {
-    setAiBriefLoading(true)
-    setAiBriefError('')
-    try {
-      const response = await requestOperatingBrief(language, {
-        batch: trialData?.batch ?? 'pilot-01',
-        dataBoundary: 'Trial events are observations; revenue figures are synthetic forecasts; completed means simulation only.',
-        scenario: { id: currentScenario.id, name: currentScenario.name },
-        filter: filters,
-        filteredSample: { count: filteredRecords.length, total: currentSnapshot.sampleSize, primarySegment: primarySegment?.name ?? null },
-        assumptions: inputs,
-        forecast: {
-          expectedBookings: currentResult.expectedBookings,
-          capacity: currentResult.capacity,
-          incrementalRevenue: currentResult.incrementalRevenue,
-          monthlyContribution: currentResult.monthlyContribution,
-          twelveMonthRoiPct: currentResult.roiPct,
-          paybackMonths: currentResult.paybackMonths,
-        },
-        ruleDecision: { decision, scaleGate, pauseGate },
-      })
-      setAiBrief(response.brief)
-    } catch (error) {
-      setAiBriefError(error instanceof Error ? error.message : t('AI 运营简报暂时不可用', 'AI operating brief is unavailable'))
-    } finally {
-      setAiBriefLoading(false)
-    }
-  }
-
-  const formatCurrency = (value: number) => new Intl.NumberFormat(isZh ? 'zh-CN' : 'en-US', {
-    style: 'currency', currency: 'CNY', maximumFractionDigits: 0,
-  }).format(value)
-  const generatedAt = new Intl.DateTimeFormat(isZh ? 'zh-CN' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(data.generatedAt))
-
-  return (
-    <div className="ops-page analytics-page">
-      <div className="ops-masthead analytics-masthead">
-        <div>
-          <p className="eyebrow">EXECUTIVE OPERATIONS BRIEF · SUZHOU</p>
-          <h1>{t('运营高管简报', 'Executive operating brief')}</h1>
-          <p>{t('把住客意向、经营假设与回报门槛压缩为一页可执行判断。', 'One decision view connecting guest intent, operating assumptions and return gates.')}</p>
-        </div>
-        <div className="ops-masthead-actions">
-          <span>{t('快照更新：', 'Snapshot: ')}{generatedAt}</span>
-          <button type="button" className="btn-ghost" onClick={() => setShowAdvanced((value) => !value)} aria-expanded={showAdvanced}>
-            {showAdvanced ? t('收起分析依据', 'Hide analysis') : t('展开分析依据', 'View analysis')}
-          </button>
-        </div>
-      </div>
-
-      <TrialDashboard onData={setTrialData} />
-      <h2>{t('经营情景预测', 'Business scenario forecast')}</h2>
-      <section className="card analytics-executive">
-        <div className="analytics-executive-copy">
-          <div className="analytics-executive-label">
-            <span>{t('本期经营判断', 'CURRENT DECISION')}</span>
-            <strong className={decisionClass}>{decisionLabel}</strong>
-          </div>
-          <h2>{recommendation}</h2>
-          <p>{t('结合住客意向、客群特征与经营参数，比较当前方案的投入与预期回报。', 'Compare investment and expected returns using guest interests, segments and operating parameters.')}</p>
-        </div>
-        <dl className="analytics-executive-metrics">
-          <div>
-            <dt>{t('月度贡献', 'Monthly contribution')}</dt>
-            <dd>{formatCurrency(result.monthlyContribution)}</dd>
-          </div>
-          <div>
-            <dt>{t('12 个月 ROI', '12-month ROI')}</dt>
-            <dd>{result.roiPct === null ? '—' : `${result.roiPct.toFixed(1)}%`}</dd>
-          </div>
-          <div>
-            <dt>{t('预计回本', 'Payback')}</dt>
-            <dd>{result.paybackMonths === null ? '—' : `${result.paybackMonths.toFixed(1)} ${t('个月', 'mo')}`}</dd>
-          </div>
-        </dl>
-      </section>
-
-      <section className="analytics-signal-strip">
-        <div className="card analytics-kpi p-4">
-          <div className="text-xs text-stone-500">{t('筛选后的匿名样本', 'Filtered anonymous sample')}</div>
-          <div className="mt-1 text-2xl font-semibold">{filteredRecords.length}<span className="ml-1 text-sm font-normal text-stone-500">/ {data.sampleSize}</span></div>
-        </div>
-        <div className="card analytics-kpi p-4">
-          <div className="text-xs text-stone-500">{t('当前批次：已确认 · 关键词表达倾向', 'Current cohort: confirmed · keyword expression trend')}</div>
-          <div className="mt-1 text-2xl font-semibold">{confirmedCount} <span className="text-sm font-normal text-stone-500">· {sentimentStats.positive}/{sentimentStats.neutral}/{sentimentStats.negative}</span></div>
-          <p className="mt-1 text-xs text-stone-500">{t('关键词表达条数：正向 / 中性 / 负向。', 'Keyword expressions: positive / neutral / negative.')}</p>
-        </div>
-        <div className="card analytics-kpi p-4">
-          <div className="text-xs text-stone-500">{t('当前情景收入指数', 'Current scenario revenue index')}</div>
-          <div className="mt-1 text-2xl font-semibold">{result.revenueIndex.toFixed(1)}</div>
-          <div className="text-xs text-stone-500">{t('基线 = 100', 'Baseline = 100')}</div>
-        </div>
-      </section>
-
-      {showAdvanced && (
-      <div className="analytics-evidence-stack">
-      <section className="card p-5 analytics-segmentation">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="eyebrow">PANDAS + KMEANS</p>
-            <h2 className="mt-1 font-semibold">{t('客群分层与样本筛选', 'Guest segmentation and sample filters')}</h2>
-          </div>
-          <p className="text-xs text-stone-500">{t('筛选会同步影响下方经营模拟的可触达客群规模。', 'Filters also update the reachable guest pool in the simulation below.')}</p>
-        </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <label className="block">
-            <span className="mb-1 block text-xs font-medium text-stone-700">{t('目标客群', 'Target segment')}</span>
-            <select className="input" value={filters.segmentId} onChange={(event) => { clearAiBrief(); setFilters((current) => ({ ...current, segmentId: event.target.value })) }}>
-              <option value="all">{t('全部客群', 'All segments')}</option>
-              {data.segments.map((segment) => <option key={segment.id} value={segment.id}>{isZh ? segment.name : segment.nameEn}</option>)}
-            </select>
-          </label>
-          <NumberField label={t('最低停留时长', 'Minimum stay')} suffix="h" value={filters.minStayHours} onChange={(value) => { clearAiBrief(); setFilters((current) => ({ ...current, minStayHours: value })) }} />
-          <NumberField label={t('最低客房消费', 'Minimum room spend')} suffix="¥" value={filters.minRoomSpend} onChange={(value) => { clearAiBrief(); setFilters((current) => ({ ...current, minRoomSpend: value })) }} />
-          <NumberField label={t('最低非遗兴趣指数', 'Minimum heritage interest')} suffix="0–1" step={0.05} value={filters.minInterest} onChange={(value) => { clearAiBrief(); setFilters((current) => ({ ...current, minInterest: Math.min(1, value) })) }} />
-        </div>
-        {filteredSegments.length ? (
-          <div className="mt-5 grid gap-4 lg:grid-cols-3">
-            {filteredSegments.map((segment) => (
-              <div key={segment.id} className="rounded-xl border border-stone-200 bg-stone-50/70 p-4">
-                <div className="flex items-start justify-between gap-3 text-sm">
-                  <span className="font-semibold">{isZh ? segment.name : segment.nameEn}</span>
-                  <span className="text-stone-500">{segment.sampleCount} {t('条', 'records')}</span>
-                </div>
-                <Bar value={segment.share} max={maxShare} />
-                <p className="mt-2 text-xs leading-5 text-stone-600">
-                  {t('筛选后占比 ', 'Filtered share ')}{(segment.share * 100).toFixed(1)}% · {t('平均停留 ', 'mean stay ')}{segment.avgStayHours.toFixed(1)}h
-                </p>
-                <p className="mt-1 text-xs leading-5 text-stone-600">
-                  {t('平均客房消费 ', 'mean room spend ')}{formatCurrency(segment.avgRoomSpend)} · {t('兴趣 ', 'interest ')}{segment.avgInterest.toFixed(2)}
-                </p>
-              </div>
-            ))}
-          </div>
-        ) : <p className="mt-5 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">{t('没有样本符合当前筛选，请放宽条件后继续分析。', 'No records match these filters. Relax the conditions to continue.')}</p>}
-      </section>
-
-      <section className="card p-5 analytics-simulation">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="eyebrow">REVENUE + ROI SIMULATION</p>
-            <h2 className="mt-1 font-semibold">{t('营收与 ROI 决策模拟', 'Revenue and ROI decision simulation')}</h2>
-          </div>
-          <p className="text-xs text-stone-500">{t('人民币/月；调整参数可比较不同经营方案。', 'CNY per month; adjust the inputs to compare operating scenarios.')}</p>
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-2">
-          {data.revenueScenarios.map((scenario) => (
-            <button key={scenario.id} className={scenarioId === scenario.id ? 'btn-primary' : 'btn-ghost'} onClick={() => selectScenario(scenario.id)}>
-              {isZh ? scenario.name : scenario.nameEn}
-            </button>
-          ))}
-        </div>
-
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          <NumberField label={t('月度酒店客量', 'Monthly hotel guests')} suffix={t('人', 'guests')} value={inputs.monthlyHotelGuests} onChange={(value) => changeInput('monthlyHotelGuests', value)} />
-          <NumberField label={t('体验转化率', 'Experience conversion')} suffix="%" step={0.01} value={Number((inputs.conversionRate * 100).toFixed(2))} onChange={(value) => changeInput('conversionRate', Math.min(1, value / 100))} />
-          <NumberField label={t('体验课单价', 'Workshop ticket')} suffix="¥" value={inputs.ticketPrice} onChange={(value) => changeInput('ticketPrice', value)} />
-          <NumberField label={t('主题房客单提升', 'Room-ticket uplift')} suffix="%" step={0.01} value={Number((inputs.ticketUplift * 100).toFixed(2))} onChange={(value) => changeInput('ticketUplift', Math.min(1, value / 100))} />
-          <NumberField label={t('月度基础营收', 'Monthly base revenue')} suffix="¥" value={inputs.baseMonthlyRevenue} onChange={(value) => changeInput('baseMonthlyRevenue', value)} />
-          <NumberField label={t('每月场次', 'Sessions per month')} suffix={t('场', 'sessions')} value={inputs.sessions} onChange={(value) => changeInput('sessions', value)} />
-          <NumberField label={t('每场容量', 'Seats per session')} suffix={t('人', 'seats')} value={inputs.seatsPerSession} onChange={(value) => changeInput('seatsPerSession', value)} />
-          <NumberField label={t('单客材料/服务成本', 'Unit cost')} suffix="¥" value={inputs.unitCost} onChange={(value) => changeInput('unitCost', value)} />
-          <NumberField label={t('月固定运营成本', 'Monthly fixed cost')} suffix="¥" value={inputs.fixedMonthlyCost} onChange={(value) => changeInput('fixedMonthlyCost', value)} />
-          <NumberField label={t('一次性启动投入', 'Initial investment')} suffix="¥" value={inputs.initialInvestment} onChange={(value) => changeInput('initialInvestment', value)} />
-        </div>
-
-        <div className="mt-6 grid gap-4 lg:grid-cols-[1.08fr_0.92fr]">
-          <div className="rounded-2xl bg-stone-50 p-4">
-            <h3 className="text-sm font-semibold">{t('情景收入指数对比', 'Scenario revenue-index comparison')}</h3>
-            <div className="mt-4 space-y-4">
-              {scenarioResults.map((scenario) => (
-                <div key={scenario.id}>
-                  <div className="flex justify-between gap-3 text-sm">
-                    <span>{isZh ? scenario.name : scenario.nameEn}</span>
-                    <span className="font-medium">{scenario.result.revenueIndex.toFixed(1)}</span>
-                  </div>
-                  <Bar value={scenario.result.revenueIndex} max={maxRevenueIndex} />
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="rounded-2xl border border-jade/15 bg-jade-light/45 p-4">
-            <p className="text-[0.65rem] font-semibold tracking-[0.14em] text-jade-dark">{t('当前可触达客群', 'CURRENT REACHABLE POOL')}</p>
-            <div className="mt-2 text-3xl font-semibold text-jade-dark">{result.eligibleGuests.toFixed(0)} <span className="text-sm font-normal">{t('人 / 月', 'guests / month')}</span></div>
-            <p className="mt-2 text-xs leading-5 text-stone-600">
-              {t('由当前筛选样本占比 ', 'Derived from the filtered-sample share of ')}{(eligibleShare * 100).toFixed(1)}% {t('映射至月度酒店客量。', 'of monthly hotel guests.')}
-            </p>
-            <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-              <div><div className="text-xs text-stone-500">{t('预估需求', 'Estimated demand')}</div><strong>{result.demand.toFixed(0)} {t('人', 'guests')}</strong></div>
-              <div><div className="text-xs text-stone-500">{t('可供容量', 'Available capacity')}</div><strong>{result.capacity.toFixed(0)} {t('席', 'seats')}</strong></div>
-              <div><div className="text-xs text-stone-500">{t('实际可承接', 'Expected bookings')}</div><strong>{result.expectedBookings.toFixed(0)} {t('人', 'guests')}</strong></div>
-              <div><div className="text-xs text-stone-500">{t('月度增量营收', 'Incremental revenue')}</div><strong>{formatCurrency(result.incrementalRevenue)}</strong></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="card overflow-hidden p-0 analytics-return-detail">
-        <div className="grid lg:grid-cols-[0.75fr_1.25fr]">
-          <div className="bg-ink p-5 text-white">
-            <p className="text-[0.65rem] font-semibold tracking-[0.16em] text-gold-light">ROI · LIVE MODEL</p>
-            <h2 className="mt-3 font-serif text-xl font-semibold">{t('当前方案的年度回报', 'Annual return of the current plan')}</h2>
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-                <div className="text-[0.65rem] text-stone-400">{t('月度贡献', 'Monthly contribution')}</div>
-                <div className="mt-1 text-lg font-semibold text-gold-light">{formatCurrency(result.monthlyContribution)}</div>
-              </div>
-              <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-                <div className="text-[0.65rem] text-stone-400">{t('12 个月 ROI', '12-month ROI')}</div>
-                <div className="mt-1 text-2xl font-semibold text-gold-light">{result.roiPct === null ? '—' : `${result.roiPct.toFixed(1)}%`}</div>
-              </div>
-            </div>
-            <div className="mt-4 text-sm leading-6 text-stone-300">
-              {t('预计回本：', 'Payback: ')}{result.paybackMonths === null ? t('当前假设下无法回本', 'not reached under current assumptions') : `${result.paybackMonths.toFixed(1)} ${t('个月', 'months')}`}
-            </div>
-            <p className="mt-4 text-[0.7rem] leading-5 text-stone-400">{t('公式：体验课收入 + 主题房增收 − 单客成本 − 固定成本；ROI 按首年净收益计算。', 'Formula: workshop revenue + room uplift − unit cost − fixed cost; ROI uses first-year net contribution.')}</p>
-          </div>
-          <div className="p-5">
-            <span className={`rounded-full px-2.5 py-1 text-[0.65rem] font-semibold ${decisionClass}`}>{decisionLabel}</span>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-700">{recommendation}</p>
-            <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-xl border border-stone-200 p-3">
-                <div className="text-xs font-semibold text-stone-800">{t('营收构成', 'Revenue composition')}</div>
-                <p className="mt-1 text-xs leading-5 text-stone-500">{t('体验课 ', 'Workshop ')}{formatCurrency(result.workshopRevenue)} · {t('主题房增收 ', 'Room uplift ')}{formatCurrency(result.roomUpliftRevenue)}</p>
-              </div>
-              <div className="rounded-xl border border-stone-200 p-3">
-                <div className="text-xs font-semibold text-stone-800">{t('月度成本', 'Monthly operating cost')}</div>
-                <p className="mt-1 text-xs leading-5 text-stone-500">{formatCurrency(result.operatingCost)}</p>
-              </div>
-              <div className="rounded-xl border border-stone-200 p-3">
-                <div className="text-xs font-semibold text-stone-800">{t('下一步验证', 'Next validation')}</div>
-                <p className="mt-1 text-xs leading-5 text-stone-500">{t('记录转化、到课率、材料成本与住客反馈。', 'Track conversion, attendance, material cost and guest feedback.')}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className="analytics-method-note">
-        <strong>{t('分析口径', 'Method note')}</strong>
-        <span>{data.method}</span>
-      </div>
-      </div>
-      )}
-
-      <section className="card p-5 analytics-actions">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="eyebrow">EXECUTION PLAN</p>
-            <h2 className="mt-1 font-semibold">{t('可执行经营建议', 'Executable operating plan')}</h2>
-          </div>
-          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${decisionClass}`}>{decisionLabel}</span>
-        </div>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-700">{recommendation}</p>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {executionActions.map((action) => (
-            <div key={action.title} className="rounded-xl border border-stone-200 bg-stone-50/70 p-4">
-              <h3 className="text-sm font-semibold text-stone-800">{action.title}</h3>
-              <p className="mt-2 text-xs leading-5 text-stone-600">{action.body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="card p-5 analytics-ai">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="eyebrow">GUIDE → DATA → AI → DECISION</p>
-            <h2 className="mt-1 font-semibold">{t('AI 与业务闭环', 'AI and business feedback loop')}</h2>
-          </div>
-          <button className="btn-primary" disabled={aiBriefLoading} onClick={() => void generateAiBrief()}>
-            {aiBriefLoading ? t('正在生成运营简报…', 'Generating brief…') : t('生成 AI 运营简报', 'Generate AI operating brief')}
-          </button>
-        </div>
-
-        <div className="mt-5 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <h3 className="text-sm font-semibold">{t('婉娘导览的匿名意向汇总', 'Anonymous intent from Wanniang')}</h3>
-              <span className="rounded-full bg-white px-2 py-1 text-xs font-semibold text-jade-dark">{guideSignalSummary.total} {t('条', 'signals')} · {guideSignalSummary.uniqueUsers} {t('人', 'users')}</span>
-            </div>
-            {guideSignalSummary.total ? (
-              <div className="mt-4 space-y-3 text-sm">
-                <div className="rounded-xl bg-white p-3 text-stone-700">
-                  <span className="text-xs text-stone-500">{t('热门兴趣', 'Top interests')}</span>
-                  <p className="mt-1 font-medium">{topTopics.map(([topic, count]) => `${topicLabels[topic] ?? topic} ${count}`).join(' · ') || '—'}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-xl bg-white p-3"><span className="text-xs text-stone-500">{t('平均可用时长', 'Average available time')}</span><p className="mt-1 font-medium">{guideSignalSummary.averageStayHours ? `${guideSignalSummary.averageStayHours.toFixed(1)}h` : '—'}</p></div>
-                  <div className="rounded-xl bg-white p-3"><span className="text-xs text-stone-500">{t('平均预算', 'Average budget')}</span><p className="mt-1 font-medium">{guideSignalSummary.averageBudget ? formatCurrency(guideSignalSummary.averageBudget) : '—'}</p></div>
-                </div>
-                <p className="text-xs leading-5 text-stone-500">{t('按关键词规则汇总正向、中性与负向表达。', 'Keyword rules group expressions as positive, neutral or negative.')}</p>
-                <p className="text-xs leading-5 text-stone-500">{t('同行偏好：', 'Party mix: ')}{topParties.map(([party, count]) => `${partyLabels[party] ?? party} ${count}`).join(' · ') || '—'}</p>
-              </div>
-            ) : (
-              <p className="mt-4 text-sm leading-6 text-stone-600">{t('当前批次还没有已登录住客提交的结构化导览意向。匿名游客的会话预览不会进入正式统计。', 'This cohort has no structured guide intent from signed-in guests yet. Anonymous session previews are excluded from formal metrics.')}</p>
-            )}
-          </div>
-
-          <div className="rounded-2xl border border-jade/15 bg-jade-light/35 p-4">
-            {aiBrief ? (
-              <div>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[0.65rem] font-semibold tracking-[0.14em] text-jade-dark">DEEPSEEK · STRUCTURED OPERATIONS BRIEF</p>
-                    <h3 className="mt-1 text-base font-semibold text-jade-dark">{aiBrief.headline}</h3>
-                  </div>
-                  <span className="rounded-full bg-white px-2 py-1 text-xs font-semibold text-jade-dark">{aiBrief.decision === 'scale' ? t('扩大', 'Scale') : aiBrief.decision === 'pause' ? t('暂缓', 'Pause') : t('试点', 'Pilot')}</span>
-                </div>
-                <p className="mt-3 text-sm leading-6 text-stone-700">{aiBrief.rationale}</p>
-                {aiBrief.actions.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    {aiBrief.actions.map((action, index) => <div key={`${action.action}-${index}`} className="rounded-xl bg-white/85 p-3 text-xs leading-5 text-stone-700"><strong>{action.action}</strong>{action.metric && <> · {action.metric}</>}{action.target && <>：{action.target}</>}</div>)}
-                  </div>
-                )}
-                <div className="mt-4 grid gap-2 sm:grid-cols-2 text-xs leading-5">
-                  <p className="rounded-xl border border-white/80 bg-white/65 p-3"><strong>{t('扩大门槛：', 'Scale gate: ')}</strong>{aiBrief.scaleGate}</p>
-                  <p className="rounded-xl border border-white/80 bg-white/65 p-3"><strong>{t('暂停条件：', 'Pause gate: ')}</strong>{aiBrief.pauseGate}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex h-full min-h-48 flex-col justify-center">
-                <p className="text-sm font-semibold text-jade-dark">{t('基于当前筛选、ROI 假设与导览意向生成运营简报', 'Create an operating brief from current filters, ROI assumptions and guide intent')}</p>
-                <p className="mt-2 text-xs leading-5 text-stone-600">{t('结合聚合指标，整理经营建议、关键指标与下一步行动。', 'Use aggregate metrics to prepare operating recommendations, key measures and next steps.')}</p>
-                {aiBriefError && <p className="mt-3 rounded-xl bg-rose-50 p-3 text-xs text-rose-800">{aiBriefError}</p>}
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-    </div>
-  )
+type Filters={segmentId:string;minStayHours:number;minInterest:number}
+const defaults=()=>Object.fromEntries(ROI_ASSUMPTIONS.scenarios.map(row=>[row.id,scenarioInputs(null,row.id)])) as Record<string,SimulationInputs>
+export function AnalyticsPage(){
+ const {language}=useLanguage(),zh=language==='zh',t=(a:string,b:string)=>zh?a:b
+ const [tab,setTab]=useState<'behavior'|'forecast'>('behavior')
+ const [data,setData]=useState<AnalyticsSnapshot|null>(null),[error,setError]=useState(''),[reload,setReload]=useState(0)
+ const [trial,setTrial]=useState<TrialData|null>(null)
+ const [filters,setFilters]=useState<Filters>({segmentId:'all',minStayHours:0,minInterest:0})
+ const [scenarioId,setScenarioId]=useState('themed-room-workshop'),[parameters,setParameters]=useState(defaults)
+ const [brief,setBrief]=useState<AiOperatingBrief|null>(null),[briefLoading,setBriefLoading]=useState(false),[briefError,setBriefError]=useState('')
+ const request=useRef(0)
+ useEffect(()=>{const controller=new AbortController();setError('');fetch('/analytics/analytics_snapshot.json',{signal:controller.signal,cache:'no-store'})
+  .then(async response=>{if(!response.ok)throw Error('HTTP '+response.status);const snapshot=await response.json();if(!snapshot||!Array.isArray(snapshot.records)||!snapshot.records.length||!Array.isArray(snapshot.segments))throw Error('INVALID_SNAPSHOT');setData(snapshot)})
+  .catch(e=>{if(!controller.signal.aborted)setError(String(e.message))});return()=>controller.abort()},[reload])
+ function invalidate(){request.current++;setBrief(null);setBriefError('');setBriefLoading(false)}
+ useEffect(()=>{invalidate()},[trial,language]);useEffect(()=>()=>{request.current++},[])
+ const records=useMemo(()=>data?.records.filter(row=>(filters.segmentId==='all'||row.segmentId===filters.segmentId)&&row.stayHours>=filters.minStayHours&&row.interest>=filters.minInterest)??[],[data,filters])
+ const share=data?.records.length?records.length/data.records.length:0
+ const rows=ROI_ASSUMPTIONS.scenarios.map(scenario=>({...scenario,inputs:parameters[scenario.id],result:calculateScenario(parameters[scenario.id],share)}))
+ const selected=rows.find(row=>row.id===scenarioId)!,inputs=selected.inputs,result=selected.result
+ const preferred=preferredScenario(rows,records.length),sensitivity=sensitivityCases(inputs,share)
+ const segments=(data?.segments??[]).map(segment=>{const group=records.filter(row=>row.segmentId===segment.id);return {...segment,count:group.length,meanInterest:group.length?group.reduce((sum,r)=>sum+r.interest,0)/group.length:0,meanStay:group.length?group.reduce((sum,r)=>sum+r.stayHours,0)/group.length:0}})
+ const primary=[...segments].sort((a,b)=>b.count*b.meanInterest-a.count*a.meanInterest)[0]
+ const currency=(n:number)=>new Intl.NumberFormat(zh?'zh-CN':'en-GB',{style:'currency',currency:'CNY',maximumFractionDigits:0}).format(n)
+ const number=(n:number|null,digits=1)=>n===null?'—':n.toFixed(digits)
+ function changeInput(key:keyof SimulationInputs,value:number){invalidate();setParameters(current=>({...current,[scenarioId]:{...current[scenarioId],[key]:Number.isFinite(value)?Math.max(0,value):0}}))}
+ function changeFilter(patch:Partial<Filters>){invalidate();setFilters(current=>({...current,...patch}))}
+ const comparison=rows.map(row=>({id:row.id,name:zh?row.name:row.nameEn,inputs:row.inputs,result:row.result}))
+ const decision=preferred?t(`优先比较${preferred.name}，${preferred.result.roiPct===null?'当前无需启动投入，':`其当前 12 个月 ROI 为 ${number(preferred.result.roiPct)}%，`}预计月度贡献为 ${currency(preferred.result.monthlyContribution)}。`,`Compare ${preferred.nameEn} first: ${preferred.result.roiPct===null?'no initial investment is set;':`its 12-month ROI is ${number(preferred.result.roiPct)}%;`} monthly contribution is ${currency(preferred.result.monthlyContribution)}.`):t('当前筛选或参数下暂无同时满足参与需求、容量与正向贡献的方案。请检查客群、定价与成本。','No option currently meets participation, capacity and positive-contribution conditions. Review the audience, pricing and costs.')
+ async function generateBrief(){
+  if(!trial||!data)return
+  const version=++request.current;setBriefLoading(true);setBriefError('')
+  try{const answer=await requestOperatingBrief(language,{batch:trial.batch,scenario:{id:scenarioId,name:zh?selected.name:selected.nameEn},filter:filters,assumptions:inputs,forecast:result,filteredSample:{count:records.length,total:data.sampleSize},comparison,sensitivity:sensitivity.map(row=>({parameter:row.parameter,factor:row.factor,result:row.result})),ruleDecision:{decision:preferred?'pilot':'pause',preferredScenario:preferred?.id??null}});if(version===request.current)setBrief(answer.brief)}
+  catch(e){if(version===request.current)setBriefError(e instanceof Error?e.message:String(e))}finally{if(version===request.current)setBriefLoading(false)}
+ }
+ function exportEvidence(){const stamp=new Date().toISOString().replace(/[:.]/g,'-');if(tab==='behavior'&&trial)downloadText(`user-behavior-${stamp}.csv`,behaviorExport(trial),'text/csv;charset=utf-8');if(tab==='forecast'&&data&&trial)downloadText(`business-forecast-${stamp}.csv`,forecastExport({snapshotAt:data.generatedAt,filters,scenarios:comparison,sensitivity,behavior:trial}),'text/csv;charset=utf-8')}
+ const fields:[keyof SimulationInputs,string,string,string][]=[
+  ['baseMonthlyRevenue','基线月收入','Baseline monthly revenue','¥'],['monthlyHotelGuests','月度酒店住客量','Monthly hotel guests',t('人','guests')],
+  ['conversionRate','体验转化率','Experience conversion','%'],['ticketUplift','主题房增收比例','Room revenue uplift','%'],
+  ['ticketPrice','套餐单价','Package price','¥'],['sessions','每月场次数','Monthly sessions',t('场','sessions')],
+  ['seatsPerSession','每场席位','Seats per session',t('席','seats')],['unitCost','单客材料成本','Material cost per guest','¥'],
+  ['fixedMonthlyCost','月度固定成本','Monthly fixed cost','¥'],['initialInvestment','启动投入','Initial investment','¥'],
+ ]
+ return <div className="ops-page enhanced-analytics"><header className="ops-masthead"><div><p className="eyebrow">OPERATIONS INSIGHTS</p><h1>{t('运营洞察','Operations insights')}</h1><p>{t('从使用效果到经营方案，清楚连接数据、计算与下一步行动。','Connect usage outcomes and business scenarios with calculations and next actions.')}</p></div><button className="btn-ghost" disabled={!trial||(tab==='forecast'&&!data)} onClick={exportEvidence}>{t('导出当前分析 CSV','Export current analysis CSV')}</button></header>
+ <div className="insight-tabs" role="tablist" aria-label={t('分析视图','Analysis view')}><button role="tab" aria-selected={tab==='behavior'} aria-controls="behavior-panel" id="behavior-tab" onClick={()=>setTab('behavior')}>{t('用户行为','User behavior')}</button><button role="tab" aria-selected={tab==='forecast'} aria-controls="forecast-panel" id="forecast-tab" onClick={()=>setTab('forecast')}>{t('经营推演','Business forecast')}</button></div>
+ <div role="tabpanel" id="behavior-panel" aria-labelledby="behavior-tab" hidden={tab!=='behavior'}>
+  <TrialDashboard onData={setTrial}/>
+  <section className="journey-card"><h2>{t('从数据到下一步','From data to next steps')}</h2>{trial?<>
+   <div className="insight-kpis"><div><span>{t('本批次注册账户','Registered accounts in cohort')}</span><strong>{trial.counts[0]??0}</strong></div><div><span>{t('已确认体验意向','Confirmed preferences')}</span><strong>{trial.statusCounts.confirmed??0}</strong></div><div><span>{t('已提交评分','Submitted ratings')}</span><strong>{trial.feedback.length}</strong></div><div><span>{t('平均流程评分','Mean journey rating')}</span><strong>{trial.feedback.length?number(trial.feedback.reduce((sum,row)=>sum+row.rating,0)/trial.feedback.length):'—'}</strong></div></div>
+   <div className="insight-kpis"><div><span>{t('礼宾独立用户','Unique concierge users')}</span><strong>{trial.guideIntent.uniqueUsers}</strong></div><div><span>{t('平均预算','Average budget')}</span><strong>{trial.guideIntent.averageBudget===null?'—':currency(trial.guideIntent.averageBudget)}</strong></div></div>
+   <h3>{t('关键词表达倾向','Keyword expression tendencies')}</h3><div className="choice-row">{Object.entries(trial.guideIntent.sentimentCounts).map(([key,count])=><span className="status-pill" key={key}>{({positive:t('正向','Positive'),neutral:t('中性','Neutral'),negative:t('负向','Negative')} as Record<string,string>)[key]??key}: {count}</span>)}</div>
+   <p>{(trial.counts[1]??0)===0?t('先邀请目标用户完成探索任务，记录他们在哪一步停顿、取消或需要帮助。','Invite target users to try exploration and record where they pause, cancel or need help.'):t('优先检查漏斗中流失最明显的步骤，再结合评分与反馈安排下一轮任务测试。','Check the largest funnel drop-off, then use ratings and feedback to plan the next task test.')}</p>
+  </>:<p>{t('正在等待所选批次的数据。','Waiting for the selected cohort.')}</p>}</section>
+ </div>
+ <div role="tabpanel" id="forecast-panel" aria-labelledby="forecast-tab" hidden={tab!=='forecast'}>
+  {error&&<Notice error>{error}<button className="btn-ghost" onClick={()=>setReload(n=>n+1)}>{t('重新读取','Retry')}</button></Notice>}
+  {!data?<Notice>{t('正在读取 Python 分析快照…','Loading the Python analysis snapshot…')}</Notice>:<>
+   <section className="journey-card"><div className="journey-heading"><div><p className="eyebrow">PYTHON · PANDAS · KMEANS</p><h2>{t('客群分层与筛选','Segments and filters')}</h2></div><span className="status-pill">{t('情景样本','Scenario samples')} · {records.length}/{data.sampleSize}</span></div>
+    <div className="studio-brief-grid"><label>{t('目标客群','Target segment')}<select className="input" value={filters.segmentId} onChange={e=>changeFilter({segmentId:e.target.value})}><option value="all">{t('全部客群','All segments')}</option>{data.segments.map(segment=><option key={segment.id} value={segment.id}>{zh?segment.name:segment.nameEn}</option>)}</select></label>
+    <label>{t('最低停留小时数','Minimum stay hours')}<input className="input" type="number" min={0} value={filters.minStayHours} onChange={e=>changeFilter({minStayHours:Math.max(0,Number(e.target.value)||0)})}/></label>
+    <label>{t('最低兴趣指数','Minimum interest index')}<input className="input" type="number" min={0} max={1} step={.05} value={filters.minInterest} onChange={e=>changeFilter({minInterest:Math.min(1,Math.max(0,Number(e.target.value)||0))})}/></label></div>
+    <div className="insight-segments">{segments.map(segment=><article key={segment.id}><h3>{zh?segment.name:segment.nameEn}</h3><strong>{segment.count} · {records.length?number(100*segment.count/records.length):'—'}%</strong><p>{segment.id==='business-efficiency'?t('商务特征占比较高，偏好利用短时空档。','Higher business share; suited to shorter free periods.'):segment.id==='culture-led'?t('非遗兴趣较高，适合深入文化与工艺。','Higher heritage interest; suited to deeper cultural study.'):t('商务特征较低，适合轻松观察与探索。','Lower business share; suited to relaxed exploration.')}</p><p>{t('平均停留','Mean stay')} {number(segment.meanStay)}h · {t('兴趣','Interest')} {number(segment.meanInterest,2)}</p></article>)}</div>
+    <p className="method-caption">{t('按停留时长、客房消费、非遗兴趣和商务特征标准化后分为三组。','Three groups use standardized stay duration, room spend, heritage interest and business characteristics.')}</p>
+    {primary&&primary.count>0&&<Link className="btn-primary" to={`/studio?segment=${encodeURIComponent(primary.id)}`}>{t('按此客群生成内容','Create content for this segment')} → {zh?primary.name:primary.nameEn}</Link>}
+   </section>
+   <section className="journey-card"><div className="journey-heading"><h2>{t('方案比较','Compare scenarios')}</h2><span>{t('快照时间：','Snapshot: ')}{new Date(data.generatedAt).toLocaleString(zh?'zh-CN':'en-GB')}</span></div><p>{decision}</p>
+    <div className="insight-table-wrap"><table className="insight-table"><thead><tr>{['方案|Scenario','预计参与|Expected guests','容量|Capacity','增量收入/月|Incremental revenue/mo','贡献/月|Contribution/mo','12个月 ROI|12-month ROI','回本月数|Payback months'].map(label=><th key={label}>{label.split('|')[zh?0:1]}</th>)}</tr></thead><tbody>{rows.map(row=><tr key={row.id} className={row.id===scenarioId?'is-current':''}><th><button aria-pressed={row.id===scenarioId} onClick={()=>{invalidate();setScenarioId(row.id)}}>{zh?row.name:row.nameEn}</button>{preferred?.id===row.id&&<small>{t('优先比较','Compare first')}</small>}</th><td>{number(row.result.expectedBookings,0)}</td><td>{number(row.result.capacity,0)}</td><td>{currency(row.result.incrementalRevenue)}</td><td>{currency(row.result.monthlyContribution)}</td><td>{row.result.roiPct===null?'—':number(row.result.roiPct)+'%'}</td><td>{number(row.result.paybackMonths)}</td></tr>)}</tbody></table></div>
+    {!records.length&&<Notice>{t('没有符合筛选的样本，请放宽条件再比较方案。','No matching samples. Relax the filters before comparing.')}</Notice>}
+   </section>
+   <section className="journey-card"><h2>{t('调整当前方案：','Adjust current scenario: ')}{zh?selected.name:selected.nameEn}</h2><p>{t('套餐单价用于经营推演；住客页面按单项体验目录报价。各方案分别保留已调整的参数。','Package price is a forecasting input; the guest page uses individual experience prices. Edits are retained separately for each scenario.')}</p>
+    <div className="studio-brief-grid">{fields.map(([key,ch,en,unit])=>{const rate=key==='conversionRate'||key==='ticketUplift';return <label key={key}>{zh?ch:en} ({unit})<input className="input" type="number" min={0} max={rate?100:undefined} step={rate ? 0.1 : 1} value={rate?Number((inputs[key]*100).toFixed(4)):inputs[key]} onChange={e=>{const value=Math.max(0,Number(e.target.value)||0);changeInput(key,rate?Math.min(100,value)/100:value)}}/></label>})}</div>
+    <button className="btn-ghost" onClick={()=>{invalidate();setParameters(current=>({...current,[scenarioId]:scenarioInputs(data,scenarioId)}))}}>{t('还原本方案参数','Reset this scenario')}</button>
+    <div className="insight-kpis"><div><span>{t('单客贡献','Unit contribution')}</span><strong>{currency(result.unitContribution)}</strong></div><div><span>{t('保本参与人数/月','Break-even guests/mo')}</span><strong>{result.breakEvenBookings===null?t('无法达到','Not attainable'):result.breakEvenBookings}</strong></div><div><span>{t('月度固定成本','Monthly fixed cost')}</span><strong>{currency(inputs.fixedMonthlyCost)}</strong></div><div><span>{t('预计材料成本/月','Expected materials/mo')}</span><strong>{currency(result.expectedBookings*inputs.unitCost)}</strong></div><div><span>{t('当前可触达人数/月','Reachable guests/mo')}</span><strong>{number(result.eligibleGuests,0)}</strong></div></div>
+    {(!result.breakEvenWithinCapacity||result.unitContribution<=0)&&<Notice>{t('请检查单客贡献与容量是否足以覆盖固定成本。','Check whether unit contribution and capacity can cover fixed costs.')}</Notice>}
+    <p className="method-caption">{t('月度贡献 = 套餐收入 + 主题房增收 − 材料成本 − 固定成本；首年净 ROI 扣除启动投入。保本人数按主题房增收抵扣固定成本后计算。','Contribution = package revenue + room uplift − materials − fixed costs. First-year net ROI deducts initial investment. Break-even guests cover fixed costs remaining after room uplift.')}</p>
+   </section>
+   <section className="journey-card"><h2>{t('敏感性分析','Sensitivity analysis')}</h2><p>{t('每次仅改变一个因素：转化率或单客材料成本上下浮动 20%，其余参数保持不变。','Change one factor at a time: conversion or material cost moves ±20%, with other inputs held fixed.')}</p>
+    {result.demand>=result.capacity&&result.capacity>0&&<p className="method-caption">{t('当前方案受容量限制：增加转化率未必增加参与人数，可同时比较场次与席位配置。','This scenario is capacity-limited. Higher conversion may not increase bookings; compare session and seat capacity too.')}</p>}
+    <div className="insight-table-wrap"><table className="insight-table"><thead><tr>{[t('因素','Factor'),t('变化','Change'),t('月度贡献','Monthly contribution'),t('12 个月 ROI','12-month ROI'),t('回本月数','Payback months')].map(label=><th key={label}>{label}</th>)}</tr></thead><tbody>{sensitivity.map(row=><tr key={row.parameter+row.factor}><th>{row.parameter==='conversionRate'?t('转化率','Conversion'):t('材料成本','Material cost')}</th><td>{row.factor===1?t('当前值','Current'):`${row.factor>1?'+':''}${Math.round((row.factor-1)*100)}%`}</td><td>{currency(row.result.monthlyContribution)}</td><td>{row.result.roiPct===null?'—':number(row.result.roiPct)+'%'}</td><td>{number(row.result.paybackMonths)}</td></tr>)}</tbody></table></div>
+   </section>
+   <section className="journey-card"><div className="journey-heading"><h2>{t('AI 经营简报','AI operating brief')}</h2><button className="btn-primary" disabled={briefLoading||!trial} onClick={()=>void generateBrief()}>{briefLoading?t('正在生成…','Generating…'):t('生成经营简报','Generate operating brief')}</button></div>
+    <p>{t('结合所选批次的聚合指标、方案比较和敏感性结果，整理可执行的验证行动。','Use cohort aggregates, scenario comparisons and sensitivity results to prepare practical validation actions.')}</p>{briefError&&<Notice error>{briefError}</Notice>}
+    {brief&&<div className="operating-brief"><h3>{brief.headline}</h3><p>{brief.rationale}</p>{brief.actions.map((action,index)=><article key={index}><strong>{action.action}</strong><p>{action.metric} · {action.target}</p></article>)}<p><strong>{t('下一阶段验证：','Next-stage validation: ')}</strong>{brief.scaleGate}</p><p><strong>{t('调整条件：','Adjustment conditions: ')}</strong>{brief.pauseGate}</p></div>}
+   </section>
+  </>}
+ </div>
+ </div>
 }

@@ -18,12 +18,17 @@ def calculate_scenario(inputs: dict, eligible_share: float = 1) -> dict:
     incremental = workshop + uplift
     cost = bookings * positive(inputs['unitCost']) + positive(inputs['fixedMonthlyCost'])
     contribution = incremental - cost
+    unit_contribution = positive(inputs['ticketPrice']) - positive(inputs['unitCost'])
+    uncovered_fixed = positive(inputs['fixedMonthlyCost']) - uplift
+    break_even = 0 if uncovered_fixed <= 0 else math.ceil(uncovered_fixed / unit_contribution) if unit_contribution > 0 else None
     return dict(eligibleGuests=guests, demand=demand, capacity=capacity, expectedBookings=bookings,
         workshopRevenue=workshop, roomUpliftRevenue=uplift, incrementalRevenue=incremental,
         operatingCost=cost, monthlyContribution=contribution,
         revenueIndex=100*(1+incremental/base) if base > 0 else 100,
         roiPct=(contribution*ASSUMPTIONS['periodMonths']-investment)/investment*100 if investment > 0 else None,
-        paybackMonths=investment/contribution if investment > 0 and contribution > 0 else None)
+        paybackMonths=investment/contribution if investment > 0 and contribution > 0 else None,
+        unitContribution=unit_contribution, breakEvenBookings=break_even,
+        breakEvenWithinCapacity=break_even is not None and break_even <= capacity)
 
 if __name__ == '__main__':
     import sys

@@ -66,7 +66,7 @@ export const useAppStore = create<AppState>((set,get) => ({
   const {data,error}=await requireCloud().from('reviewed_contents').select('*').order('created_at',{ascending:false})
   if(error) throw error
   if(id!==get().user?.id) return
-  set({contents:data.map(c=>({id:c.id,userId:c.user_id,type:c.type,title:c.title,content:c.content,language:c.language,createdAt:new Date(c.created_at).getTime()}))})
+  set({contents:data.map(c=>({id:c.id,userId:c.user_id,type:c.type,title:c.title,content:c.content,language:c.language,reviewStatus:c.review_status,auditNotes:c.audit_notes,reviewerId:c.reviewer_id,createdAt:new Date(c.created_at).getTime()}))})
  },
  async addContent(type,title,content,language,notes) {
   await rpc('save_reviewed_content',{p_type:type,p_title:title,p_content:content,p_language:language,p_notes:notes})

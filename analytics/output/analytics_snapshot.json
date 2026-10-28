@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-07T10:44:25.548223",
+  "generatedAt": "2026-10-28T03:55:12.155060+00:00",
   "source": "ENT207 课程匿名合成样本；不含个人身份信息，非锦江真实经营数据。",
   "method": "pandas 特征整理；scikit-learn KMeans(k=3) 客群分层；收入与 ROI 为可调经营假设。",
   "sampleSize": 1200,
@@ -20,8 +20,8 @@
     },
     {
       "id": "family-leisure",
-      "name": "亲子休闲型",
-      "nameEn": "Family leisure",
+      "name": "休闲探索型",
+      "nameEn": "Leisure explorers",
       "share": 0.3133,
       "description": "样本 376；均值停留 24.4h，兴趣指数 0.43",
       "descriptionEn": "376 samples · mean stay 24.4h · interest index 0.43",
@@ -10983,7 +10983,10 @@
       "monthlyContribution": 36480.0,
       "revenueIndex": 105.104,
       "roiPct": 143.2,
-      "paybackMonths": 4.934210526315789
+      "paybackMonths": 4.934210526315789,
+      "unitContribution": 186,
+      "breakEvenBookings": 0,
+      "breakEvenWithinCapacity": true
     },
     {
       "id": "themed-room-workshop",
@@ -11003,7 +11006,10 @@
       "monthlyContribution": 93200.0,
       "revenueIndex": 112.552,
       "roiPct": 272.8,
-      "paybackMonths": 3.218884120171674
+      "paybackMonths": 3.218884120171674,
+      "unitContribution": 330,
+      "breakEvenBookings": 0,
+      "breakEvenWithinCapacity": true
     }
   ]
 }

@@ -5,6 +5,7 @@ import App from './App'
 import { LanguageProvider } from './lib/i18n'
 import './index.css'
 import './journey.css'
+import './operations.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

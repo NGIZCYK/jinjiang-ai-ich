@@ -93,6 +93,6 @@ describe('Edge Function with simulated auth, database and provider (no cloud req
     const response=await handler(request('analytics/brief',{analysis:{batch:'demo'}}))
     const json=await response.json()
     expect(json.brief.decision).toBe('pilot')
-    expect(json.brief.limitation).toContain('manual review')
+    expect(json.brief.limitation).toContain('digital counts are not attendance or revenue')
   })
 })

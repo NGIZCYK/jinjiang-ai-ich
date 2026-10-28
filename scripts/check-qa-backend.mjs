@@ -144,11 +144,11 @@ async function main() {
     await check('deepseek_operating_brief', async () => {
       const r = await endpoint(ops.token, 'analytics/brief', { language: 'zh', analysis: { batch: 'pilot-01', scenario: 'QA migration acceptance', assumptions: {}, forecast: {}, ruleDecision: 'pilot' } })
       assert(r.status === 200, `HTTP_${r.status}`); const v = await r.json()
-      assert(v.provider === 'deepseek' && ['pilot','pause'].includes(v.brief?.decision) && v.brief.rationale?.trim() && Array.isArray(v.brief.actions) && v.brief.limitation.includes('manual review'))
+      assert(v.provider === 'deepseek' && ['pilot','pause'].includes(v.brief?.decision) && v.brief.rationale?.trim() && Array.isArray(v.brief.actions) && v.brief.limitation.includes('digital counts are not attendance or revenue'))
       return { status: r.status, provider: v.provider, decision: v.brief.decision, expansionGuarded: true }
     })
   } finally {
-    for (const actor of actors) await actor.client.auth.signOut()
+    for (const actor of actors) await actor.client.auth.signOut({scope:'local'})
     report.passed = report.checks.length > 0 && report.checks.every(c => c.passed)
     report.finishedAt = new Date().toISOString()
     await writeFile(reportPath, JSON.stringify(report, null, 2))

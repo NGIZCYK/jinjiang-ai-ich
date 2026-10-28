@@ -68,7 +68,7 @@ def segment(df: pd.DataFrame) -> tuple[pd.DataFrame, list[dict]]:
     profile_map = {
         biz_id: ("business-efficiency", "商务快捷型", "Business efficiency"),
         cult_id: ("culture-led", "文化体验型", "Culture-led experience"),
-        family_id: ("family-leisure", "亲子休闲型", "Family leisure"),
+        family_id: ("family-leisure", "休闲探索型", "Leisure explorers"),
     }
     work["segment_id"] = work["cluster"].map(lambda cluster: profile_map[int(cluster)][0])
     out: list[dict] = []
@@ -128,7 +128,7 @@ def main() -> None:
         for index, row in segmented.iterrows()
     ]
     payload = {
-        "generatedAt": pd.Timestamp.now().isoformat(),
+        "generatedAt": pd.Timestamp.now(tz="UTC").isoformat(),
         "source": "ENT207 课程匿名合成样本；不含个人身份信息，非锦江真实经营数据。",
         "method": "pandas 特征整理；scikit-learn KMeans(k=3) 客群分层；收入与 ROI 为可调经营假设。",
         "sampleSize": len(segmented),

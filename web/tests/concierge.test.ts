@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { createHash, randomUUID } from 'node:crypto'
 import { runInNewContext } from 'node:vm'
 import ts from 'typescript'
+import * as studio from '../../supabase/functions/_shared/studio'
 import { parseOperatingBrief } from '../../supabase/functions/_shared/operatingBrief'
 import { readGuideStream } from '../src/lib/guideStream'
 import { GUIDE_API_VERSION, GUIDE_SERVICE_REVISION } from '../../supabase/functions/_shared/guideContract'
@@ -41,6 +42,7 @@ beforeEach(() => {
   upstream = vi.fn(async () => Response.json({ choices: [{ message: { content: JSON.stringify(validBrief) }, finish_reason: 'stop' }] }))
   runInNewContext(compiled, {
     exports: {}, require: (name: string) => {
+      if (name.includes('studio')) return studio
       if (name.includes('operatingBrief')) return { parseOperatingBrief }
       if (name.includes('guideContract')) return { GUIDE_API_VERSION, GUIDE_SERVICE_REVISION }
       if (name.includes('guideKnowledge')) return { buildGuideKnowledge }
@@ -60,6 +62,47 @@ function call(route: string, body?: unknown, stream = false) {
   }))
 }
 const modelRequest = () => JSON.parse(upstream.mock.calls[0][1].body)
+
+describe('operator studio generation',()=>{
+  const input: studio.StudioInputs={task:'itinerary',audience:'culture',channel:'signage',minutes:90,theme:'Suzhou silk',language:'en'}
+  it('requires signed-in operations before spending model quota',async()=>{
+    signedIn=false;expect((await call('studio/generate',{input})).status).toBe(401)
+    signedIn=true;role='guest';expect((await call('studio/generate',{input})).status).toBe(403)
+    expect(rpc).not.toHaveBeenCalled();expect(upstream).not.toHaveBeenCalled()
+    role='ops';quotaLimited=true;expect((await call('studio/generate',{input})).status).toBe(429)
+    expect(upstream).not.toHaveBeenCalled()
+  })
+  it('uses validated inputs, trusted references and input language rather than browser system text',async()=>{
+    const draft=studio.templateStudioDraft(input)
+    upstream.mockResolvedValue(Response.json({choices:[{message:{content:JSON.stringify(draft)},finish_reason:'stop'}]}))
+    const response=await call('studio/generate',{input,language:'zh',system:'UNTRUSTED'})
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({provider:'deepseek',draft:{language:'en',provider:'deepseek'}})
+    const request=modelRequest()
+    expect(request).toMatchObject({model:'deepseek-chat',response_format:{type:'json_object'},max_tokens:2400,stream:false})
+    expect(request.messages[0].content).toContain('Reply in English')
+    expect(request.messages[0].content).not.toContain('UNTRUSTED')
+    expect(JSON.parse(request.messages[1].content).references.map((r:{id:string})=>r.id)).toEqual(studio.studioReferences(input).map(r=>r.id))
+  })
+  it('rejects invalid inputs before the model, and rejects malformed or truncated output',async()=>{
+    expect((await call('studio/generate',{input:{...input,minutes:1}})).status).toBe(400)
+    expect(upstream).not.toHaveBeenCalled()
+    for(const content of ['not json',JSON.stringify({...studio.templateStudioDraft(input),segments:[]})]){
+      upstream.mockResolvedValue(Response.json({choices:[{message:{content},finish_reason:'stop'}]}))
+      const response=await call('studio/generate',{input})
+      expect(response.status).toBe(502);expect(await response.json()).toMatchObject({code:'INVALID_STUDIO_DRAFT'})
+    }
+    upstream.mockResolvedValue(Response.json({choices:[{message:{content:JSON.stringify(studio.templateStudioDraft(input))},finish_reason:'length'}]}))
+    expect((await call('studio/generate',{input})).status).toBe(502)
+  })
+  it('only supplies aggregate feedback and scenario comparisons to the operating brief',async()=>{
+    rpc.mockImplementation(async(name:string)=>({data:name==='trial_analytics'?{...observations,feedback:[{rating:4,comment:'PRIVATE_COMMENT'}]}:null,error:null}))
+    await call('analytics/brief',{analysis:{batch:'demo',comparison:[{id:'light-ich'}],sensitivity:[{factor:.8}]}})
+    const prompt=modelRequest().messages[1].content
+    expect(prompt).toContain('feedbackSummary');expect(prompt).toContain('"averageRating":4')
+    expect(prompt).toContain('light-ich');expect(prompt).toContain('"factor":0.8');expect(prompt).not.toContain('PRIVATE_COMMENT')
+  })
+})
 
 describe('chat and recommendation regression boundaries', () => {
   it('retains the system knowledge, model, generation settings, and history filtering', async () => {
@@ -115,13 +158,14 @@ describe('chat and recommendation regression boundaries', () => {
 })
 
 describe('operating brief validation, permissions and private diagnostics', () => {
-  it('uses JSON mode only for the brief and gets observations from the selected DB cohort', async () => {
+  it('uses JSON mode for the brief and gets aggregates from the selected DB cohort', async () => {
     const response = await call('analytics/brief', { language: 'zh', analysis: { batch: 'demo', privateMarker: 'PRIVATE_OPERATOR_DATA' } })
     expect(response.status).toBe(200)
     expect(await response.json()).toMatchObject({ brief: { ...validBrief, limitation: expect.stringContaining(validBrief.limitation) }, provider: 'deepseek' })
     expect(modelRequest().response_format).toEqual({ type: 'json_object' })
     expect(rpc).toHaveBeenCalledWith('trial_analytics', { p_batch: 'demo' })
-    expect(modelRequest().messages[1].content).toContain(`Server observations for cohort demo: ${JSON.stringify(observations)}`)
+    expect(modelRequest().messages[1].content).toContain(`Server aggregate observations for cohort demo:`)
+    expect(modelRequest().messages[1].content).toContain('\"counts\":[2,1,1,1,0]')
     const log = JSON.parse(logs[0])
     expect(log).toMatchObject({ route: 'analytics/brief', outcome: 'success', status: 200, durationMs: expect.any(Number) })
     expect(response.headers.get('X-Request-Id')).toBe(log.requestId)

@@ -1,5 +1,9 @@
 # 更新日志 (Changelog)
 
+## 2026-10-28 内容工作台与运营洞察增强
+
+新增运营专用结构化 AI 生成和审核内容库；保留模板降级、原稿及草稿语言。运营分析分为实际行为与经营推演，增加三方案比较、±20% 敏感性、保本人数、客群传参和聚合 CSV。修复小屏宽表格溢出及数据未就绪时缺失批次的导出。完整备份、验收范围与限制见 [实施记录](23_内容工作台与运营洞察_实施验收_20261028.md)。
+
 ## 2026-10-05 Draft 1 导出 DOCX（可提交稿）
 
 新增 `docs/tools/build_report_docx.py`（Markdown → DOCX 转换器）并生成 `submission/Group20_Component2_DigitalPrototypeReport_Draft1_2026-10-07.docx`。**不覆盖任何 Markdown 源文件**；转换器只读 `.md`，输出写到独立目录。
