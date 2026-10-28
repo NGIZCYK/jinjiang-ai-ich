@@ -16,14 +16,16 @@ interface AppState {
 }
 let started = false
 let authVersion = 0
+let authEventVersion = 0
 let pendingIdentity: { id?: string; promise: Promise<void> } | null = null
 function loadIdentity(id?: string) {
+ if (id && useAppStore.getState().ready && useAppStore.getState().user?.id === id) return Promise.resolve()
  if (pendingIdentity && pendingIdentity.id === id) return pendingIdentity.promise
  const pending = { id, promise: Promise.resolve() }
  pendingIdentity = pending
  pending.promise = (async () => {
  const version = ++authVersion
- useAppStore.setState({ user:null, ready:false, messages:[], guideSignals:loadGuideSignals(),contents:[],authError:'' })
+ useAppStore.setState({ user:null, ready:false, batch:'demo', messages:[], guideSignals:loadGuideSignals(),contents:[],authError:'' })
  if (!id || !cloud) { useAppStore.setState({ ready:true }); return }
  const {data,error} = await cloud.from('profiles').select('*').eq('id',id).single()
  if (version !== authVersion) return
@@ -32,28 +34,44 @@ function loadIdentity(id?: string) {
  if (version !== authVersion) return
  useAppStore.setState({ ready:true, batch:data.batch_id, user:{ id:data.id,name:data.name,role:data.role,email:session.session?.user.email || '' } })
  if (data.role==='ops') void useAppStore.getState().refreshContents().catch(() => {})
- })().finally(() => { if (pendingIdentity === pending) pendingIdentity = null })
+ })().catch(error => {
+  if (pendingIdentity === pending) useAppStore.setState({user:null,ready:true,authError:error instanceof Error ? error.message : String(error)})
+ }).finally(() => { if (pendingIdentity === pending) pendingIdentity = null })
  return pending.promise
 }
 export const useAppStore = create<AppState>((set,get) => ({
  user:null,ready:!cloud,authError:'',batch:'demo',messages:[],guideSignals:loadGuideSignals(),contents:[],
  initialize() {
   if(started || !cloud) return; started=true
-  void cloud.auth.getSession().then(({data}) => { void loadIdentity(data.session?.user.id) })
+  const initialVersion = authEventVersion
+  void cloud.auth.getSession().then(({data}) => {
+   if (initialVersion === authEventVersion) void loadIdentity(data.session?.user.id)
+  }).catch(error => {
+   if (initialVersion === authEventVersion) set({ready:true,authError:String(error)})
+  })
   cloud.auth.onAuthStateChange((event,session) => {
    if (event === 'TOKEN_REFRESHED' || (session?.user.id === get().user?.id && event === 'SIGNED_IN')) return
-   setTimeout(() => { void loadIdentity(session?.user.id) },0)
+   const version = ++authEventVersion
+   setTimeout(() => { if (version === authEventVersion) void loadIdentity(session?.user.id) },0)
   })
  },
  async login(email,password) {
+  ++authEventVersion
   try { const {data,error}=await requireCloud().auth.signInWithPassword({email:email.trim(),password}); if(error) throw error; await loadIdentity(data.user.id); if(get().authError) throw new Error(get().authError); return {ok:true} }
   catch(e) { return {ok:false,error:e instanceof Error?e.message:String(e)} }
  },
  async register(email,password,name) {
+  ++authEventVersion
   try { const {data,error}=await requireCloud().auth.signUp({email:email.trim(),password,options:{data:{name}}}); if(error) throw error; if(data.session) await loadIdentity(data.user?.id); return {ok:true,confirmation:!data.session} }
   catch(e) {return {ok:false,error:e instanceof Error?e.message:String(e)}}
  },
- async logout() { if(cloud) {const {error}=await cloud.auth.signOut(); if(error) {set({authError:error.message});return}} sessionStorage.removeItem('jj_v2_needs');sessionStorage.removeItem('jj_v2_exploration_draft');await loadIdentity() },
+ async logout() {
+  ++authEventVersion
+  await loadIdentity()
+  try { sessionStorage.removeItem('jj_v2_needs');sessionStorage.removeItem('jj_v2_exploration_draft') } catch { /* Storage may be unavailable. */ }
+  try { if(cloud) {const {error}=await cloud.auth.signOut({scope:'local'});if(error) set({authError:error.message})} }
+  catch(error) {set({authError:error instanceof Error ? error.message : String(error)})}
+ },
  addMessage(m) {const full={...m,id:crypto.randomUUID(),createdAt:Date.now()};set({messages:[...get().messages,full]});return full},
  async addGuideSignal(s) {
   if(get().user?.role==='guest')await rpc('save_guide_signal',{p_request:s.sourceMessageId,p_language:s.language,p_topics:s.topics,p_stay_hours:s.stayHours??null,p_budget:s.budget??null,p_party_type:s.partyType,p_sentiment:s.sentiment})

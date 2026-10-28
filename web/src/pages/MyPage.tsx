@@ -17,12 +17,15 @@ export function BookingHistory({id}:{id:string}) {
  return <details onToggle={e=>{if(e.currentTarget.open)void action.run(async()=>{const {data,error}=await requireCloud().from('booking_history').select('status,reason,created_at').eq('booking_id',id).order('created_at');if(error)throw error;setRows(data)},'')}}><summary>{t('处理记录','Status history')}</summary>{rows.map((r,i)=><p key={i}>{slotTime(r.created_at,language)} · {statusLabel(r.status,language)} {r.reason}</p>)}{action.message&&<Notice error>{action.message}</Notice>}</details>
 }
 export function MyPage(){
- const {language,t}=useCopy();const user=useAppStore(s=>s.user)!;const batch=useAppStore(s=>s.batch)
+ const {language,t}=useCopy();const user=useAppStore(s=>s.user)
  const {exploration,recommendations,bookings,catalog,sessions,loading,error,refresh}=useJourneyStore();const [params]=useSearchParams()
  const [selectedRec,setSelectedRec]=useState(params.get('recommendation')||'');const [experience,setExperience]=useState('workshop');const [sessionId,setSessionId]=useState('');const [partySize,setPartySize]=useState(1);const action=useAction();const request=useRef(crypto.randomUUID());const rec=recommendations.find(r=>r.id===selectedRec)
  const duration=Number(params.get('duration')) || null
  useEffect(()=>{if(rec){setExperience(rec.experience_id);setSessionId('')}else if(duration){const suitable=catalog.filter(e=>e.minutes<=duration).sort((a,b)=>b.minutes-a.minutes)[0];if(suitable)setExperience(suitable.id)}},[rec,duration,catalog])
  const available=sessions.filter(s=>s.experience_id===experience);const selected=catalog.find(e=>e.id===experience)
+ // Store subscriptions can notify this child before its role guard unmounts it.
+ // Keep every hook above this guard so logout cannot crash the React root.
+ if(!user)return <Notice>{t('请登录后查看我的行程。','Sign in to view your journey.')}</Notice>
  const ownBookings=bookings.filter(b=>b.user_id===user.id)
  function resetRequest(){request.current=crypto.randomUUID();action.clear()}
  return <div className="journey-page"><header className="journey-heading"><div><p className="eyebrow">YOUR SUZHOU JOURNEY</p><h1>{t('我的行程','My journey')}</h1><p>{localizedUserName(user,language)}</p></div><button className="btn-ghost" disabled={loading} onClick={()=>void refresh()}>{loading?t('同步中…','Syncing…'):t('刷新共享记录','Refresh shared records')}</button></header>{error&&<Notice error>{error}</Notice>}

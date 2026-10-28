@@ -1,7 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
 const url = import.meta.env.VITE_SUPABASE_URL?.trim()
 const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim()
-export const cloud = url && key ? createClient(url, key) : null
+// A fresh visit must start as a visitor, even on a shared demo computer.
+// Keep authentication in memory for SPA navigation only.
+export const authOptions = { persistSession: false, detectSessionInUrl: false }
+export const cloud = url && key ? createClient(url, key, { auth: authOptions }) : null
 export const CLOUD_NOTICE = '共享服务尚未配置，暂不能登录或保存。Shared service is not configured; sign-in and cloud saving are unavailable.'
 export function requireCloud() { if (!cloud) throw new Error(CLOUD_NOTICE); return cloud }
 export async function rpc<T>(name: string, args: Record<string, unknown> = {}): Promise<T> {
