@@ -1,3 +1,4 @@
+import { feedbackStatistics } from '../../supabase/functions/_shared/feedbackSummary'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { createHash, randomUUID } from 'node:crypto'
@@ -42,6 +43,7 @@ beforeEach(() => {
   upstream = vi.fn(async () => Response.json({ choices: [{ message: { content: JSON.stringify(validBrief) }, finish_reason: 'stop' }] }))
   runInNewContext(compiled, {
     exports: {}, require: (name: string) => {
+      if (name.includes('feedbackSummary')) return { feedbackStatistics }
       if (name.includes('studio')) return studio
       if (name.includes('operatingBrief')) return { parseOperatingBrief }
       if (name.includes('guideContract')) return { GUIDE_API_VERSION, GUIDE_SERVICE_REVISION }

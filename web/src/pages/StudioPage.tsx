@@ -1,3 +1,5 @@
+import { readStudioDraft, writeStudioDraft, removeStudioDraft } from '../lib/studioDraft'
+import { actionError } from '../lib/actionErrors'
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useLanguage } from '../lib/i18n'
@@ -15,22 +17,30 @@ function initialInputs(params: URLSearchParams, language: 'zh'|'en'): StudioInpu
 export function StudioPage() {
   const {language}=useLanguage(), zh=language==='zh', t=(a:string,b:string)=>zh?a:b
   const [params]=useSearchParams()
-  const [inputs,setInputs]=useState<StudioInputs>(()=>initialInputs(params,language))
-  const [context,setContext]=useState<StudioInputs|null>(null)
-  const [title,setTitle]=useState(''),[body,setBody]=useState('')
-  const [provider,setProvider]=useState<StudioDraft['provider']|'saved'>('saved')
-  const [checks,setChecks]=useState([false,false,false]),[notes,setNotes]=useState(''),[approved,setApproved]=useState(false)
+  const owner=useAppStore(s=>s.user?.id)??'visitor'
+  const [restored]=useState(()=>readStudioDraft(owner))
+  const [draftStatus,setDraftStatus]=useState<'saved'|'unavailable'|'empty'>(restored?'saved':'empty')
+  const [inputs,setInputs]=useState<StudioInputs>(()=>restored?.inputs??initialInputs(params,language))
+  const [context,setContext]=useState<StudioInputs|null>(restored?.context??null)
+  const [title,setTitle]=useState(restored?.title??''),[body,setBody]=useState(restored?.body??'')
+  const [provider,setProvider]=useState<StudioDraft['provider']|'saved'>(restored?.provider??'saved')
+  const [checks,setChecks]=useState([false,false,false]),[notes,setNotes]=useState(restored?.notes??''),[approved,setApproved]=useState(false)
   const [saved,setSaved]=useState(false)
-  const [stale,setStale]=useState(false),[busy,setBusy]=useState(false),[saving,setSaving]=useState(false)
+  const [stale,setStale]=useState(restored?.stale??false),[busy,setBusy]=useState(false),[saving,setSaving]=useState(false)
   const [message,setMessage]=useState(''),[failed,setFailed]=useState(false)
   const [search,setSearch]=useState(''),[typeFilter,setTypeFilter]=useState('all'),[languageFilter,setLanguageFilter]=useState('all')
   const contents=useAppStore(s=>s.contents), addContent=useAppStore(s=>s.addContent), refresh=useAppStore(s=>s.refreshContents)
   const controller=useRef<AbortController|null>(null), request=useRef(0)
   useEffect(()=>()=>{request.current++;controller.current?.abort()},[])
-  useEffect(()=>{const segment=params.get('segment');if(segment){setInputs(current=>({...current,audience:initialInputs(params,language).audience}));setStale(true);invalidate()}},[params.get('segment')])
+  useEffect(()=>{const segment=params.get('segment');if(segment&&initialInputs(params,language).audience!==inputs.audience){setInputs(current=>({...current,audience:initialInputs(params,language).audience}));setStale(true);invalidate()}},[params.get('segment')])
+  function stash(){const ok=writeStudioDraft(owner,{inputs,context,title,body,notes,checks,provider,stale});setDraftStatus(ok?'saved':'unavailable');return ok}
+  useEffect(()=>{if(saved){removeStudioDraft(owner);setDraftStatus('empty');return}if(body.trim()||title.trim())stash()},[owner,inputs,context,title,body,notes,checks,provider,stale,saved])
+  useEffect(()=>{if(!body.trim()||saved)return;const warn=(event:BeforeUnloadEvent)=>{event.preventDefault();event.returnValue=''};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn)},[body,saved])
+  function confirmReplace(){return !body.trim()||saved||window.confirm(t('此操作会替换当前正文。需要保留时，请先下载草稿。继续吗？','This replaces the current text. Download a copy first if you need it. Continue?'))}
   function invalidate(){setSaved(false);setApproved(false);setChecks([false,false,false]);setNotes('');setMessage('')}
   function change(patch:Partial<StudioInputs>){setInputs(current=>({...current,...patch}));if(body)setStale(true);invalidate()}
   async function generate(){
+    if(!confirmReplace())return
     controller.current?.abort();const abort=new AbortController();controller.current=abort
     const version=++request.current;setBusy(true);setFailed(false);setMessage('');invalidate()
     const captured={...inputs,language}
@@ -47,9 +57,10 @@ export function StudioPage() {
     if(content.length>30000){setFailed(true);setMessage(t('内容过长，请缩短正文后重新审核。','Shorten the content and review it again.'));return}
     setSaving(true);setFailed(false)
     try{await addContent(context.task,title.trim(),content,context.language,notes.trim());setSaved(true);setMessage(t('已保存到内容库，原有记录保留。','Saved to the content library; earlier records are preserved.'))}
-    catch(e){setFailed(true);setMessage(e instanceof Error?e.message:t('保存失败','Save failed'))}finally{setSaving(false)}
+    catch(e){setFailed(true);setMessage(actionError(e,language))}finally{setSaving(false)}
   }
   function open(item:GeneratedContent){
+    if(!confirmReplace())return
     controller.current?.abort();request.current++;setBusy(false)
     const decoded=decodeStudioContent(item.content), captured=decoded.inputs??{...initialInputs(new URLSearchParams(),item.language??'zh'),task:item.type,language:item.language??'zh'}
     setInputs(captured);setContext(captured);setTitle(item.title);setBody(decoded.body);setProvider(decoded.provider??'saved');setStale(false);invalidate()
@@ -61,6 +72,7 @@ export function StudioPage() {
   const fileName=(title||'studio-content').replace(/[\\/:*?"<>|]/g,'-').slice(0,100)
   return <div className="ops-page studio-page enhanced-studio">
     <header className="ops-masthead"><div><p className="eyebrow">CONTENT STUDIO</p><h1>{t('苏绣内容工作台','Su Embroidery Content Studio')}</h1><p>{t('输入住客与渠道需求，生成有依据的内容，审核后保存到内容库。','Turn guest and channel needs into grounded content, review it and save it to your library.')}</p></div><a className="btn-ghost" href="#content-library">{t('打开内容库','Open content library')} · {contents.length}</a></header>
+    {(restored||body)&&<div className="studio-draft-status" role="status"><span>{draftStatus==='unavailable'?t('浏览器暂存不可用，请下载草稿以保留修改。','Browser draft storage is unavailable. Download a copy to keep your edits.'):saved?t('内容已入库。','Content is in the library.'):t('草稿已自动暂存到此标签页，返回工作台可继续编辑。恢复后请重新审核。','Draft saved in this tab. Return to continue editing; review again before saving to the library.')}</span><button className="btn-ghost" disabled={!body||busy||saving} onClick={()=>stash()}>{t('暂存草稿','Save draft locally')}</button></div>}
     <ol className="studio-workflow" aria-label={t('内容工作流','Content workflow')}><li>01 · {t('定义需求','Define needs')}</li><li>02 · {t('生成与编辑','Generate and edit')}</li><li>03 · {t('审核与保存','Review and save')}</li></ol>
     <section className="journey-card"><h2>{t('01 · 内容需求','01 · Content brief')}</h2><fieldset disabled={busy||saving} className="studio-brief-grid">
       <label>{t('内容类型','Content type')}<select className="input" value={inputs.task} onChange={e=>change({task:e.target.value as StudioInputs['task']})}><option value="itinerary">{t('住客体验行程','Guest itinerary')}</option><option value="copy">{t('酒店推广文案','Hotel promotion')}</option></select></label>

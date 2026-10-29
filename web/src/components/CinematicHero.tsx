@@ -38,6 +38,7 @@ export function CinematicHero({
   const [isPaused, setIsPaused] = useState(false)
   const [isReady, setIsReady] = useState(false)
   const [videoFailed, setVideoFailed] = useState(false)
+  const [wantsVideo,setWantsVideo] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches)
   const [staticMode, setStaticMode] = useState(() => {
     if (typeof window === 'undefined') return false
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -68,6 +69,7 @@ export function CinematicHero({
   }
 
   const togglePlayback = async () => {
+    if (!wantsVideo && !staticMode && !videoFailed) { setWantsVideo(true); return }
     const video = videoRef.current
     if (!video || staticMode || videoFailed) return
     if (video.paused) {
@@ -100,7 +102,7 @@ export function CinematicHero({
     <section className="home-hospitality-hero home-cinematic-hero">
       <div className={`home-film-media ${isReady ? 'is-ready' : ''}`} aria-hidden="true">
         <img src={POSTER_SRC} alt="" width="1600" height="900" />
-        {!staticMode && !videoFailed && (
+        {!staticMode && !videoFailed && wantsVideo && (
           <video
             ref={videoRef}
             autoPlay
@@ -136,13 +138,13 @@ export function CinematicHero({
 
       <div className="home-film-console">
         <div className="home-film-meta">
-          <strong>{staticMode || videoFailed ? copy.static : timeLabel}</strong>
+          <strong>{staticMode || videoFailed || !wantsVideo ? copy.static : timeLabel}</strong>
         </div>
         <div className="home-film-progress" aria-hidden="true">
-          <span style={{ width: `${staticMode || videoFailed ? 100 : progress}%` }} />
+          <span style={{ width: `${staticMode || videoFailed || !wantsVideo ? 100 : progress}%` }} />
         </div>
-        <button type="button" onClick={togglePlayback} disabled={staticMode || videoFailed} aria-label={isPaused ? copy.play : copy.pause}>
-          {staticMode || videoFailed ? copy.static : isPaused ? copy.play : copy.pause}
+        <button type="button" onClick={togglePlayback} disabled={staticMode || videoFailed} aria-label={!wantsVideo?(language==='zh'?'播放影像':'Play film'):isPaused ? copy.play : copy.pause}>
+          {staticMode || videoFailed ? copy.static : !wantsVideo?(language==='zh'?'播放影像':'Play film'):isPaused ? copy.play : copy.pause}
         </button>
       </div>
     </section>

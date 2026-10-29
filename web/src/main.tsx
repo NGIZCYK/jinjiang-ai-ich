@@ -6,6 +6,8 @@ import { LanguageProvider } from './lib/i18n'
 import './index.css'
 import './journey.css'
 import './operations.css'
+import './experience-flow.css'
+import './voice-settings.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

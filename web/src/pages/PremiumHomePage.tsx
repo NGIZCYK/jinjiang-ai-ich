@@ -3,12 +3,17 @@ import { Link } from 'react-router-dom'
 import { CinematicHero } from '../components/CinematicHero'
 import { useLanguage } from '../lib/i18n'
 import { useAppStore } from '../lib/store'
+import { clearContinuation, readContinuation } from '../lib/journeyFlow'
+import { useReducedMotion } from '../hooks/useReducedMotion'
 
 export function PremiumHomePage() {
   const user = useAppStore((state) => state.user)
   const { language } = useLanguage()
   const [artIndex, setArtIndex] = useState(0)
   const [isArtworkPaused, setIsArtworkPaused] = useState(false)
+  const [pausedByUser,setPausedByUser] = useState(false)
+  const [continueTo,setContinueTo] = useState(readContinuation)
+  const reducedMotion = useReducedMotion()
 
   const copy = language === 'zh'
     ? {
@@ -95,10 +100,10 @@ export function PremiumHomePage() {
   const artwork = artworks[artIndex] ?? artworks[0]
 
   useEffect(() => {
-    if (isArtworkPaused) return undefined
+    if (isArtworkPaused || pausedByUser || reducedMotion) return undefined
     const timer = window.setInterval(() => setArtIndex((current) => (current + 1) % artworks.length), 5600)
     return () => window.clearInterval(timer)
-  }, [artworks.length, isArtworkPaused])
+  }, [artworks.length, isArtworkPaused, pausedByUser, reducedMotion])
 
   function selectArtwork(nextIndex: number) {
     setArtIndex((nextIndex + artworks.length) % artworks.length)
@@ -111,13 +116,14 @@ export function PremiumHomePage() {
         eyebrow={copy.heroEyebrow}
         title={copy.title}
         lead={copy.lead}
-        primaryLabel={copy.meet}
-        primaryTo={'/guide'}
+        primaryLabel={user&&continueTo?(language==='zh'?'继续刚才的操作':'Continue your experience'):copy.meet}
+        primaryTo={user&&continueTo?continueTo:'/guide'}
         secondaryLabel={copy.explore}
         secondaryTo="/immersive"
         note={copy.heroNote}
       />
 
+      {user&&continueTo&&<section className="home-continue" aria-label={language==='zh'?'继续体验':'Continue your experience'}><div><small>{language==='zh'?'欢迎回来':'WELCOME BACK'}</small><h2>{language==='zh'?'接着完成刚才的体验。':'Pick up where you left off.'}</h2><p>{language==='zh'?'你的探索与需求草稿仍在，可以继续核对并保存。':'Your exploration and needs drafts are ready to check and save.'}</p></div><Link className="btn-primary" to={continueTo} onClick={()=>{clearContinuation();setContinueTo(null)}}>{language==='zh'?'继续刚才的操作':'Continue your experience'} →</Link><button className="journey-text-button" onClick={()=>{clearContinuation();setContinueTo(null)}}>{language==='zh'?'稍后再说':'Maybe later'}</button></section>}
       <section className="home-journey-section">
         <header className="home-section-intro">
           <p className="eyebrow">{copy.journeyEyebrow}</p>
@@ -145,7 +151,7 @@ export function PremiumHomePage() {
           <h2>{copy.roomTitle}</h2>
           <p>{copy.roomBody}</p>
           <ul>{copy.roomPoints.map((point) => <li key={point}>{point}</li>)}</ul>
-          <Link to={'/immersive'}>{copy.roomCta}<span aria-hidden="true">→</span></Link>
+          <Link to="/my">{copy.roomCta}<span aria-hidden="true">→</span></Link>
         </div>
       </section>
 
@@ -167,7 +173,7 @@ export function PremiumHomePage() {
           <p>{copy.collectionLead}</p>
         </header>
 
-        <div className="home-collection-layout" onMouseEnter={() => setIsArtworkPaused(true)} onMouseLeave={() => setIsArtworkPaused(false)} onFocus={() => setIsArtworkPaused(true)} onBlur={() => setIsArtworkPaused(false)}>
+        <div className="home-collection-layout" onMouseEnter={() => setIsArtworkPaused(true)} onMouseLeave={() => setIsArtworkPaused(false)} onFocus={() => setIsArtworkPaused(true)} onBlur={event => {if(!event.currentTarget.contains(event.relatedTarget))setIsArtworkPaused(false)}}>
           <div className="home-collection-art">
             <img key={artwork.src} className="home-artwork-image" src={artwork.src} alt={artwork.alt} width="1080" height="1440" decoding="async" loading="lazy" />
           </div>
@@ -184,7 +190,7 @@ export function PremiumHomePage() {
               </div>
               <button type="button" onClick={() => selectArtwork(artIndex + 1)} aria-label={copy.next}>→</button>
             </div>
-            <small>{copy.pause}</small>
+            <button type="button" className="journey-text-button" aria-pressed={pausedByUser||reducedMotion} disabled={reducedMotion} onClick={()=>setPausedByUser(value=>!value)}>{reducedMotion?(language==='zh'?'已按系统偏好停止自动轮换':'Auto rotation is off for reduced motion'):pausedByUser?(language==='zh'?'继续自动轮换':'Resume rotation'):(language==='zh'?'暂停自动轮换':'Pause rotation')}</button>
           </div>
         </div>
       </section>

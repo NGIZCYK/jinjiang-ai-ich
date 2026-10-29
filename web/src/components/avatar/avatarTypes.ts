@@ -74,12 +74,7 @@ export interface AvatarStageProps {
   name?: string
   className?: string
   fallbackImage?: string
-  /**
-   * 开口度 0~1，由 useSpeechQueue 的 rAF 循环产出。
-   * 当前用途：驱动 puppet 的下颚律动（AvatarStage → PuppetAvatar，经 CSS 变量，
-   * 不触发 React 重渲染）；若将来接入真实 Live2D 运行时，本值应透传给其 setParameters。
-   */
-  /** Direct frame subscription; numeric mouthOpen remains the compatibility fallback. */
+  /** Compatibility input for an explicitly enabled model; the stable portrait ignores it. */
   mouthSource?: MouthSource
   mouthOpen?: number
   mouthForm?: number
@@ -87,7 +82,7 @@ export interface AvatarStageProps {
   useLive2D?: boolean
   modelPath?: string
   pace?: AvatarPace
-  /** 默认 true；置 false 时跳过 puppet 渲染器直接用静态兜底。 */
+  /** Defaults to false. The guide uses one stable portrait; legacy puppet is opt-in only. */
   usePuppet?: boolean
 }
 
@@ -109,9 +104,7 @@ export interface PuppetAvatarProps {
   alt?: string
   className?: string
   /**
-   * 开口度 0~1，驱动下颚律动。
-   * 写入 puppet-jaw 元素的 --jaw-open 变量（0~1），形变在 CSS 内完成；
-   * 故意不走 React state，避免 60fps 重渲染。
+   * Legacy frame input retained for compatibility. Whole-portrait deformation is disabled.
    */
   /** Direct frame subscription; numeric mouthOpen remains the compatibility fallback. */
   mouthSource?: MouthSource

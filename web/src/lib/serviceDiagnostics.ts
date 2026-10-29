@@ -3,7 +3,7 @@ export function voiceErrorType(error: unknown): string {
     if (error.name === 'AbortError') return 'CANCELLED'
     if (error.name === 'NotAllowedError') return 'PLAYBACK_BLOCKED'
     if (error.name === 'TimeoutError') return 'TIMEOUT'
-    if (['VOICE_TOKEN_UNAVAILABLE', 'VOICE_SYNTHESIS_FAILED', 'VOICE_AUDIO_UNAVAILABLE', 'VOICE_PLAYBACK_ERROR'].includes(error.message)) return error.message
+    if (['VOICE_TOKEN_UNAVAILABLE', 'VOICE_SYNTHESIS_FAILED', 'VOICE_AUDIO_UNAVAILABLE', 'VOICE_PLAYBACK_ERROR', 'VOICE_LANGUAGE_UNAVAILABLE', 'VOICE_SELECTION_UNAVAILABLE', 'VOICE_UNAVAILABLE'].includes(error.message)) return error.message
   }
   return 'VOICE_SERVICE_ERROR'
 }

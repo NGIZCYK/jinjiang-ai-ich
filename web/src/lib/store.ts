@@ -1,3 +1,4 @@
+import { clearContinuation } from './journeyFlow'
 import { create } from 'zustand'
 import type { ChatMessage, GeneratedContent, GuideSignal, User } from '../types'
 import { cloud, requireCloud, rpc } from './cloud'
@@ -68,13 +69,16 @@ export const useAppStore = create<AppState>((set,get) => ({
  async logout() {
   ++authEventVersion
   await loadIdentity()
+  persistGuideSignals([]);set({guideSignals:[]});clearContinuation()
   try { sessionStorage.removeItem('jj_v2_needs');sessionStorage.removeItem('jj_v2_exploration_draft') } catch { /* Storage may be unavailable. */ }
   try { if(cloud) {const {error}=await cloud.auth.signOut({scope:'local'});if(error) set({authError:error.message})} }
   catch(error) {set({authError:error instanceof Error ? error.message : String(error)})}
  },
  addMessage(m) {const full={...m,id:crypto.randomUUID(),createdAt:Date.now()};set({messages:[...get().messages,full]});return full},
  async addGuideSignal(s) {
+  const owner=get().user?.id
   if(get().user?.role==='guest')await rpc('save_guide_signal',{p_request:s.sourceMessageId,p_language:s.language,p_topics:s.topics,p_stay_hours:s.stayHours??null,p_budget:s.budget??null,p_party_type:s.partyType,p_sentiment:s.sentiment})
+  if(owner!==get().user?.id)return
   const next=[{...s,id:crypto.randomUUID(),createdAt:Date.now()},...get().guideSignals].slice(0,200);persistGuideSignals(next);set({guideSignals:next})
  },
  clearMessages(l) {set({messages:l?get().messages.filter(m=>(m.language??'zh')!==l):[]})},

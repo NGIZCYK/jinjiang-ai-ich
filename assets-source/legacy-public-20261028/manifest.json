@@ -1,0 +1,110 @@
+[
+  {
+    "original": "web/public/assets/lobby-heritage-360-4k-v2.webp",
+    "archive": "assets-source/legacy-public-20261028/assets/lobby-heritage-360-4k-v2.webp",
+    "bytes": 1405018,
+    "sha256": "7ed5a42f47ac0b84da16ecb35d114ec17f908f6523d13204db6b349bf86c1c1a"
+  },
+  {
+    "original": "web/public/assets/lobby-heritage-360-4k-v3.webp",
+    "archive": "assets-source/legacy-public-20261028/assets/lobby-heritage-360-4k-v3.webp",
+    "bytes": 1975474,
+    "sha256": "e6ce33de90a39569a1a1b3705bf1f2ff68fe69ad70c2fa1d92711faf8458d417"
+  },
+  {
+    "original": "web/public/assets/lobby-heritage-360-4k-v4-backup.webp",
+    "archive": "assets-source/legacy-public-20261028/assets/lobby-heritage-360-4k-v4-backup.webp",
+    "bytes": 1826104,
+    "sha256": "27da0d02352c148e220c4bff2a219f295e71c15bec345c46ccde8de4c6ab6371"
+  },
+  {
+    "original": "web/public/assets/lobby-heritage-360-4k-v4.webp",
+    "archive": "assets-source/legacy-public-20261028/assets/lobby-heritage-360-4k-v4.webp",
+    "bytes": 1422542,
+    "sha256": "2d4d498e63a66616b199cb01f305cff2d1df160d65e3853aa38763976e015680"
+  },
+  {
+    "original": "web/public/assets/lobby-heritage-360-8k-v2.webp",
+    "archive": "assets-source/legacy-public-20261028/assets/lobby-heritage-360-8k-v2.webp",
+    "bytes": 3509532,
+    "sha256": "866d5b2c65ed76c40f320fce87548540bc20d968dc3f4ecab47bd4e098b265f3"
+  },
+  {
+    "original": "web/public/assets/lobby-heritage-360-8k-v3.webp",
+    "archive": "assets-source/legacy-public-20261028/assets/lobby-heritage-360-8k-v3.webp",
+    "bytes": 5088678,
+    "sha256": "8a66effecd0a4a01dd4e7764df5f2213cc63790d4b614b2c7168fcc0ab6976d8"
+  },
+  {
+    "original": "web/public/assets/lobby-heritage-360-8k-v4-backup.webp",
+    "archive": "assets-source/legacy-public-20261028/assets/lobby-heritage-360-8k-v4-backup.webp",
+    "bytes": 5123538,
+    "sha256": "171b88d570441b52546d2d1bdbdf92c5247498f655d9f7e6548d519018bf0170"
+  },
+  {
+    "original": "web/public/assets/lobby-heritage-360-8k-v4.webp",
+    "archive": "assets-source/legacy-public-20261028/assets/lobby-heritage-360-8k-v4.webp",
+    "bytes": 2324290,
+    "sha256": "74f3c097b3e4c4cee5cb621711d47bd6fd0799eed6b588a0087444baa2fd5f0e"
+  },
+  {
+    "original": "web/public/assets/lobby-heritage-360-preview-v2.webp",
+    "archive": "assets-source/legacy-public-20261028/assets/lobby-heritage-360-preview-v2.webp",
+    "bytes": 106930,
+    "sha256": "9a5c0eb75959736b268d2146ee4c4f065603e22f4d20c5adc0aa8575789b9ea8"
+  },
+  {
+    "original": "web/public/assets/lobby-heritage-360-preview-v3.webp",
+    "archive": "assets-source/legacy-public-20261028/assets/lobby-heritage-360-preview-v3.webp",
+    "bytes": 153280,
+    "sha256": "82fe42343a416ca3ae54fa2d39b3a32c7234e2365198b3f1783d48f431b5c080"
+  },
+  {
+    "original": "web/public/assets/lobby-heritage-360-preview-v4-backup.webp",
+    "archive": "assets-source/legacy-public-20261028/assets/lobby-heritage-360-preview-v4-backup.webp",
+    "bytes": 152598,
+    "sha256": "f774e718279f608bc8063c20e50c67d299e0a9fafa405c5b4c5c70968d048ece"
+  },
+  {
+    "original": "web/public/assets/lobby-heritage-360-preview-v4.webp",
+    "archive": "assets-source/legacy-public-20261028/assets/lobby-heritage-360-preview-v4.webp",
+    "bytes": 424156,
+    "sha256": "009491e98f4b9dc93b6bc557b4a311a052761ff0a95c1208ee1bfb0e063566fd"
+  },
+  {
+    "original": "web/public/assets/lobby-heritage-360-source-v3.png",
+    "archive": "assets-source/legacy-public-20261028/assets/lobby-heritage-360-source-v3.png",
+    "bytes": 2871857,
+    "sha256": "58c1e3e204416757288a6d8b5fbba93275bc40c2b2ba1e71867453fcf06a94fa"
+  },
+  {
+    "original": "web/public/vendor/aframe.min.js",
+    "archive": "assets-source/legacy-public-20261028/vendor/aframe.min.js",
+    "bytes": 1390001,
+    "sha256": "4fe911ce356f034b05da1a00d3a205ec19c8cf9de0ea17592cc6481b2cb98afb"
+  },
+  {
+    "original": "web/public/assets/lobby-concierge-360.jpg",
+    "archive": "assets-source/legacy-public-20261028/assets/lobby-concierge-360.jpg",
+    "bytes": 829145,
+    "sha256": "3e00112f4c047b4802aef4c5a97657a1152c3d4a790c1d3f07dcc6a5586a9042"
+  },
+  {
+    "original": "web/public/images/wanniang-concierge.png",
+    "archive": "assets-source/legacy-public-20261028/images/wanniang-concierge.png",
+    "bytes": 1940254,
+    "sha256": "601bebbb1d648936abd5e431679af763242a1c1081d2bcd4e33a5066dd43732b"
+  },
+  {
+    "original": "web/public/images/wanniang-speaking.png",
+    "archive": "assets-source/legacy-public-20261028/images/wanniang-speaking.png",
+    "bytes": 1896583,
+    "sha256": "3215b1cc1128dbba6688bb20f365367bff00312b383eb308e4b90f177be99b4c"
+  },
+  {
+    "original": "web/public/images/wanniang-listening.png",
+    "archive": "assets-source/legacy-public-20261028/images/wanniang-listening.png",
+    "bytes": 1853151,
+    "sha256": "e844ac345c7205a18df8ecd83627384e8d6614de3003e3ff6fe3d6c8a47a3f69"
+  }
+]

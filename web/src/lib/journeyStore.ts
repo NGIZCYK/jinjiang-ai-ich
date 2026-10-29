@@ -29,7 +29,7 @@ export const useJourneyStore=create<JourneyState>((set,get)=>({
    set({owner:id,exploration:(results[0].data as {body:Exploration}|null)?.body??null,needs:(results[1].data as {needs:Needs}|null)?.needs??null,recommendations:results[2].data as SavedRecommendation[],bookings:results[3].data as unknown as JourneyBooking[],catalog:results[4].data as Experience[],sessions:results[5].data as SessionSlot[],loading:false})
   }catch(e){if(version===refreshVersion)set({loading:false,error:e instanceof Error?e.message:String((e as {message?:string}).message??e)})}
  },
- async saveExploration(body){await rpc('save_exploration',{p_body:body});set({exploration:body,owner:useAppStore.getState().user?.id??null});await get().refresh()},
+ async saveExploration(body){const owner=useAppStore.getState().user?.id;if(!owner)throw new Error('SIGN_IN_REQUIRED');await rpc('save_exploration',{p_body:body});if(owner!==useAppStore.getState().user?.id)return;set({exploration:body,owner});await get().refresh()},
 }))
 const DRAFT='jj_v2_exploration_draft'
 function storedDraft():Exploration|null {
@@ -39,5 +39,5 @@ function storedDraft():Exploration|null {
 export function hasDraft(){return storedDraft()!==null}
 export function readDraft():Exploration{return storedDraft()??{...EMPTY_EXPLORATION,levels:[]}}
 export function writeDraft(x:Exploration){try{sessionStorage.setItem(DRAFT,JSON.stringify(x))}catch{}}
-export function clearDraft(){sessionStorage.removeItem(DRAFT)}
+export function clearDraft(){try{sessionStorage.removeItem(DRAFT)}catch{}}
 export async function loadPublicCatalog(){if(!cloud)return; const {data,error}=await requireCloud().from('experiences').select('*').eq('active',true);if(!error&&data)useJourneyStore.setState({catalog:data})}

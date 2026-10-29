@@ -1,3 +1,4 @@
+import { feedbackStatistics } from '../../../supabase/functions/_shared/feedbackSummary'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { AnalyticsSnapshot } from '../types'
@@ -45,6 +46,7 @@ export function AnalyticsPage(){
   catch(e){if(version===request.current)setBriefError(e instanceof Error?e.message:String(e))}finally{if(version===request.current)setBriefLoading(false)}
  }
  function exportEvidence(){const stamp=new Date().toISOString().replace(/[:.]/g,'-');if(tab==='behavior'&&trial)downloadText(`user-behavior-${stamp}.csv`,behaviorExport(trial),'text/csv;charset=utf-8');if(tab==='forecast'&&data&&trial)downloadText(`business-forecast-${stamp}.csv`,forecastExport({snapshotAt:data.generatedAt,filters,scenarios:comparison,sensitivity,behavior:trial}),'text/csv;charset=utf-8')}
+ const feedback=trial?feedbackStatistics(trial):null
  const fields:[keyof SimulationInputs,string,string,string][]=[
   ['baseMonthlyRevenue','基线月收入','Baseline monthly revenue','¥'],['monthlyHotelGuests','月度酒店住客量','Monthly hotel guests',t('人','guests')],
   ['conversionRate','体验转化率','Experience conversion','%'],['ticketUplift','主题房增收比例','Room revenue uplift','%'],
@@ -53,11 +55,11 @@ export function AnalyticsPage(){
   ['fixedMonthlyCost','月度固定成本','Monthly fixed cost','¥'],['initialInvestment','启动投入','Initial investment','¥'],
  ]
  return <div className="ops-page enhanced-analytics"><header className="ops-masthead"><div><p className="eyebrow">OPERATIONS INSIGHTS</p><h1>{t('运营洞察','Operations insights')}</h1><p>{t('从使用效果到经营方案，清楚连接数据、计算与下一步行动。','Connect usage outcomes and business scenarios with calculations and next actions.')}</p></div><button className="btn-ghost" disabled={!trial||(tab==='forecast'&&!data)} onClick={exportEvidence}>{t('导出当前分析 CSV','Export current analysis CSV')}</button></header>
- <div className="insight-tabs" role="tablist" aria-label={t('分析视图','Analysis view')}><button role="tab" aria-selected={tab==='behavior'} aria-controls="behavior-panel" id="behavior-tab" onClick={()=>setTab('behavior')}>{t('用户行为','User behavior')}</button><button role="tab" aria-selected={tab==='forecast'} aria-controls="forecast-panel" id="forecast-tab" onClick={()=>setTab('forecast')}>{t('经营推演','Business forecast')}</button></div>
+ <div className="insight-tabs" onKeyDown={event=>{const keys=['ArrowLeft','ArrowRight','Home','End'];if(!keys.includes(event.key))return;event.preventDefault();const next=event.key==='Home'?'behavior':event.key==='End'?'forecast':tab==='behavior'?'forecast':'behavior';setTab(next);event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next==='behavior'?0:1]?.focus()}} role="tablist" aria-label={t('分析视图','Analysis view')}><button role="tab" tabIndex={tab==='behavior'?0:-1} aria-selected={tab==='behavior'} aria-controls="behavior-panel" id="behavior-tab" onClick={()=>setTab('behavior')}>{t('用户行为','User behavior')}</button><button role="tab" tabIndex={tab==='forecast'?0:-1} aria-selected={tab==='forecast'} aria-controls="forecast-panel" id="forecast-tab" onClick={()=>setTab('forecast')}>{t('经营推演','Business forecast')}</button></div>
  <div role="tabpanel" id="behavior-panel" aria-labelledby="behavior-tab" hidden={tab!=='behavior'}>
   <TrialDashboard onData={setTrial}/>
   <section className="journey-card"><h2>{t('从数据到下一步','From data to next steps')}</h2>{trial?<>
-   <div className="insight-kpis"><div><span>{t('本批次注册账户','Registered accounts in cohort')}</span><strong>{trial.counts[0]??0}</strong></div><div><span>{t('已确认体验意向','Confirmed preferences')}</span><strong>{trial.statusCounts.confirmed??0}</strong></div><div><span>{t('已提交评分','Submitted ratings')}</span><strong>{trial.feedback.length}</strong></div><div><span>{t('平均流程评分','Mean journey rating')}</span><strong>{trial.feedback.length?number(trial.feedback.reduce((sum,row)=>sum+row.rating,0)/trial.feedback.length):'—'}</strong></div></div>
+   <div className="insight-kpis"><div><span>{t('本批次注册账户','Registered accounts in cohort')}</span><strong>{trial.counts[0]??0}</strong></div><div><span>{t('已确认体验意向','Confirmed preferences')}</span><strong>{trial.statusCounts.confirmed??0}</strong></div><div><span>{feedback?.scope==='all'?t('累计评分','Total ratings'):t('最近评分（最多50条）','Recent ratings (up to 50)')}</span><strong>{feedback?.count}</strong></div><div><span>{feedback?.scope==='all'?t('平均流程评分','Mean journey rating'):t('最近评分均值','Recent mean rating')}</span><strong>{number(feedback?.averageRating??null)}</strong></div></div>
    <div className="insight-kpis"><div><span>{t('礼宾独立用户','Unique concierge users')}</span><strong>{trial.guideIntent.uniqueUsers}</strong></div><div><span>{t('平均预算','Average budget')}</span><strong>{trial.guideIntent.averageBudget===null?'—':currency(trial.guideIntent.averageBudget)}</strong></div></div>
    <h3>{t('关键词表达倾向','Keyword expression tendencies')}</h3><div className="choice-row">{Object.entries(trial.guideIntent.sentimentCounts).map(([key,count])=><span className="status-pill" key={key}>{({positive:t('正向','Positive'),neutral:t('中性','Neutral'),negative:t('负向','Negative')} as Record<string,string>)[key]??key}: {count}</span>)}</div>
    <p>{(trial.counts[1]??0)===0?t('先邀请目标用户完成探索任务，记录他们在哪一步停顿、取消或需要帮助。','Invite target users to try exploration and record where they pause, cancel or need help.'):t('优先检查漏斗中流失最明显的步骤，再结合评分与反馈安排下一轮任务测试。','Check the largest funnel drop-off, then use ratings and feedback to plan the next task test.')}</p>
@@ -66,6 +68,7 @@ export function AnalyticsPage(){
  <div role="tabpanel" id="forecast-panel" aria-labelledby="forecast-tab" hidden={tab!=='forecast'}>
   {error&&<Notice error>{error}<button className="btn-ghost" onClick={()=>setReload(n=>n+1)}>{t('重新读取','Retry')}</button></Notice>}
   {!data?<Notice>{t('正在读取 Python 分析快照…','Loading the Python analysis snapshot…')}</Notice>:<>
+   <details className="journey-card data-provenance"><summary>{t('数据来源与适用范围','Data sources and limitations')}</summary><p>{t(data.source,'Synthetic course samples; no personal identities or actual Jinjiang trading data.')}</p><p>{t('客群分层和收入、成本、ROI 均用于情景比较。数字流程的账号与操作记录不能证明真人参与、实际到场或酒店收入。','Segments, revenue, cost and ROI support scenario comparisons. Account activity does not prove human participation, attendance or hotel revenue.')}</p></details>
    <section className="journey-card"><div className="journey-heading"><div><p className="eyebrow">PYTHON · PANDAS · KMEANS</p><h2>{t('客群分层与筛选','Segments and filters')}</h2></div><span className="status-pill">{t('情景样本','Scenario samples')} · {records.length}/{data.sampleSize}</span></div>
     <div className="studio-brief-grid"><label>{t('目标客群','Target segment')}<select className="input" value={filters.segmentId} onChange={e=>changeFilter({segmentId:e.target.value})}><option value="all">{t('全部客群','All segments')}</option>{data.segments.map(segment=><option key={segment.id} value={segment.id}>{zh?segment.name:segment.nameEn}</option>)}</select></label>
     <label>{t('最低停留小时数','Minimum stay hours')}<input className="input" type="number" min={0} value={filters.minStayHours} onChange={e=>changeFilter({minStayHours:Math.max(0,Number(e.target.value)||0)})}/></label>
@@ -91,7 +94,7 @@ export function AnalyticsPage(){
    </section>
    <section className="journey-card"><div className="journey-heading"><h2>{t('AI 经营简报','AI operating brief')}</h2><button className="btn-primary" disabled={briefLoading||!trial} onClick={()=>void generateBrief()}>{briefLoading?t('正在生成…','Generating…'):t('生成经营简报','Generate operating brief')}</button></div>
     <p>{t('结合所选批次的聚合指标、方案比较和敏感性结果，整理可执行的验证行动。','Use cohort aggregates, scenario comparisons and sensitivity results to prepare practical validation actions.')}</p>{briefError&&<Notice error>{briefError}</Notice>}
-    {brief&&<div className="operating-brief"><h3>{brief.headline}</h3><p>{brief.rationale}</p>{brief.actions.map((action,index)=><article key={index}><strong>{action.action}</strong><p>{action.metric} · {action.target}</p></article>)}<p><strong>{t('下一阶段验证：','Next-stage validation: ')}</strong>{brief.scaleGate}</p><p><strong>{t('调整条件：','Adjustment conditions: ')}</strong>{brief.pauseGate}</p></div>}
+    {brief&&<div className="operating-brief"><h3>{brief.headline}</h3><p>{brief.rationale}</p><p className="method-caption">{brief.limitation}</p>{brief.actions.map((action,index)=><article key={index}><strong>{action.action}</strong><p>{action.metric} · {action.target}</p></article>)}<p><strong>{t('下一阶段验证：','Next-stage validation: ')}</strong>{brief.scaleGate}</p><p><strong>{t('调整条件：','Adjustment conditions: ')}</strong>{brief.pauseGate}</p></div>}
    </section>
   </>}
  </div>

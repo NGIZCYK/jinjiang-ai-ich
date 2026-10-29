@@ -15,7 +15,7 @@ function initialLanguage(): Language {
   try {
     const requested = new URLSearchParams(window.location.search).get('lang')
     if (requested === 'en' || requested === 'zh') return requested
-    return localStorage.getItem(LANGUAGE_KEY) === 'en' ? 'en' : 'zh'
+    return window.localStorage.getItem(LANGUAGE_KEY) === 'en' ? 'en' : 'zh'
   } catch {
     return 'zh'
   }
@@ -27,7 +27,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en'
     document.title = language === 'zh' ? '婉娘 · 锦江苏绣非遗体验' : 'Wanniang · Jinjiang Su Embroidery Experience'
-    localStorage.setItem(LANGUAGE_KEY, language)
+    try { window.localStorage.setItem(LANGUAGE_KEY, language) }
+    catch { /* Keep the selected language in memory when browser storage is unavailable. */ }
   }, [language])
 
   const value = useMemo(() => ({ language, setLanguage }), [language])

@@ -1,3 +1,5 @@
+import { readVoiceSettings } from './voiceSettings'
+import type { Language } from '../i18n'
 import { apiFetch } from '../cloud'
 import { BrowserTtsProvider } from './browserTts'
 import type { TtsProvider } from './types'
@@ -11,6 +13,7 @@ export interface TtsTokenResponse {
   reason?: string
 }
 
+const deviceProvider=new BrowserTtsProvider()
 let cachedProvider: TtsProvider | null = null
 let cachedMode: 'viseme' | 'browser' | 'unavailable' | null = null
 
@@ -20,7 +23,8 @@ let cachedMode: 'viseme' | 'browser' | 'unavailable' | null = null
  * 级别 2：浏览器原生 SpeechSynthesis 模式（approximate fallback 节奏口型）
  * 级别 3：静音托底模式（unavailable）
  */
-export async function detectTtsMode(): Promise<'viseme' | 'browser' | 'unavailable'> {
+export async function detectTtsMode(language:Language='zh'): Promise<'viseme' | 'browser' | 'unavailable'> {
+  if(readVoiceSettings(language).voiceURI)return deviceProvider.mode
   if (cachedMode) return cachedMode
 
   try {
@@ -48,7 +52,8 @@ export async function detectTtsMode(): Promise<'viseme' | 'browser' | 'unavailab
 /**
  * 动态工厂：按可用凭据自动升级或回退 TtsProvider 实例
  */
-export async function getTtsProvider(): Promise<TtsProvider> {
+export async function getTtsProvider(language:Language='zh'): Promise<TtsProvider> {
+  if(readVoiceSettings(language).voiceURI)return deviceProvider
   if (cachedProvider) return cachedProvider
 
   try {

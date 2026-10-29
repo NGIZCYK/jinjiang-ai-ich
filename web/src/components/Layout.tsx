@@ -3,6 +3,8 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import { localizedUserName, useLanguage } from '../lib/i18n'
 import { useAppStore } from '../lib/store'
 import { PageErrorBoundary } from './PageErrorBoundary'
+import { JourneySteps } from './JourneySteps'
+import { clearContinuation, readContinuation } from '../lib/journeyFlow'
 
 export function Layout() {
   const user = useAppStore((s) => s.user)
@@ -11,6 +13,11 @@ export function Layout() {
   const location = useLocation()
   const { language, setLanguage } = useLanguage()
   const isHome = location.pathname === '/'
+  const operatorPage=['/operations','/studio','/analytics'].includes(location.pathname)
+  const [workspace,setWorkspace]=useState<'guest'|'ops'>(operatorPage?'ops':'guest')
+  useEffect(()=>{setWorkspace(operatorPage?'ops':'guest')},[operatorPage,user?.id])
+  useEffect(()=>{const frame=requestAnimationFrame(()=>{if(location.hash){let id='';try{id=decodeURIComponent(location.hash.slice(1))}catch{return}document.getElementById(id)?.scrollIntoView({block:'start'})}else window.scrollTo({top:0,behavior:'instant' as ScrollBehavior})});return()=>cancelAnimationFrame(frame)},[location.pathname,location.hash])
+  useEffect(()=>{if(user&&readContinuation()===location.pathname+location.search+location.hash)clearContinuation()},[user?.id,location.pathname,location.search,location.hash])
   const [homeHeaderScrolled, setHomeHeaderScrolled] = useState(false)
 
   useEffect(() => {
@@ -49,9 +56,9 @@ export function Layout() {
     { to: '/my', label: copy.guestLinks[3] },
   ]
   const opsLinks = [
-    { to: '/operations', label: language === 'zh' ? '体验管理' : 'Experiences' },
-    { to: '/studio', label: copy.opsLinks[0] },
-    { to: '/analytics', label: copy.opsLinks[1] },
+    { to: '/operations', end: false, label: language === 'zh' ? '体验管理' : 'Experiences' },
+    { to: '/studio', end: false, label: copy.opsLinks[0] },
+    { to: '/analytics', end: false, label: copy.opsLinks[1] },
   ]
   const showOperations = user?.role === 'ops'
 
@@ -71,7 +78,7 @@ export function Layout() {
           </Link>
 
           <nav className="site-primary-nav" aria-label={language === 'zh' ? '住客导航' : 'Guest navigation'}>
-            {guestLinks.map((link) => (
+            {(showOperations&&workspace==='ops'?opsLinks:guestLinks).map((link) => (
               <NavLink
                 key={link.to}
                 to={link.to}
@@ -81,26 +88,16 @@ export function Layout() {
                 {link.label}
               </NavLink>
             ))}
-            {showOperations && <span className="nav-divider" aria-hidden="true" />}
-            {showOperations && opsLinks.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                className={({ isActive }) => `nav-link nav-link-ops ${isActive ? 'nav-link-active' : ''}`}
-              >
-                {link.label}
-              </NavLink>
-            ))}
           </nav>
 
           <div className="site-header-actions">
             {showOperations && <span className="role-indicator">{copy.opsLabel}</span>}
             <div className="language-switch" aria-label="Language selector">
-              <button className={language === 'zh' ? 'language-switch-active' : ''} onClick={() => setLanguage('zh')} aria-label="Switch to Chinese">
+              <button className={language === 'zh' ? 'language-switch-active' : ''} onClick={() => setLanguage('zh')} aria-label="Switch to Chinese" aria-pressed={language==='zh'}>
                 中
               </button>
               <span aria-hidden="true" />
-              <button className={language === 'en' ? 'language-switch-active' : ''} onClick={() => setLanguage('en')} aria-label="Switch to English">
+              <button className={language === 'en' ? 'language-switch-active' : ''} onClick={() => setLanguage('en')} aria-label="Switch to English" aria-pressed={language==='en'}>
                 EN
               </button>
             </div>
@@ -142,9 +139,10 @@ export function Layout() {
             )}
           </div>
         </div>
+        {showOperations&&<div className="workspace-switch" role="group" aria-label={language==='zh'?'切换工作区':'Choose workspace'}><button aria-pressed={workspace==='guest'} onClick={()=>{setWorkspace('guest');nav('/')}}>{language==='zh'?'住客体验':'Guest experience'}</button><button aria-pressed={workspace==='ops'} onClick={()=>{setWorkspace('ops');nav('/operations')}}>{language==='zh'?'运营工作区':'Operations workspace'}</button></div>}
         <nav className="mobile-nav-shell" aria-label={language === 'zh' ? '移动端导航' : 'Mobile navigation'}>
           <div className="mobile-nav-track">
-            {guestLinks.map((link) => (
+            {(showOperations&&workspace==='ops'?opsLinks:guestLinks).map((link) => (
               <NavLink
                 key={link.to}
                 to={link.to}
@@ -154,21 +152,11 @@ export function Layout() {
                 {link.label}
               </NavLink>
             ))}
-            {showOperations && <span className="mobile-nav-divider">{copy.opsLabel}</span>}
-            {showOperations && opsLinks.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                className={({ isActive }) => `mobile-nav-link mobile-nav-link-ops ${isActive ? 'mobile-nav-link-active' : ''}`}
-              >
-                {link.label}
-              </NavLink>
-            ))}
           </div>
         </nav>
       </header>
       <main id="main-content" className={`site-main ${isHome ? 'site-main-home' : ''}`}>
-        <PageErrorBoundary key={location.pathname} language={language}><Outlet /></PageErrorBoundary>
+        <JourneySteps /><PageErrorBoundary key={location.pathname} language={language}><Outlet /></PageErrorBoundary>
       </main>
       <footer className="site-footer">
         <div className="site-footer-inner">

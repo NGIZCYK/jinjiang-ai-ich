@@ -4,6 +4,7 @@ import { BrowserTtsProvider } from '../lib/tts/browserTts'
 import { detectTtsMode, getTtsProvider } from '../lib/tts/ttsFactory'
 import type { SpeechPlayback, SpeechRequest, TtsProvider } from '../lib/tts/types'
 import { logVoiceRequest, voiceErrorType } from '../lib/serviceDiagnostics'
+import { VOICE_SETTINGS_EVENT, voiceFailureMessage } from '../lib/tts/voiceSettings'
 import {
   getApproximateFallbackViseme,
   getRestViseme,
@@ -11,6 +12,7 @@ import {
 } from '../lib/tts/visemeMapper'
 
 export interface UseSpeechQueueOptions {
+  animateMouth?: boolean
   provider?: TtsProvider
   language: 'zh' | 'en'
   onSentenceStart?: (request: SpeechRequest) => void
@@ -21,6 +23,7 @@ export interface UseSpeechQueueOptions {
 export type SpeechQueuePhase = 'idle' | 'synthesizing' | 'playing'
 
 export interface UseSpeechQueueReturn {
+  error: string
   enqueue: (items: SpeechRequest | SpeechRequest[]) => void
   stop: () => void
   phase: SpeechQueuePhase
@@ -44,6 +47,7 @@ const defaultBrowserTtsProvider = new BrowserTtsProvider()
  * “正在准备”与“实际播放”分开记录，人物只在音频真正开始时进入 speaking。
  */
 export function useSpeechQueue({
+  animateMouth = false,
   provider,
   language,
   onSentenceStart,
@@ -51,6 +55,7 @@ export function useSpeechQueue({
   onQueueEmpty,
 }: UseSpeechQueueOptions): UseSpeechQueueReturn {
   const [phase, setPhase] = useState<SpeechQueuePhase>('idle')
+  const [error,setError] = useState('')
   const [currentSpeechId, setCurrentSpeechId] = useState<string | null>(null)
   const [currentMessageId, setCurrentMessageId] = useState<string | null>(null)
   const [queueLength, setQueueLength] = useState(0)
@@ -94,9 +99,9 @@ export function useSpeechQueue({
 
   useEffect(() => {
     let cancelled = false
-    void detectTtsMode().then((mode) => { if (!cancelled) setTtsMode(mode) })
+    void detectTtsMode(language).then((mode) => { if (!cancelled) setTtsMode(mode) })
     return () => { cancelled = true }
-  }, [])
+  }, [language])
 
   useEffect(() => {
     currentLanguageRef.current = language
@@ -112,6 +117,7 @@ export function useSpeechQueue({
   }, [publishMouth])
 
   const stop = useCallback(() => {
+    setError('')
     // 使所有仍在 await 的旧任务失效，防止停止后快速重播产生双队列。
     runIdRef.current += 1
     processingRunRef.current = null
@@ -142,8 +148,16 @@ export function useSpeechQueue({
 
   useEffect(() => () => stop(), [stop])
 
+  useEffect(()=>{
+    let active=true
+    const changed=(event:Event)=>{if((event as CustomEvent).detail!==currentLanguageRef.current)return;stop();void detectTtsMode(currentLanguageRef.current).then(mode=>{if(active)setTtsMode(mode)})}
+    window.addEventListener(VOICE_SETTINGS_EVENT,changed)
+    return()=>{active=false;window.removeEventListener(VOICE_SETTINGS_EVENT,changed)}
+  },[stop])
+
   const startMouthAnimation = useCallback((playback: SpeechPlayback, controller: AbortController, runId: number) => {
     stopAnimation()
+    if(!animateMouth)return
     const startTime = performance.now()
     const hasVisemes = Boolean(playback.visemes?.length)
 
@@ -162,7 +176,7 @@ export function useSpeechQueue({
     }
 
     animationFrameRef.current = requestAnimationFrame(tick)
-  }, [publishMouth, stopAnimation])
+  }, [animateMouth, publishMouth, stopAnimation])
 
   const processQueue = useCallback(async () => {
     const runId = runIdRef.current
@@ -171,7 +185,7 @@ export function useSpeechQueue({
 
     let activeProvider: TtsProvider
     try {
-      activeProvider = provider || await getTtsProvider()
+      activeProvider = provider || await getTtsProvider(currentLanguageRef.current)
     } catch {
       activeProvider = defaultBrowserTtsProvider
     }
@@ -222,6 +236,7 @@ export function useSpeechQueue({
       } catch (error) {
         outcome = controller.signal.aborted ? 'cancelled' : 'error'
         errorType = voiceErrorType(error)
+        if(!controller.signal.aborted&&runIdRef.current===runId){setError(voiceFailureMessage(error,currentLanguageRef.current));if(error instanceof Error&&/^VOICE_(LANGUAGE_UNAVAILABLE|SELECTION_UNAVAILABLE|UNAVAILABLE)$/.test(error.message)){queueRef.current=[];setQueueLength(0)}}
         // 单句合成失败时继续后续队列，页面文本回答不受影响。
       } finally {
         playback?.stop()
@@ -249,12 +264,14 @@ export function useSpeechQueue({
   const enqueue = useCallback((items: SpeechRequest | SpeechRequest[]) => {
     const list = (Array.isArray(items) ? items : [items]).filter((item) => Boolean(item.text.trim()))
     if (!list.length) return
+    setError('')
     queueRef.current.push(...list)
     setQueueLength(queueRef.current.length)
     void processQueue()
   }, [processQueue])
 
   return {
+    error,
     enqueue,
     stop,
     phase,

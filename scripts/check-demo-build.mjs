@@ -24,7 +24,7 @@ const checks = {
   privateCredentialsAbsent: privateValues.every(value => !text.includes(value)) && !privilegedJwt && !/sb_secret_[A-Za-z0-9_-]{16,}/.test(text),
   materialInterfaceIncluded: ['silk-study','silk-view-nav','silk-light-options'].every(marker => text.includes(marker)),
   developmentAssetsAbsent: !existsSync(join(dist,'avatar','wanniang-puppet','raw')) && !existsSync(join(dist,'avatar','wanniang-puppet','preview')),
-  runtimePortraitPresent: ['base.webp','eyes.webp'].every(name => existsSync(join(dist,'avatar','wanniang-puppet',name))),
+  runtimePortraitPresent: existsSync(join(dist,'avatar','wanniang-v3','portrait.webp')) && text.includes('/avatar/wanniang-v3/portrait.webp'),
 }
 console.log(JSON.stringify(checks,null,2))
 if (Object.values(checks).some(value => !value)) process.exitCode=1

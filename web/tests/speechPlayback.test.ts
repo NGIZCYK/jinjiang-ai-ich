@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { BrowserTtsProvider } from '../src/lib/tts/browserTts'
 import { AzureVisemeTtsProvider } from '../src/lib/tts/azureTts'
 import { sanitizeSpeechText } from '../src/lib/tts/speechText'
+import { speechMarkup } from '../src/lib/tts/speechMarkup'
 import type { SpeechRequest } from '../src/lib/tts/types'
 
 const sdk = vi.hoisted(() => ({ instances: [] as any[] }))
@@ -15,7 +16,7 @@ vi.mock('microsoft-cognitiveservices-speech-sdk', () => ({
     failure: any
     text = ''
     constructor() { sdk.instances.push(this) }
-    speakTextAsync(text: string, success: any, failure: any) { Object.assign(this, { text, success, failure }) }
+    speakSsmlAsync(text: string, success: any, failure: any) { Object.assign(this, { text, success, failure }) }
   },
 }))
 const request: SpeechRequest = { id: 'generated-id', text: '**体验**（演示价格，待确认）', language: 'zh', messageId: 'message-id' }
@@ -98,7 +99,7 @@ describe('Azure voice lifecycle', () => {
     expect(started).toHaveBeenCalledTimes(1)
     controller.abort(); await playing
     playback.stop()
-    expect(synth.text).toBe(sanitizeSpeechText(request.text))
+    expect(synth.text).toBe(speechMarkup(sanitizeSpeechText(request.text),'zh','zh-CN-XiaoxiaoNeural',0.94))
     expect(audios[0].pause).toHaveBeenCalledTimes(1)
     expect(revoke).toHaveBeenCalledExactlyOnceWith('blob:test-voice')
   })

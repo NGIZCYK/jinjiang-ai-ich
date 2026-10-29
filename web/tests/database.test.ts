@@ -1,6 +1,6 @@
 import { beforeAll,beforeEach,afterAll,describe,it,expect } from 'vitest'
 import { PGlite } from '@electric-sql/pglite'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 const guest='11111111-1111-4111-8111-111111111111', other='22222222-2222-4222-8222-222222222222', ops='33333333-3333-4333-8333-333333333333', demo='44444444-4444-4444-8444-444444444444'
 const session='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
 let db:PGlite
@@ -12,7 +12,7 @@ const exploration={motif:'boats',palette:'jade',levels:['full','1/4'],answer:'re
 beforeAll(async()=>{
  db=new PGlite()
  await db.exec(`create role anon; create role authenticated; create schema auth; create table auth.users(id uuid primary key,raw_user_meta_data jsonb default '{}'::jsonb); create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to anon,authenticated; grant execute on function auth.uid() to anon,authenticated;`)
- for(const name of ['202609180001_journey.sql','202609180002_ai_quota.sql','202609190003_guide_signals_and_cohorts.sql'])await db.exec(readFileSync(new URL('../../supabase/migrations/'+name,import.meta.url),'utf8'))
+ for(const name of readdirSync(new URL('../../supabase/migrations/',import.meta.url)).filter(name=>name.endsWith('.sql')).sort())await db.exec(readFileSync(new URL('../../supabase/migrations/'+name,import.meta.url),'utf8'))
 })
 beforeEach(async()=>{
  await db.exec('truncate profiles cascade; truncate sessions cascade;')
@@ -25,6 +25,19 @@ beforeEach(async()=>{
 })
 afterAll(async()=>{await db.close()})
 describe('PostgreSQL journey, authorization and state invariants',()=>{
+ it('summarizes the whole cohort independently of the latest 50 feedback details',async()=>{
+  for(let n=0;n<51;n++){
+   const slot=crypto.randomUUID();await db.query("insert into sessions(id,experience_id,starts_at,capacity) values($1,'scroll',now()+($2||' days')::interval,2)",[slot,String(n+4)])
+   const booking=(await db.query<{id:string}>("insert into bookings(user_id,session_id,party_size,status,batch_id,request_id) values($1,$2,1,'completed','pilot-01',$3) returning id",[guest,slot,request()])).rows[0].id
+   await db.query("insert into feedback values($1,$2,$3,'feedback',now()+($4||' seconds')::interval)",[booking,guest,n===0?1:5,String(n)])
+  }
+  const stats=(await as<{data:{feedback:unknown[];feedbackSummary:{count:number;averageRating:number}}}>(ops,"select trial_analytics('pilot-01') data"))[0].data
+  expect(stats.feedback).toHaveLength(50);expect(stats.feedbackSummary.count).toBe(51)
+  expect(stats.feedbackSummary.averageRating).toBeCloseTo(251/51)
+  const empty=(await as<{data:{feedbackSummary:{count:number;averageRating:null}}}>(ops,"select trial_analytics('demo') data"))[0].data
+  expect(empty.feedbackSummary).toEqual({count:0,averageRating:null})
+  await expect(as(guest,"select trial_analytics('pilot-01')")).rejects.toThrow('FORBIDDEN')
+ })
  it('ignores a self-assigned operations role at signup',async()=>{const rows=await as(guest,'select role from profiles where id=$1',[guest]);expect(rows[0].role).toBe('guest');await expect(as(guest,"update profiles set role='ops' where id=$1",[guest])).rejects.toThrow()})
  it('ignores a self-selected study batch at signup',async()=>{const fresh='55555555-5555-4555-8555-555555555555';await db.query("insert into auth.users values($1,$2)",[fresh,JSON.stringify({name:'New',batch_id:'pilot-01'})]);const rows=await as(fresh,'select batch_id from profiles');expect(rows[0].batch_id).toBe('demo')})
  it('lets only operations assign an inactive guest to a study batch',async()=>{await expect(as(demo,"select assign_guest_batch($1,'pilot-01')",[demo])).rejects.toThrow('FORBIDDEN');await as(ops,"select assign_guest_batch($1,'pilot-01')",[demo]);expect((await as(demo,'select batch_id from profiles'))[0].batch_id).toBe('pilot-01');const roster=await as<{id:string;has_activity:boolean}>(ops,'select * from participant_roster()');expect(roster.some(row=>row.id===demo&&!row.has_activity)).toBe(true)})

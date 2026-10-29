@@ -32,7 +32,7 @@ export function extractGuideSignal(text: string, language: Language): Omit<Guide
   const hourMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:小时|小時|h(?:ours?)?)/i)
   const minuteMatch = text.match(/(\d+)\s*(?:分钟|分鐘|mins?|minutes?)/i)
   const stayHours = hourMatch ? Number(hourMatch[1]) : minuteMatch ? Number(minuteMatch[1]) / 60 : undefined
-  const budgetMatch = text.match(/(?:预算|預算|花费|花費|费用|費用|人民币|人民幣|budget|¥|￥)\s*[：:约約]?\s*(\d{2,6})/i)
+  const budgetMatch = text.match(/(?:预算|預算|花费|花費|费用|費用|人民币|人民幣|budget|¥|￥)\s*[：:约約]?\s*(\d{1,6})/i)
   const budget = budgetMatch ? Number(budgetMatch[1]) : undefined
 
   let partyType: GuidePartyType = 'unspecified'
@@ -45,7 +45,7 @@ export function extractGuideSignal(text: string, language: Language): Omit<Guide
     language,
     topics,
     stayHours: stayHours && stayHours > 0 && stayHours <= 168 ? stayHours : undefined,
-    budget: budget && budget > 0 && budget <= 100_000 ? budget : undefined,
+    budget: budget !== undefined && budget >= 0 && budget <= 100_000 ? budget : undefined,
     partyType,
     sentiment: sentimentOf(text),
   }

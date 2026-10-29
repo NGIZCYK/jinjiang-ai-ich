@@ -1,18 +1,20 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { StaticAvatarProps } from './avatarTypes'
+import { WANNIANG_PORTRAIT } from './avatarPortrait'
 
 /** 静态主视觉与 Live2D 故障降级渲染器。 */
 export function StaticAvatar({
   state,
   emotion = 'neutral',
   gesture = 'none',
-  imageSrc = '/images/wanniang-concierge-v2.png',
+  imageSrc = WANNIANG_PORTRAIT,
   alt = '婉娘文化礼宾',
   className = '',
   ttsMode = 'browser',
 }: StaticAvatarProps) {
   const [loadError, setLoadError] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
+  useEffect(()=>{setLoadError(false);setIsLoaded(false)},[imageSrc])
 
   const stateClass = `avatar-state-${state}`
   const emotionClass = `avatar-emotion-${emotion}`
@@ -45,7 +47,7 @@ export function StaticAvatar({
       ) : (
         <div className="static-avatar-fallback-art" aria-hidden="true">
           <div className="static-avatar-fallback-silhouette" />
-          <span className="static-avatar-fallback-caption">江南文化礼宾 · 婉娘</span>
+          <span className="static-avatar-fallback-caption">{alt}</span>
         </div>
       )}
     </div>

@@ -3,7 +3,7 @@ import { pathToFileURL } from 'node:url'
 
 export const LIVE_SITE = 'https://idyllic-bubblegum-1f5a5c.netlify.app'
 export const DEMO_BACKEND = 'https://jhosvgldwgndpudwentv.supabase.co'
-export const EXPECTED_SERVICE_REVISION = '2026.10.07-concierge-r1'
+export const EXPECTED_SERVICE_REVISION = '2026.10.28-concierge-r2'
 
 /** Public GET/OPTIONS requests only. Never accepts credentials or records response bodies. */
 export async function checkLiveSite({ fetchImpl = fetch, site = LIVE_SITE, backend = DEMO_BACKEND } = {}) {

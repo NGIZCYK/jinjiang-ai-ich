@@ -26,12 +26,13 @@ export function AvatarStage({
   useLive2D = false,
   modelPath,
   pace = 'calm',
-  usePuppet = true,
+  usePuppet = false,
 }: AvatarStageProps) {
   const [live2dFailed, setLive2dFailed] = useState(false)
   const [live2dReady, setLive2dReady] = useState(false)
   const [puppetFailed, setPuppetFailed] = useState(false)
   const [puppetReady, setPuppetReady] = useState(false)
+  useEffect(()=>{setPuppetReady(false);setPuppetFailed(false)},[usePuppet])
 
   useEffect(() => {
     setLive2dFailed(false)
@@ -59,13 +60,14 @@ export function AvatarStage({
   return (
     <div
       className={`digital-human-stage guide-host-stage ${stageStateClass} ${className}`}
+      data-motion={usePuppet||canUseLive2D?'model':'still'}
       aria-label={accessibilityLabel}
     >
       {/* 顶部业务标识 */}
       {eyebrow && <span className="digital-human-eyebrow">{eyebrow}</span>}
 
       {/* 静态形象承担首屏与故障降级，puppet/Live2D 就绪后无闪烁接管。 */}
-      {!showLive2D && !puppetReady && (
+      {!showLive2D && (!usePuppet || !puppetReady) && (
         <StaticAvatar
           state={state}
           emotion={emotion}

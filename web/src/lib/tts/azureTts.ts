@@ -2,6 +2,8 @@ import { apiFetch } from '../cloud'
 import type { SpeechPlayback, SpeechRequest, TtsProvider, VisemeFrame } from './types'
 import { mapAzureVisemeToShape } from './visemeMapper'
 import { sanitizeSpeechText } from './speechText'
+import { readVoiceSettings } from './voiceSettings'
+import { speechMarkup } from './speechMarkup'
 
 export interface AzureTtsOptions {
   region: string
@@ -86,7 +88,9 @@ export class AzureVisemeTtsProvider implements TtsProvider {
       signal.addEventListener('abort', onAbort, { once: true })
       if (signal.aborted) { onAbort(); return }
       try {
-        synthesizer.speakTextAsync(cleanText, (result) => {
+        const settings=readVoiceSettings(request.language)
+        const voice=request.language==='zh'?this.voiceZh:this.voiceEn
+        synthesizer.speakSsmlAsync(speechMarkup(cleanText,request.language,voice,settings.rate), (result) => {
           if (ended || signal.aborted) return
           if (result.reason !== SpeechSDK.ResultReason.SynthesizingAudioCompleted || !result.audioData) {
             failPreparation(new Error('VOICE_SYNTHESIS_FAILED'))
