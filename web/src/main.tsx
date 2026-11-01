@@ -8,6 +8,8 @@ import './journey.css'
 import './operations.css'
 import './experience-flow.css'
 import './voice-settings.css'
+import './styles/ops.css'
+import './styles/guest-ui.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

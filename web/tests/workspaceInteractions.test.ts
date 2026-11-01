@@ -1,16 +1,17 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createElement } from 'react'
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { LanguageProvider } from '../src/lib/i18n'
 import { useAppStore } from '../src/lib/store'
 import { StudioPage } from '../src/pages/StudioPage'
 import { PremiumHomePage } from '../src/pages/PremiumHomePage'
 import { Layout } from '../src/components/Layout'
+import { OpsShell } from '../src/components/ops/OpsShell'
 import { AuthPage } from '../src/pages/AuthPage'
 import { readStudioDraft } from '../src/lib/studioDraft'
-import { rememberContinuation } from '../src/lib/journeyFlow'
+import { readContinuation, rememberContinuation } from '../src/lib/journeyFlow'
 
 const api=vi.hoisted(()=>({fetch:vi.fn()}))
 vi.mock('../src/lib/cloud',()=>({cloud:{},apiFetch:api.fetch,requireCloud:vi.fn(),rpc:vi.fn()}))
@@ -23,7 +24,7 @@ beforeEach(()=>{
  vi.stubGlobal('cancelAnimationFrame',clearTimeout)
  window.scrollTo=vi.fn();Element.prototype.scrollIntoView=vi.fn()
 })
-afterEach(()=>{cleanup();vi.useRealTimers();vi.unstubAllGlobals()})
+afterEach(()=>{cleanup();vi.restoreAllMocks();vi.useRealTimers();vi.unstubAllGlobals()})
 describe('operator workspace drafts',()=>{
  it('restores edited text after leaving the page, with approval and checks reset',async()=>{
   const view=show(StudioPage)
@@ -63,6 +64,10 @@ describe('homepage continuation and motion',()=>{
   rememberContinuation('/immersive#exploration-task');show(PremiumHomePage)
   expect(screen.getAllByRole('link',{name:/继续刚才的操作/}).every(link=>link.getAttribute('href')==='/immersive#exploration-task')).toBe(true)
   expect(screen.getByRole('link',{name:/查看我的行程/}).getAttribute('href')).toBe('/my')
+  expect(document.querySelector('.home-continue')).toBeNull()
+  fireEvent.click(screen.getByRole('button',{name:'稍后再说'}))
+  expect(readContinuation()).toBeNull()
+  expect(screen.getByRole('link',{name:'咨询婉娘'}).getAttribute('href')).toBe('/guide')
  })
  it('pauses automatic artwork rotation until explicitly resumed',()=>{
   vi.useFakeTimers();show(PremiumHomePage)
@@ -71,10 +76,66 @@ describe('homepage continuation and motion',()=>{
   fireEvent.click(screen.getByRole('button',{name:'暂停自动轮换'}));act(()=>vi.advanceTimersByTime(11200))
   expect(screen.getByRole('heading',{name:'鹤与玉兰'})).toBeTruthy()
  })
- it('uses a still mobile hero until the guest requests the film',()=>{
+ it('uses the portrait film and poster with explicit mobile playback and error fallback',()=>{
   vi.stubGlobal('matchMedia',vi.fn((query:string)=>({matches:false,media:query,addEventListener:vi.fn(),removeEventListener:vi.fn()})))
   const view=show(PremiumHomePage);expect(view.container.querySelector('video')).toBeNull()
-  fireEvent.click(screen.getByRole('button',{name:'播放影像'}));expect(view.container.querySelector('video')).not.toBeNull()
+  expect(view.container.querySelector('.home-film-media img')?.getAttribute('src')).toBe('/assets/home-embroidery-20261101-v2-mobile.webp')
+  expect(screen.getByRole('button',{name:'播放影像'}).classList.contains('home-film-control-center')).toBe(true)
+  fireEvent.click(screen.getByRole('button',{name:'播放影像'}))
+  const video=view.container.querySelector('video')!
+  expect(video.querySelector('source')?.getAttribute('src')).toBe('/videos/home-embroidery-20261101-v2-mobile.mp4')
+  expect(video.autoplay&&video.loop&&video.playsInline).toBe(true)
+  fireEvent.playing(video);expect(view.container.querySelector('.home-film-media.is-ready')).toBeTruthy()
+  expect(screen.getByRole('button',{name:'暂停影像'}).classList.contains('home-film-control-center')).toBe(false)
+  fireEvent.error(video);expect(view.container.querySelector('video')).toBeNull()
+  expect(view.container.querySelector('.home-film-media.is-ready')).toBeNull()
+  expect(view.container.querySelector('.home-film-control')).toBeNull()
+  expect(screen.queryByText('空间概念图 · 非实景照片')).toBeNull()
+ })
+ it('automatically plays the landscape muted looping film on desktop',()=>{
+  vi.stubGlobal('matchMedia',vi.fn((query:string)=>({matches:query.includes('min-width'),media:query,addEventListener:vi.fn(),removeEventListener:vi.fn()})))
+  const view=show(PremiumHomePage),video=view.container.querySelector('video')!
+  expect(video).not.toBeNull();expect(video.muted&&video.autoplay&&video.loop).toBe(true)
+  expect(video.querySelector('source')?.getAttribute('src')).toBe('/videos/home-embroidery-20261101-v2-desktop.mp4')
+  expect(screen.getByRole('button',{name:'暂停影像'})).toBeTruthy()
+ })
+ it('switches viewport-specific media without reusing a stale ready frame',()=>{
+  const listeners=new Set<()=>void>()
+  const query={matches:true,media:'(min-width: 768px)',addEventListener:(_type:string,fn:()=>void)=>listeners.add(fn),removeEventListener:(_type:string,fn:()=>void)=>listeners.delete(fn)}
+  vi.stubGlobal('matchMedia',vi.fn((value:string)=>value.includes('min-width')?query:{matches:false,media:value,addEventListener:vi.fn(),removeEventListener:vi.fn()}))
+  const view=show(PremiumHomePage);fireEvent.playing(view.container.querySelector('video')!)
+  expect(view.container.querySelector('.home-film-media.is-ready')).toBeTruthy()
+  act(()=>{query.matches=false;listeners.forEach(fn=>fn())})
+  expect(view.container.querySelector('video')).toBeNull()
+  expect(view.container.querySelector('.home-film-media img')?.getAttribute('src')).toContain('-mobile.webp')
+  act(()=>{query.matches=true;listeners.forEach(fn=>fn())})
+  expect(view.container.querySelector('source')?.getAttribute('src')).toContain('-desktop.mp4')
+  expect(view.container.querySelector('.home-film-media.is-ready')).toBeNull()
+ })
+ it('pauses and resumes playback using the visible controls',async()=>{
+  const view=show(PremiumHomePage),video=view.container.querySelector('video')!
+  let paused=false
+  Object.defineProperty(video,'paused',{get:()=>paused,configurable:true})
+  const pause=vi.spyOn(video,'pause').mockImplementation(()=>{paused=true;fireEvent.pause(video)})
+  const play=vi.spyOn(video,'play').mockImplementation(async()=>{paused=false;fireEvent.play(video);fireEvent.playing(video)})
+  fireEvent.click(screen.getByRole('button',{name:'暂停影像'}));expect(pause).toHaveBeenCalledOnce()
+  fireEvent.click(screen.getByRole('button',{name:'继续播放'}));await waitFor(()=>expect(play).toHaveBeenCalledOnce())
+  expect(screen.getByRole('button',{name:'暂停影像'})).toBeTruthy()
+ })
+ it('keeps the video unloaded when the device requests data saving',()=>{
+  Object.defineProperty(navigator,'connection',{value:{saveData:true},configurable:true})
+  try{const view=show(PremiumHomePage);expect(view.container.querySelector('video')).toBeNull();expect(view.container.querySelector('.home-film-control')).toBeNull();expect(screen.queryByText('静态模式')).toBeNull()}
+  finally{delete (navigator as any).connection}
+ })
+ it('returns to its poster when motion is disabled and waits for playback after re-enabling',()=>{
+  const listeners=new Set<()=>void>()
+  const motion={matches:false,addEventListener:(_type:string,fn:()=>void)=>listeners.add(fn),removeEventListener:(_type:string,fn:()=>void)=>listeners.delete(fn)}
+  vi.stubGlobal('matchMedia',vi.fn((query:string)=>query.includes('reduced-motion')?motion:{matches:true,addEventListener:vi.fn(),removeEventListener:vi.fn()}))
+  const view=show(PremiumHomePage);fireEvent.playing(view.container.querySelector('video')!)
+  act(()=>{motion.matches=true;listeners.forEach(fn=>fn())})
+  expect(view.container.querySelector('video')).toBeNull();expect(view.container.querySelector('.home-film-control')).toBeNull()
+  act(()=>{motion.matches=false;listeners.forEach(fn=>fn())})
+  expect(view.container.querySelector('video')).not.toBeNull();expect(view.container.querySelector('.home-film-media.is-ready')).toBeNull()
  })
  it('respects reduced motion for both the hero and artwork rotation',()=>{
   vi.useFakeTimers();vi.stubGlobal('matchMedia',vi.fn((query:string)=>({matches:true,media:query,addEventListener:vi.fn(),removeEventListener:vi.fn()})))
@@ -82,12 +143,78 @@ describe('homepage continuation and motion',()=>{
   act(()=>vi.advanceTimersByTime(11200));expect(screen.getByRole('heading',{name:'花下双猫'})).toBeTruthy()
   expect((screen.getByRole('button',{name:'已按系统偏好停止自动轮换'}) as HTMLButtonElement).disabled).toBe(true)
  })
- it('separates guest navigation and operations navigation',async()=>{
-  render(createElement(LanguageProvider,null,createElement(MemoryRouter,{initialEntries:['/operations']},createElement(Routes,null,createElement(Route,{element:createElement(Layout)},createElement(Route,{path:'*',element:createElement('div',null,'Page')}))))))
+ it('keeps the guest site in preview mode and the operations workspace separate',async()=>{
+  const guest=render(createElement(LanguageProvider,null,createElement(MemoryRouter,{initialEntries:['/']},createElement(Routes,null,createElement(Route,{element:createElement(Layout)},createElement(Route,{path:'*',element:createElement('div',null,'Page')}))))))
+  expect(guest.container.querySelector('.guest-ui')).not.toBeNull()
+  expect(screen.getByText('运营预览 · 住客端')).toBeTruthy()
+  expect(screen.queryByRole('link',{name:'体验管理'})).toBeNull()
+  expect(screen.queryByRole('button',{name:'住客体验'})).toBeNull()
+  guest.unmount()
+  render(createElement(LanguageProvider,null,createElement(MemoryRouter,{initialEntries:['/ops/experiences']},createElement(Routes,null,createElement(Route,{path:'/ops',element:createElement(OpsShell)},createElement(Route,{path:'experiences',element:createElement('div',null,'Ops page')}))))))
   await waitFor(()=>expect(screen.getAllByRole('link',{name:'体验管理'}).length).toBe(2))
   expect(screen.queryByRole('link',{name:'我的行程'})).toBeNull()
-  fireEvent.click(screen.getByRole('button',{name:'住客体验'}))
-  await waitFor(()=>expect(screen.getAllByRole('link',{name:'我的行程'}).length).toBe(2))
-  expect(screen.queryByRole('link',{name:'体验管理'})).toBeNull()
+  expect(screen.queryByText('运营预览 · 住客端')).toBeNull()
+  expect(screen.getAllByRole('link',{name:'总览'}).length).toBe(2)
+  expect(document.querySelector('.guest-ui')).toBeNull()
+ })
+ it.each(['zh','en'])('introduces %s copy before the clean film and links onward to the chapters',language=>{
+  localStorage.setItem('jj_language',language)
+  const view=show(PremiumHomePage),film=screen.getByRole('region',{name:language==='zh'?'苏绣主题影像':'Embroidery film'})
+  const intro=document.getElementById('home-introduction')!
+  expect(within(film).queryByRole('heading')).toBeNull()
+  expect(within(film).queryByRole('link',{name:language==='zh'?'咨询婉娘':'Meet Wanniang'})).toBeNull()
+  expect(film.textContent?.trim()).toBe('')
+  expect(view.container.querySelector('.home-hero-shade,.home-film-console,.home-film-progress')).toBeNull()
+  expect(intro.compareDocumentPosition(film)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  const chapters=document.getElementById('stay-chapters')!
+  expect(film.compareDocumentPosition(chapters)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  const arrow=within(film).getByRole('link',{name:language==='zh'?'向下探索住中三章':'Explore the three chapters below'})
+  expect(arrow.getAttribute('href')).toBe('#stay-chapters');expect(chapters.tabIndex).toBe(-1)
+  const chapterLinks=Array.from(chapters.querySelectorAll<HTMLAnchorElement>('.home-journey-item'))
+  expect(chapterLinks.map(link=>link.getAttribute('href'))).toEqual(['/immersive?focus=artwork','/immersive?focus=silk','/immersive?focus=workbench'])
+  expect(chapterLinks.map(link=>link.querySelector('img')?.getAttribute('src'))).toEqual(['/assets/suxiu-gusu-prosperous.webp','/assets/suxiu-silk-splitting-20261029.webp','/assets/suxiu-step-03-stitching.webp'])
+  expect(chapterLinks.every(link=>link.querySelector('img')?.alt&&link.querySelector('h3')?.id===link.getAttribute('aria-labelledby'))).toBe(true)
+  expect(within(intro).getByRole('link',{name:language==='zh'?'咨询婉娘':'Meet Wanniang'}).getAttribute('href')).toBe('/guide')
+  expect(within(intro).getByRole('link',{name:language==='zh'?'开始探索':'Enter the embroidery atelier'}).getAttribute('href')).toBe('/immersive')
+ })
+ it('reveals chapter cards once and makes keyboard focus visible before the observer fires',()=>{
+  let onIntersection:IntersectionObserverCallback=()=>{}
+  const disconnect=vi.fn()
+  vi.stubGlobal('IntersectionObserver',class{constructor(callback:IntersectionObserverCallback){onIntersection=callback}observe(){}disconnect(){disconnect()}})
+  const view=show(PremiumHomePage),grid=view.container.querySelector<HTMLElement>('.home-journey-grid')!
+  expect(grid.dataset.reveal).toBe('pending')
+  fireEvent.focus(screen.getByRole('link',{name:'大堂 · 观绣'}))
+  expect(grid.hasAttribute('data-reveal')).toBe(false)
+  act(()=>onIntersection([{isIntersecting:true}] as IntersectionObserverEntry[],{} as IntersectionObserver))
+  expect(grid.hasAttribute('data-reveal')).toBe(false)
+  expect(disconnect).toHaveBeenCalled()
+ })
+ it('removes pending chapter motion immediately when reduced motion is enabled',()=>{
+  let onIntersection:IntersectionObserverCallback=()=>{}
+  const listeners=new Set<()=>void>()
+  const motion={matches:false,addEventListener:(_type:string,fn:()=>void)=>listeners.add(fn),removeEventListener:(_type:string,fn:()=>void)=>listeners.delete(fn)}
+  vi.stubGlobal('matchMedia',vi.fn((query:string)=>query.includes('reduced-motion')?motion:{matches:true,addEventListener:vi.fn(),removeEventListener:vi.fn()}))
+  vi.stubGlobal('IntersectionObserver',class{constructor(callback:IntersectionObserverCallback){onIntersection=callback}observe(){}disconnect(){}})
+  const view=show(PremiumHomePage),grid=view.container.querySelector<HTMLElement>('.home-journey-grid')!
+  act(()=>onIntersection([{isIntersecting:true}] as IntersectionObserverEntry[],{} as IntersectionObserver))
+  expect(grid.dataset.reveal).toBe('visible')
+  act(()=>{motion.matches=true;listeners.forEach(fn=>fn())})
+  expect(grid.hasAttribute('data-reveal')).toBe(false)
+  expect(screen.getByRole('link',{name:'大堂 · 观绣'})).toBeTruthy()
+  expect(view.container.querySelector('video')).toBeNull()
+ })
+ it.each([375,390,768,1366,1920])('uses the measured complete header height at %ipx and follows later header changes',width=>{
+  let height=width<768?164:width<1216?176:124
+  const callbacks=new Set<()=>void>();const disconnect=vi.fn()
+  vi.stubGlobal('innerWidth',width)
+  vi.stubGlobal('ResizeObserver',class{constructor(callback:()=>void){callbacks.add(callback)}observe(){}disconnect(){disconnect()}})
+  vi.spyOn(HTMLElement.prototype,'getBoundingClientRect').mockImplementation(function(this:HTMLElement){return {height:this.tagName==='HEADER'?height:0,width} as DOMRect})
+  const view=render(createElement(LanguageProvider,null,createElement(MemoryRouter,{initialEntries:['/']},createElement(Routes,null,createElement(Route,{element:createElement(Layout)},createElement(Route,{path:'/',element:createElement(PremiumHomePage)}))))))
+  const shell=view.container.querySelector<HTMLElement>('.page-shell-home')!
+  expect(shell.style.getPropertyValue('--home-header-height')).toBe(`${height}px`)
+  expect(view.container.querySelector('.site-header-home-scrolled')).toBeNull()
+  act(()=>{height+=24;callbacks.forEach(callback=>callback())})
+  expect(shell.style.getPropertyValue('--home-header-height')).toBe(`${height}px`)
+  view.unmount();expect(disconnect).toHaveBeenCalledOnce()
  })
 })

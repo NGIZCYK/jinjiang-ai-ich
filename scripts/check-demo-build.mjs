@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, existsSync } from 'node:fs'
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs'
 import { resolve, dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { DEMO_BACKEND } from './check-live-site.mjs'
@@ -25,6 +25,8 @@ const checks = {
   materialInterfaceIncluded: ['silk-study','silk-view-nav','silk-light-options'].every(marker => text.includes(marker)),
   developmentAssetsAbsent: !existsSync(join(dist,'avatar','wanniang-puppet','raw')) && !existsSync(join(dist,'avatar','wanniang-puppet','preview')),
   runtimePortraitPresent: existsSync(join(dist,'avatar','wanniang-v3','portrait.webp')) && text.includes('/avatar/wanniang-v3/portrait.webp'),
+  runtimeHeroPresent: ['desktop','mobile'].every(variant => ['videos/home-embroidery-20261101-v2-'+variant+'.mp4','assets/home-embroidery-20261101-v2-'+variant+'.webp'].every(path => existsSync(join(dist,path)) && text.includes('/'+path))),
+  runtimeHeroWithinBudget: ['desktop','mobile'].every(variant => { const path=join(dist,'videos','home-embroidery-20261101-v2-'+variant+'.mp4'); return existsSync(path) && statSync(path).size>0 && statSync(path).size<(variant==='desktop'?8:4)*1024*1024 }),
 }
 console.log(JSON.stringify(checks,null,2))
 if (Object.values(checks).some(value => !value)) process.exitCode=1

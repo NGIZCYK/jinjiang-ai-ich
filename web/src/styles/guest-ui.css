@@ -1,0 +1,49 @@
+/* Guest-facing controls. The separate operations shell does not use this scope. */
+.guest-ui {
+  --guest-control-radius:.375rem;
+  --guest-control-motion:200ms;
+}
+
+.guest-ui :is(.btn,.home-hero-primary,.home-hero-secondary,.header-account-action,.mobile-language-button,.language-switch button,.journey-text-button) {
+  min-height:2.75rem;
+  transition:color var(--guest-control-motion) ease,background-color var(--guest-control-motion) ease,border-color var(--guest-control-motion) ease,box-shadow var(--guest-control-motion) ease;
+}
+.guest-ui :is(.btn,.home-hero-primary) { border-radius:var(--guest-control-radius); }
+.guest-ui :is(.btn-primary,.home-hero-primary) { background:var(--jade);color:#fff;border:1px solid transparent; }
+.guest-ui :is(.btn-primary,.home-hero-primary):hover:not(:disabled) { background:#203a34; }
+.guest-ui .btn-ghost { color:var(--jade);border-color:#2b4a4240;background:transparent; }
+.guest-ui .btn-ghost:hover:not(:disabled) { background:var(--jade-light);border-color:#2b4a4280; }
+.guest-ui :is(.btn,.home-hero-primary):active:not(:disabled) { background:#1d332e; }
+.guest-ui .btn-ghost:active:not(:disabled) { color:var(--jade);background:#dce6e0; }
+.guest-ui :is(.btn,.home-hero-primary,.home-hero-secondary,.home-room-copy > a,.home-concierge-invitation > a,.nav-link,.mobile-nav-link,.header-account-action,.mobile-language-button,.language-switch button,.journey-text-button):focus-visible {
+  outline:2px solid var(--jade);outline-offset:3px;
+}
+.guest-ui .home-concierge-invitation > a:focus-visible { outline-color:var(--paper-light); }
+.guest-ui :is(.language-switch button,.mobile-language-button) { min-width:2.75rem; }
+.guest-ui .nav-link { display:inline-flex;align-items:center;min-height:2.75rem; }
+.guest-ui .mobile-nav-link { min-height:2.75rem; }
+.guest-ui :is(.home-hero-primary,.home-hero-secondary) > span[aria-hidden] { transition:transform var(--guest-control-motion) ease; }
+.guest-ui :is(.home-hero-primary,.home-hero-secondary):focus-visible > span[aria-hidden] { transform:translateX(3px); }
+@media(hover:hover) and (pointer:fine) {
+  .guest-ui :is(.home-hero-primary,.home-hero-secondary):hover > span[aria-hidden] { transform:translateX(3px); }
+}
+
+.guest-ui .input {
+  min-height:2.75rem;min-width:0;border-radius:var(--guest-control-radius);border-color:#2b4a4238;background:var(--paper-light);color:var(--ink);font-size:1rem;
+  transition:border-color var(--guest-control-motion) ease,box-shadow var(--guest-control-motion) ease,background-color var(--guest-control-motion) ease;
+}
+.guest-ui .input::placeholder { color:#70766f;opacity:1; }
+.guest-ui .input:focus { border-color:var(--jade);box-shadow:0 0 0 3px #2b4a4212; }
+.guest-ui .input:focus-visible { outline:2px solid var(--jade);outline-offset:2px; }
+.guest-ui .input[aria-invalid='true'] { border-color:var(--vermilion); }
+.guest-ui :is(.btn,.home-hero-primary):disabled,
+.guest-ui fieldset:disabled .btn { background:#e5e4dd;color:#62665f;border-color:transparent;box-shadow:none;cursor:not-allowed; }
+.guest-ui .input:disabled,.guest-ui fieldset:disabled .input { background:#ebe8e0;color:#62665f;cursor:not-allowed;box-shadow:none; }
+.guest-ui button[aria-busy='true'] { cursor:progress; }
+.guest-ui .btn[aria-pressed='true'] { border-color:var(--jade); }
+
+@media(prefers-reduced-motion:reduce) {
+  .guest-ui *,.guest-ui *::before,.guest-ui *::after { transition:none!important;animation:none!important;scroll-behavior:auto!important; }
+  .guest-ui .home-journey-grid[data-reveal] .home-journey-item { opacity:1;transform:none; }
+  .guest-ui :is(.home-hero-primary,.home-hero-secondary) > span[aria-hidden] { transform:none!important; }
+}

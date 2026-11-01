@@ -13,70 +13,66 @@ export interface TtsTokenResponse {
   reason?: string
 }
 
-const deviceProvider=new BrowserTtsProvider()
-let cachedProvider: TtsProvider | null = null
-let cachedMode: 'viseme' | 'browser' | 'unavailable' | null = null
+type TtsMode = 'viseme' | 'browser' | 'unavailable'
+const deviceProvider = new BrowserTtsProvider()
+// Retry automatic selection after a short outage without probing for every sentence.
+const RETRY_AFTER_MS = 30_000
+let cachedProvider: { value: TtsProvider; retryAt: number } | null = null
+let cachedMode: { value: TtsMode; retryAt: number } | null = null
+let providerRequest: Promise<TtsProvider> | null = null
+let modeRequest: Promise<TtsMode> | null = null
 
-/**
- * 检测当前系统可用的最高级别 TTS 模式
- * 级别 1：Azure Viseme 模式（配置了 AZURE_SPEECH_KEY & REGION）
- * 级别 2：浏览器原生 SpeechSynthesis 模式（approximate fallback 节奏口型）
- * 级别 3：静音托底模式（unavailable）
- */
-export async function detectTtsMode(language:Language='zh'): Promise<'viseme' | 'browser' | 'unavailable'> {
-  if(readVoiceSettings(language).voiceURI)return deviceProvider.mode
-  if (cachedMode) return cachedMode
+function rememberMode(value: TtsMode) {
+  cachedMode = { value, retryAt: Date.now() + RETRY_AFTER_MS }
+  return value
+}
 
+async function probeMode(): Promise<TtsMode> {
   try {
     const res = await apiFetch('/api/tts/status', { headers: { Accept: 'application/json' }, cache: 'no-store', signal: AbortSignal.timeout(10000) })
     if (res.ok && (res.headers.get('content-type') || '').includes('application/json')) {
       const data = (await res.json()) as { provider?: string }
-      if (data.provider === 'azure') {
-        cachedMode = 'viseme'
-        return 'viseme'
-      }
+      if (data.provider === 'azure') return rememberMode('viseme')
     }
-  } catch {
-    // 忽略网络或服务不可达
-  }
-
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    cachedMode = 'browser'
-    return 'browser'
-  }
-
-  cachedMode = 'unavailable'
-  return 'unavailable'
+  } catch { /* Device playback remains available during a service outage. */ }
+  // A slower status failure must not overwrite a successfully acquired online provider.
+  return rememberMode(cachedProvider?.value.mode === 'viseme' ? 'viseme' : deviceProvider.mode)
 }
 
-/**
- * 动态工厂：按可用凭据自动升级或回退 TtsProvider 实例
- */
-export async function getTtsProvider(language:Language='zh'): Promise<TtsProvider> {
-  if(readVoiceSettings(language).voiceURI)return deviceProvider
-  if (cachedProvider) return cachedProvider
+/** Report automatic service availability, respecting an explicit language-specific device voice. */
+export async function detectTtsMode(language: Language = 'zh'): Promise<TtsMode> {
+  if (readVoiceSettings(language).voiceURI) return deviceProvider.mode
+  if (cachedProvider?.value.mode === 'viseme') return 'viseme'
+  if (cachedMode && Date.now() < cachedMode.retryAt) return cachedMode.value
+  if (!modeRequest) modeRequest = probeMode().finally(() => { modeRequest = null })
+  const mode = await modeRequest
+  return readVoiceSettings(language).voiceURI ? deviceProvider.mode : mode
+}
 
+async function acquireProvider(): Promise<TtsProvider> {
+  let value: TtsProvider = deviceProvider
   try {
     const res = await apiFetch('/api/tts/token', { headers: { Accept: 'application/json' }, cache: 'no-store', signal: AbortSignal.timeout(10000) })
     if (res.ok && (res.headers.get('content-type') || '').includes('application/json')) {
       const data = (await res.json()) as TtsTokenResponse
       if (data.mode === 'viseme' && data.token && data.region) {
         const { AzureVisemeTtsProvider } = await import('./azureTts')
-        cachedProvider = new AzureVisemeTtsProvider({
-          region: data.region,
-          token: data.token,
-          voiceZh: data.voiceZh,
-          voiceEn: data.voiceEn,
-        })
-        cachedMode = 'viseme'
-        return cachedProvider
+        value = new AzureVisemeTtsProvider({ region: data.region, token: data.token, voiceZh: data.voiceZh, voiceEn: data.voiceEn })
       }
     }
-  } catch {
-    // 降级至浏览器模式
-  }
+  } catch { /* Retry automatic online selection after the bounded fallback interval. */ }
+  // The online provider refreshes its own token; fallback choices expire instead.
+  cachedProvider = { value, retryAt: value.mode === 'viseme' ? Infinity : Date.now() + RETRY_AFTER_MS }
+  rememberMode(value.mode)
+  return value
+}
 
-  cachedProvider = new BrowserTtsProvider()
-  cachedMode = cachedProvider.mode
-  return cachedProvider
+/** Share preparation across callers while allowing explicit device choices to take effect immediately. */
+export async function getTtsProvider(language: Language = 'zh'): Promise<TtsProvider> {
+  if (readVoiceSettings(language).voiceURI) return deviceProvider
+  if (cachedProvider && Date.now() < cachedProvider.retryAt) return cachedProvider.value
+  if (!providerRequest) providerRequest = acquireProvider().finally(() => { providerRequest = null })
+  const value = await providerRequest
+  // The preference may have changed while the network request was pending.
+  return readVoiceSettings(language).voiceURI ? deviceProvider : value
 }

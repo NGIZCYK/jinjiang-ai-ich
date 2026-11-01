@@ -51,6 +51,29 @@ describe('voice choice and stored preferences',()=>{
  })
 })
 describe('voice settings interactions',()=>{
+ it('opens a modal, traps keyboard focus, stops a preview on close and returns focus to its trigger',async()=>{
+  const props={language:'zh' as const,phase:'idle' as 'idle'|'playing',previewing:false,mode:'browser' as const,onPreview:vi.fn(),onStop:vi.fn(),onPreferenceChange:vi.fn()}
+  const view=render(createElement(VoiceSettings,props)),trigger=screen.getByRole('button',{name:/声音与试听/})
+  trigger.focus();fireEvent.click(trigger)
+  const dialog=await screen.findByRole('dialog',{name:'声音与试听'})
+  expect(dialog.getAttribute('aria-modal')).toBe('true');expect(document.body.style.overflow).toBe('hidden')
+  expect(document.activeElement).toBe(screen.getByLabelText('当前语言的音色'))
+  const first=screen.getByRole('button',{name:'关闭声音设置'}),last=screen.getByRole('button',{name:'恢复推荐设置'})
+  first.focus();fireEvent.keyDown(first,{key:'Tab',shiftKey:true});expect(document.activeElement).toBe(last)
+  fireEvent.keyDown(last,{key:'Tab'});expect(document.activeElement).toBe(first)
+  view.rerender(createElement(VoiceSettings,{...props,phase:'playing',previewing:true}))
+  fireEvent.keyDown(dialog,{key:'Escape'})
+  expect(screen.queryByRole('dialog')).toBeNull();expect(document.activeElement).toBe(trigger)
+  expect(document.body.style.overflow).toBe('');expect(props.onStop).toHaveBeenCalledOnce()
+ })
+ it('can cancel a sample before the provider reports preparing and displays errors inside the modal',async()=>{
+  const props={language:'zh' as const,phase:'idle' as const,previewing:false,mode:'browser' as const,onPreview:vi.fn(),onStop:vi.fn(),onPreferenceChange:vi.fn()}
+  const view=render(createElement(VoiceSettings,props));fireEvent.click(screen.getByRole('button',{name:/声音与试听/}))
+  fireEvent.click(screen.getByRole('button',{name:'试听当前声音'}));expect(screen.getByRole('button',{name:'取消准备'})).toBeTruthy()
+  fireEvent.keyDown(screen.getByRole('dialog'),{key:'Escape'});expect(props.onStop).toHaveBeenCalledOnce()
+  fireEvent.click(screen.getByRole('button',{name:/声音与试听/}));view.rerender(createElement(VoiceSettings,{...props,error:'此设备暂无中文音色。'}))
+  expect(screen.getByRole('alert').textContent).toBe('此设备暂无中文音色。')
+ })
  it('previews the active language and restores saved preferences on a later visit',async()=>{
   const props={language:'zh' as const,phase:'idle' as const,previewing:false,mode:'browser' as const,onPreview:vi.fn(),onStop:vi.fn(),onPreferenceChange:vi.fn()}
   const view=render(createElement(VoiceSettings,props));fireEvent.click(screen.getByText('声音与试听'))

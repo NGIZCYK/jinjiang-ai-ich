@@ -21,15 +21,17 @@ describe('public demo-account configuration', () => {
     expect(readDemoAccounts({ ...complete, VITE_DEMO_GUEST_EMAIL: '  ' })).toEqual([])
   })
 
-  it('provides one guest and one operator who both land on the homepage', () => {
+  it('sends guests to the welcome page and operators to the workspace', () => {
     const accounts = readDemoAccounts(complete)
     expect(accounts.map(({ role, email, landingPath }) => ({ role, email, landingPath }))).toEqual([
       { role: 'guest', email: 'guest@example.test', landingPath: '/' },
-      { role: 'ops', email: 'ops@example.test', landingPath: '/' },
+      { role: 'ops', email: 'ops@example.test', landingPath: '/ops' },
     ])
   })
 
-  it('always uses the homepage after authentication', () => {
+  it('resolves the post-login destination by role', () => {
+    expect(resolveLoginTarget('guest')).toBe('/')
+    expect(resolveLoginTarget('ops')).toBe('/ops')
     expect(resolveLoginTarget()).toBe('/')
   })
 })

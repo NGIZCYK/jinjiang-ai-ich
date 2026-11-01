@@ -16,6 +16,7 @@ export function AvatarStage({
   language,
   statusText,
   eyebrow,
+  showStatus = true,
   name = '婉娘',
   className = '',
   fallbackImage,
@@ -104,10 +105,10 @@ export function AvatarStage({
       )}
 
       {/* 底部边缘状态胶囊：置于舞台下缘，确保不遮挡面部 */}
-      <div className="digital-human-status" aria-live="polite">
+      {showStatus && <div className="digital-human-status" aria-live="polite">
         <span className={`status-dot status-dot-${state}`} aria-hidden="true" />
         <span className="status-text">{resolvedStatus}</span>
-      </div>
+      </div>}
     </div>
   )
 }

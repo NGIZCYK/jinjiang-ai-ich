@@ -1,0 +1,12 @@
+[
+  {
+    "original": "web\\public\\videos\\home-heritage-film-20260915-v1.mp4",
+    "archive": "assets-source\\hero-film-20261101\\previous\\home-heritage-film-20260915-v1.mp4",
+    "sha256": "520C4B3478A8CF72B2E962C4A8B3B8B8C9A9C60E22EE65185107DF0EDEC886A7"
+  },
+  {
+    "original": "web\\public\\assets\\home-heritage-film-poster-20260915-v1.webp",
+    "archive": "assets-source\\hero-film-20261101\\previous\\home-heritage-film-poster-20260915-v1.webp",
+    "sha256": "FFA1E6EA7A89B0E654F15D7E4097871A2B3FEC5DDA5DF4435A9613850BC2983B"
+  }
+]

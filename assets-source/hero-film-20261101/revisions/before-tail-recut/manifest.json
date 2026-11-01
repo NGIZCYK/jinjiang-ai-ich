@@ -1,0 +1,71 @@
+{
+  "source": "D:\\B站视屏素材\\c_208067976\\120\\video.m4s",
+  "sourceSha256": "0422d9608644cf0f22c4b7a13d64fa00ec0d86878d3d0c309cf76e3b064d265a",
+  "sourceTitle": "汉绣芳华【武汉非遗】",
+  "bvid": "BV15t4y197q5",
+  "use": "Classroom substitute footage approved by user; no on-page source label",
+  "sourceCrop": [
+    3840,
+    1632,
+    0,
+    264
+  ],
+  "timeline": [
+    [
+      "atelier",
+      73.2,
+      77.6,
+      0.55
+    ],
+    [
+      "needle",
+      34.4,
+      38.4,
+      0.52
+    ],
+    [
+      "flowers",
+      96.6,
+      100.6,
+      0.5
+    ],
+    [
+      "courtyard",
+      118.8,
+      121.8,
+      0.5
+    ],
+    [
+      "window",
+      102.0,
+      106.6,
+      0.52
+    ]
+  ],
+  "transitionSeconds": 0.4,
+  "durationSeconds": 18,
+  "fps": 25,
+  "audio": false,
+  "outputs": [
+    {
+      "variant": "desktop",
+      "width": 1920,
+      "height": 1080,
+      "video": "web/public/videos/home-embroidery-20261101-desktop.mp4",
+      "videoBytes": 6355925,
+      "videoSha256": "07ba73e83700334f891b5eea05d88b9bc063dd83c6f21c496e51359b4b181138",
+      "poster": "web/public/assets/home-embroidery-20261101-desktop.webp",
+      "posterSha256": "32cbabc4e04a2600c0fd28031b526a8d9ed349af00f3d57855a69ad91b2eb5f2"
+    },
+    {
+      "variant": "mobile",
+      "width": 720,
+      "height": 1280,
+      "video": "web/public/videos/home-embroidery-20261101-mobile.mp4",
+      "videoBytes": 3199031,
+      "videoSha256": "304f42da101e4a3b495e519ec3a1b1fa69e0d7d08fb2bca5b5e6dbd7cbadc0cc",
+      "poster": "web/public/assets/home-embroidery-20261101-mobile.webp",
+      "posterSha256": "22381a323d05a359e6769d85e5de516fcd76b90059584996176f2217367690e1"
+    }
+  ]
+}

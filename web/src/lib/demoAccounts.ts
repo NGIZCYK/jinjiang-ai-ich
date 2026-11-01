@@ -5,7 +5,7 @@ export interface DemoAccount {
   readonly role: DemoAccountRole
   readonly email: string
   readonly password: string
-  readonly landingPath: '/'
+  readonly landingPath: '/' | '/ops'
   readonly labelZh: string
   readonly labelEn: string
   readonly descriptionZh: string
@@ -44,17 +44,18 @@ export function readDemoAccounts(env: DemoEnv): readonly DemoAccount[] {
       role: 'ops',
       email: opsEmail,
       password: opsPassword,
-      landingPath: '/',
+      landingPath: '/ops',
       labelZh: '运营账户',
       labelEn: 'Operations account',
-      descriptionZh: '处理体验意向并查看运营数据',
-      descriptionEn: 'Process experience requests and review operations data',
+      descriptionZh: '处理体验意向、审核内容并查看运营数据',
+      descriptionEn: 'Process experience requests, review content and read operations data',
     },
   ]
 }
 
-export function resolveLoginTarget() {
-  return '/'
+/** Guests keep the welcome page; operations enters its own workspace. */
+export function resolveLoginTarget(role: 'guest' | 'ops' = 'guest') {
+  return role === 'ops' ? '/ops' : '/'
 }
 
 export const demoAccounts = readDemoAccounts(import.meta.env)

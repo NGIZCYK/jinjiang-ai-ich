@@ -16,12 +16,12 @@ export interface LobbyHotspotMeta {
 const hotspotCopy: Record<Language, LobbyHotspotMeta[]> = {
   zh: [
     { id: 'artwork', index: '01', code: '01 · 观绣', label: '观绣 · 《姑苏繁华图》', hint: '移动 3x 数字微距镜探索运河水纹与阊门繁华' },
-    { id: 'silk', index: '02', code: '02 · 识线', label: '识线 · 丝色百宝阁', hint: '江南五度色谱与 1/32 极细发丝级劈丝分级' },
-    { id: 'workbench', index: '03', code: '03 · 试针', label: '试针 · 传统绣台', hint: '起针四步曲实录与红木双面台屏成器' },
+    { id: 'silk', index: '02', code: '02 · 识线', label: '识线 · 丝色百宝阁', hint: '观察材料、策展色样与相对细度' },
+    { id: 'workbench', index: '03', code: '03 · 试针', label: '试针 · 传统绣台', hint: '认识上绷、配线、起针与留存四步工序' },
   ],
   en: [
     { id: 'artwork', index: '01', code: '01 · OBSERVE', label: '01 · Observe Masterpiece', hint: 'Explore canal ripples with 3x digital loupe' },
-    { id: 'silk', index: '02', code: '02 · THREAD', label: '02 · Thread & Palettes', hint: '5 Jiangnan palettes & 1/32 filament splitting' },
+    { id: 'silk', index: '02', code: '02 · THREAD', label: '02 · Thread & Palettes', hint: 'Explore materials, curated colours and relative fineness' },
     { id: 'workbench', index: '03', code: '03 · STITCH', label: '03 · Stitch at Workbench', hint: '4-step sequence & rosewood desk screen' },
   ],
 }
@@ -138,11 +138,11 @@ const SILK_GALLERY_VIEWS: SilkGalleryView[] = [
     titleEn: 'Splitting · Relative Fineness',
     navZh: '劈丝',
     navEn: 'Splitting',
-    image: '/assets/suxiu-silk-02-splitting.webp',
-    captionZh: '从针线近景认识劈丝概念，再用示意线比较相对细度。',
-    captionEn: 'A needle-and-thread close-up introduces splitting; illustrated lines compare relative fineness.',
-    leadZh: '从针具与丝线近景认识劈丝，比较不同相对细度在轮廓和色彩层次中的表现。',
-    leadEn: 'A needle-and-thread close-up introduces splitting and the role of relative fineness in outlines and colour layers.',
+    image: '/assets/suxiu-silk-splitting-20261029.webp',
+    captionZh: '细丝分离概念图；下方线条用于比较相对细度，不代表实测丝径。',
+    captionEn: 'Illustrated silk separation. The lines below compare relative fineness, not measured diameters.',
+    leadZh: '用细丝分离概念图认识劈丝，再比较线条细度在轮廓与色彩层次中的表现。图像由 AI 生成，不作为真实操作或丝径测量记录。',
+    leadEn: 'An AI-generated concept image introduces silk separation. Compare the illustrated line weights below; the image is not a record of an actual operation or diameter measurement.',
   },
   {
     id: 'palette',

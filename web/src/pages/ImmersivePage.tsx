@@ -1,7 +1,7 @@
 import { ExplorationTask } from '../components/ExplorationTask'
 import type { Exploration } from '../lib/journey'
 import { useEffect, useRef, useState } from 'react'
-import { useLocation, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { LobbyConciergeScene, type LobbyHotspotId } from '../components/LobbyConciergeScene'
 import { useLanguage, type Language } from '../lib/i18n'
 
@@ -18,7 +18,7 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
   zh: {
     artwork: {
       title: '观绣：《姑苏繁华图》数字纹理演绎',
-      eyebrow: '01 · OBSERVE',
+      eyebrow: '01 · 观绣',
       body: '参照清代画家徐扬《姑苏繁华图》中的城市风貌，以数字纹理呈现阊门、运河、桥梁与市井人物。观察构图、色阶与丝光，发现画面细节与苏州故事之间的联系。',
       tags: ['姑苏胜景', '数字纹理', '微距观察'],
       observe: '选择画面中的四个点位，比较水波、人物与商铺的纹理方向和色阶变化；需要时再开启 3x 微距镜。',
@@ -26,7 +26,7 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
     },
     silk: {
       title: '识线：从蚕茧、劈丝到丝光',
-      eyebrow: '02 · THREAD',
+      eyebrow: '02 · 识线',
       body: '从蚕茧到丝光，观察材料、色样与相对细度如何影响绣面的视觉表现。',
       tags: ['材料序列', '相对细度', '策展取色'],
       observe: '从上方切换蚕茧、劈丝、取色与丝光。劈丝可与整股基准比较，取色可预览线束颜色，丝光可切换三种受光方向；示意均用于概念观察。',
@@ -34,7 +34,7 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
     },
     workbench: {
       title: '试针：传统绣台与第一针',
-      eyebrow: '03 · STITCH',
+      eyebrow: '03 · 试针',
       body: '循着上绷、配线、起针与留存四步，认识一枚练习样片的制作过程。',
       tags: ['传统绣绷', '四步工序', '入门体验'],
       observe: '按次序查看四个流程节点，留意绷面张力、丝线方向与落针节奏如何共同影响成绣效果。',
@@ -71,38 +71,24 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
 
 const PAGE_COPY = {
   zh: {
-    eyebrow: 'JINJIANG SUZHOU · HERITAGE ATELIER',
+    eyebrow: '锦江苏州 · 苏绣艺境',
     title: '苏绣艺境',
-    lead: '沿“观绣—识线—试针”进入一门手艺。先沉浸观看，再按需展开解释，让场景保持完整，让知识始终可追溯。',
+    lead: '看一幅长卷，识一缕丝线，了解第一针。选择感兴趣的一章，慢慢探索。',
     selected: '当前展签',
     close: '收起展签',
     open: '展开展签',
     observe: '如何观看',
     stay: '住中延伸',
-    routeEyebrow: 'THE GUEST JOURNEY',
-    routeTitle: '从驻足，到理解，再到亲手尝试。',
-    route: [
-      ['01', '观绣', '选择一个微距点位，记录构图与纹理发现。'],
-      ['02', '识线', '比较材料、色样与相对细度，观察丝光变化。'],
-      ['03', '试针', '认识上绷与配线，了解基础练习样片的制作。'],
-    ],
   },
   en: {
     eyebrow: 'JINJIANG SUZHOU · HERITAGE ATELIER',
     title: 'The Su Embroidery Atelier',
-    lead: 'Move through Observe, Thread and Stitch. The scene leads; interpretation opens only when needed, keeping the experience immersive and its claims reviewable.',
+    lead: 'A closer look, a silk thread, a first stitch. Choose a chapter and explore at your own pace.',
     selected: 'Current label',
     close: 'Close label',
     open: 'Open label',
     observe: 'How to look',
     stay: 'Extend the stay',
-    routeEyebrow: 'THE GUEST JOURNEY',
-    routeTitle: 'From pause, to understanding, to making.',
-    route: [
-      ['01', 'Observe', 'Choose one macro point and record a compositional or textural detail.'],
-      ['02', 'Thread', 'Compare materials, swatches and relative fineness to observe silk lustre.'],
-      ['03', 'Stitch', 'Explore mounting and thread selection, then see how a practice sample is made.'],
-    ],
   },
 } as const
 
@@ -118,7 +104,7 @@ export function ImmersivePage() {
   const [active, setActive] = useState<LobbyHotspotId>('artwork')
   const [focusRequest, setFocusRequest] = useState(0)
   const [observation, setObservation] = useState<Partial<Exploration>>()
-  const [detailsOpen, setDetailsOpen] = useState(true)
+  const [detailsOpen, setDetailsOpen] = useState(false)
   const copy = PAGE_COPY[language]
   const detail = DETAIL_COPY[language][active]
   const requestedFocus = searchParams.get('focus')
@@ -137,7 +123,6 @@ export function ImmersivePage() {
 
   const focusExhibit = (id: LobbyHotspotId) => {
     setActive(id)
-    setDetailsOpen(true)
     setFocusRequest((request) => request + 1)
   }
 
@@ -156,37 +141,22 @@ export function ImmersivePage() {
           <LobbyConciergeScene language={language} active={active} focusRequest={focusRequest} onSelect={focusExhibit} onExplore={setObservation} />
         </div>
 
-        {detailsOpen ? (
-          <aside className="immersive-label" aria-live="polite">
-            <div className="immersive-label-heading">
-              <div>
-                <span>{detail.eyebrow}</span>
-                <small>{copy.selected}</small>
-              </div>
-              <button type="button" onClick={() => setDetailsOpen(false)}>{copy.close}</button>
-            </div>
+        <div className="immersive-label-container">
+          <button className="immersive-label-trigger" type="button" aria-expanded={detailsOpen} aria-controls="exhibit-label" onClick={() => setDetailsOpen(value => !value)}>
+            <span>{detail.eyebrow}</span>
+            <strong>{detailsOpen ? copy.close : copy.open}</strong>
+          </button>
+          <aside id="exhibit-label" className="immersive-label" hidden={!detailsOpen} aria-live="polite">
+            <div className="immersive-label-heading"><small>{copy.selected}</small></div>
             <h2>{detail.title}</h2>
             <p className="immersive-label-body">{detail.body}</p>
-            {active === 'artwork' && (
-              <>
-                <p className="immersive-label-tags">{detail.tags.join(' · ')}</p>
-                <div className="immersive-label-note">
-                  <span>{copy.observe}</span>
-                  <p>{detail.observe}</p>
-                </div>
-                <div className="immersive-label-note">
-                  <span>{copy.stay}</span>
-                  <p>{detail.stay}</p>
-                </div>
-              </>
-            )}
+            {active === 'artwork' && <>
+              <p className="immersive-label-tags">{detail.tags.join(' · ')}</p>
+              <div className="immersive-label-note"><span>{copy.observe}</span><p>{detail.observe}</p></div>
+              <div className="immersive-label-note"><span>{copy.stay}</span><p>{detail.stay}</p></div>
+            </>}
           </aside>
-        ) : (
-          <button className="immersive-label-trigger" type="button" onClick={() => setDetailsOpen(true)}>
-            <span>{detail.eyebrow}</span>
-            <strong>{copy.open}</strong>
-          </button>
-        )}
+        </div>
       </section>
 
       <details className="immersive-exploration-disclosure" ref={explorationDisclosureRef}>
@@ -196,20 +166,13 @@ export function ImmersivePage() {
         </summary>
         <ExplorationTask observation={observation} onFocus={(id) => { focusExhibit(id); document.querySelector('.immersive-workspace')?.scrollIntoView({ behavior: 'smooth' }) }} />
       </details>
-      <section className="immersive-journey">
-        <header>
-          <p className="eyebrow">{copy.routeEyebrow}</p>
-          <h2>{copy.routeTitle}</h2>
-        </header>
+      <section className="immersive-next-step">
         <div>
-          {copy.route.map(([number, title, body]) => (
-            <article key={number}>
-              <span>{number}</span>
-              <h3>{title}</h3>
-              <p>{body}</p>
-            </article>
-          ))}
+          <p className="eyebrow">{language === 'zh' ? '继续探索' : 'KEEP EXPLORING'}</p>
+          <h2>{language === 'zh' ? '带着发现，问问婉娘。' : 'Take a question to Wanniang.'}</h2>
+          <p>{language === 'zh' ? '从刚才的一处细节，聊聊苏绣与苏州。' : 'Continue the story of a detail you noticed, in Su embroidery or Suzhou.'}</p>
         </div>
+        <Link className="btn-primary" to="/guide">{language === 'zh' ? '继续向婉娘提问' : 'Ask Wanniang'}<span aria-hidden="true"> →</span></Link>
       </section>
 
     </div>

@@ -1,0 +1,26 @@
+[
+  {
+    "runtime": "web/public/assets/suzhou-heritage-salon-20261029.webp",
+    "source": "assets-source/design-polish-20261029/suzhou-heritage-salon-20261029.png",
+    "size": [
+      1672,
+      941
+    ],
+    "bytes": 223272,
+    "sha256": "4c0b37589aa7a84347dd2603858fc2a412ebdafacbf7fb268a95fd632eab72cc",
+    "origin": "built-in imagegen",
+    "synthetic": true
+  },
+  {
+    "runtime": "web/public/assets/suxiu-silk-splitting-20261029.webp",
+    "source": "assets-source/design-polish-20261029/suxiu-silk-splitting-20261029.png",
+    "size": [
+      1200,
+      800
+    ],
+    "bytes": 145314,
+    "sha256": "41ae5566a04f3949448cd808d57229de64183013b7d94353c1d7c6d9d67670c3",
+    "origin": "built-in imagegen",
+    "synthetic": true
+  }
+]

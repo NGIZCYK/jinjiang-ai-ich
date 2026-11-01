@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react'
+import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { localizedUserName, useLanguage } from '../lib/i18n'
 import { useAppStore } from '../lib/store'
 import { PageErrorBoundary } from './PageErrorBoundary'
 import { JourneySteps } from './JourneySteps'
+import { OpsPreviewBar } from './OpsPreviewBar'
 import { clearContinuation, readContinuation } from '../lib/journeyFlow'
+
+const GUEST_ROUTES = ['/', '/guide', '/immersive', '/my']
 
 export function Layout() {
   const user = useAppStore((s) => s.user)
@@ -13,22 +16,35 @@ export function Layout() {
   const location = useLocation()
   const { language, setLanguage } = useLanguage()
   const isHome = location.pathname === '/'
-  const operatorPage=['/operations','/studio','/analytics'].includes(location.pathname)
-  const [workspace,setWorkspace]=useState<'guest'|'ops'>(operatorPage?'ops':'guest')
-  useEffect(()=>{setWorkspace(operatorPage?'ops':'guest')},[operatorPage,user?.id])
-  useEffect(()=>{const frame=requestAnimationFrame(()=>{if(location.hash){let id='';try{id=decodeURIComponent(location.hash.slice(1))}catch{return}document.getElementById(id)?.scrollIntoView({block:'start'})}else window.scrollTo({top:0,behavior:'instant' as ScrollBehavior})});return()=>cancelAnimationFrame(frame)},[location.pathname,location.hash])
-  useEffect(()=>{if(user&&readContinuation()===location.pathname+location.search+location.hash)clearContinuation()},[user?.id,location.pathname,location.search,location.hash])
-  const [homeHeaderScrolled, setHomeHeaderScrolled] = useState(false)
-
+  const showPreview = user?.role === 'ops' && GUEST_ROUTES.includes(location.pathname)
   useEffect(() => {
-    if (!isHome) {
-      setHomeHeaderScrolled(false)
-      return undefined
+    document.title = language === 'zh' ? '婉娘 · 锦江苏绣非遗体验' : 'Wanniang · Jinjiang Su Embroidery Experience'
+  }, [language, location.pathname])
+  useEffect(() => { if (user && readContinuation() === location.pathname + location.search + location.hash) clearContinuation() }, [user?.id, location.pathname, location.search, location.hash])
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      if (location.hash) {
+        let id = ''
+        try { id = decodeURIComponent(location.hash.slice(1)) } catch { return }
+        document.getElementById(id)?.scrollIntoView({ block: 'start' })
+      } else window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [location.pathname, location.hash])
+  const headerRef = useRef<HTMLElement>(null)
+  const [homeHeaderHeight, setHomeHeaderHeight] = useState<number | null>(null)
+  useLayoutEffect(() => {
+    if (!isHome || !headerRef.current) return
+    const header = headerRef.current
+    const measure = () => {
+      const height = Math.ceil(header.getBoundingClientRect().height)
+      if (height > 0) setHomeHeaderHeight(height)
     }
-    const syncHeader = () => setHomeHeaderScrolled(window.scrollY > 40)
-    syncHeader()
-    window.addEventListener('scroll', syncHeader, { passive: true })
-    return () => window.removeEventListener('scroll', syncHeader)
+    measure()
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure)
+    observer?.observe(header)
+    window.addEventListener('resize', measure)
+    return () => { observer?.disconnect(); window.removeEventListener('resize', measure) }
   }, [isHome])
   const copy = language === 'zh'
     ? {
@@ -36,8 +52,6 @@ export function Layout() {
         brandShort: '苏绣礼宾',
         descriptor: '苏绣文化礼宾',
         guestLinks: ['礼遇首页', '婉娘礼宾', '苏绣艺境', '我的行程'],
-        opsLinks: ['内容工作台', '运营洞察'],
-        opsLabel: '运营空间',
         login: '登录', logout: '退出',
       }
     : {
@@ -45,8 +59,6 @@ export function Layout() {
         brandShort: 'Su Embroidery',
         descriptor: 'Su Embroidery Cultural Concierge',
         guestLinks: ['Welcome', 'Wanniang', 'Embroidery Gallery', 'My Journey'],
-        opsLinks: ['Content Studio', 'Operations'],
-        opsLabel: 'Operations',
         login: 'Sign in', logout: 'Sign out',
       }
   const guestLinks = [
@@ -55,19 +67,14 @@ export function Layout() {
     { to: '/immersive', label: copy.guestLinks[2] },
     { to: '/my', label: copy.guestLinks[3] },
   ]
-  const opsLinks = [
-    { to: '/operations', end: false, label: language === 'zh' ? '体验管理' : 'Experiences' },
-    { to: '/studio', end: false, label: copy.opsLinks[0] },
-    { to: '/analytics', end: false, label: copy.opsLinks[1] },
-  ]
-  const showOperations = user?.role === 'ops'
 
   return (
-    <div className={`page-shell min-h-screen ${isHome ? 'page-shell-home' : ''}`}>
+    <div className={`page-shell guest-ui min-h-screen ${isHome ? 'page-shell-home' : ''}`} style={isHome && homeHeaderHeight !== null ? { '--home-header-height': `${homeHeaderHeight}px` } as CSSProperties : undefined}>
       <a href="#main-content" className="skip-link">
         {language === 'zh' ? '跳到主要内容' : 'Skip to main content'}
       </a>
-      <header className={`site-header sticky top-0 z-20 ${isHome ? 'site-header-home' : ''} ${homeHeaderScrolled ? 'site-header-home-scrolled' : ''}`}>
+      {showPreview && <OpsPreviewBar />}
+      <header ref={headerRef} className={`site-header sticky top-0 z-20 ${isHome ? 'site-header-home' : ''}`}>
         <div className="site-header-inner">
           <Link to="/" className="brand-lockup" aria-label={language === 'zh' ? '返回礼遇首页' : 'Return to welcome'}>
             <span className="brand-seal" aria-hidden="true">{language === 'zh' ? '绣' : 'S'}</span>
@@ -78,7 +85,7 @@ export function Layout() {
           </Link>
 
           <nav className="site-primary-nav" aria-label={language === 'zh' ? '住客导航' : 'Guest navigation'}>
-            {(showOperations&&workspace==='ops'?opsLinks:guestLinks).map((link) => (
+            {guestLinks.map((link) => (
               <NavLink
                 key={link.to}
                 to={link.to}
@@ -91,7 +98,6 @@ export function Layout() {
           </nav>
 
           <div className="site-header-actions">
-            {showOperations && <span className="role-indicator">{copy.opsLabel}</span>}
             <div className="language-switch" aria-label="Language selector">
               <button className={language === 'zh' ? 'language-switch-active' : ''} onClick={() => setLanguage('zh')} aria-label="Switch to Chinese" aria-pressed={language==='zh'}>
                 中
@@ -139,10 +145,9 @@ export function Layout() {
             )}
           </div>
         </div>
-        {showOperations&&<div className="workspace-switch" role="group" aria-label={language==='zh'?'切换工作区':'Choose workspace'}><button aria-pressed={workspace==='guest'} onClick={()=>{setWorkspace('guest');nav('/')}}>{language==='zh'?'住客体验':'Guest experience'}</button><button aria-pressed={workspace==='ops'} onClick={()=>{setWorkspace('ops');nav('/operations')}}>{language==='zh'?'运营工作区':'Operations workspace'}</button></div>}
         <nav className="mobile-nav-shell" aria-label={language === 'zh' ? '移动端导航' : 'Mobile navigation'}>
           <div className="mobile-nav-track">
-            {(showOperations&&workspace==='ops'?opsLinks:guestLinks).map((link) => (
+            {guestLinks.map((link) => (
               <NavLink
                 key={link.to}
                 to={link.to}

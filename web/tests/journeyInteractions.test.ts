@@ -25,6 +25,20 @@ beforeEach(()=>{
 })
 afterEach(cleanup)
 describe('guest booking interactions',()=>{
+ it('keeps internal refresh diagnostics out of the guest notice',()=>{
+  useJourneyStore.setState({error:'Could not find the function public.available_sessions in the schema cache'})
+  show(MyPage,'/my')
+  expect(screen.getByText(/暂时无法更新行程/)).toBeTruthy()
+  expect(screen.queryByText(/public\.available_sessions/)).toBeNull()
+ })
+ it('localises network refresh errors while retaining the selected session',()=>{
+  localStorage.setItem('jj_language','en')
+  show(MyPage,'/my')
+  fireEvent.change(screen.getByLabelText('Date & session'),{target:{value:slot.id}})
+  act(()=>useJourneyStore.setState({error:'Failed to fetch'}))
+  expect(screen.getByText(/Connection interrupted/)).toBeTruthy()
+  expect((screen.getByLabelText('Date & session') as HTMLSelectElement).value).toBe(slot.id)
+ })
  it('retains session and party size when shared records refresh',async()=>{
   show(MyPage)
   fireEvent.change(screen.getByLabelText('具体日期与场次'),{target:{value:slot.id}})

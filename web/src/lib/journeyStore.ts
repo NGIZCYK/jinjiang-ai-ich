@@ -2,6 +2,16 @@ import { create } from 'zustand'
 import { cloud, requireCloud, rpc } from './cloud'
 import { CATALOG, EMPTY_EXPLORATION, type Exploration, type Experience, type SessionSlot, type SavedRecommendation, type JourneyBooking, type Needs } from './journey'
 import { useAppStore } from './store'
+import { actionError } from './actionErrors'
+import type { Language } from './i18n'
+
+/** Keep server diagnostics out of the guest-facing refresh notice. */
+export function journeyRefreshError(error: string, language: Language) {
+ const message=actionError(error,language)
+ return message!==error?message:language==='zh'
+  ?'暂时无法更新行程，已有记录和已填写的内容仍保留，请稍后重试。'
+  :'Your journey could not be refreshed. Your records and entries are retained; please try again shortly.'
+}
 interface JourneyState {
  owner: string|null; exploration: Exploration|null; recommendations: SavedRecommendation[]; bookings: JourneyBooking[];
  catalog: Experience[]; sessions: SessionSlot[]; needs: Needs|null; loading:boolean; error:string;
@@ -20,7 +30,7 @@ export const useJourneyStore=create<JourneyState>((set,get)=>({
     cloud.from('explorations').select('body').eq('user_id',id).maybeSingle(),
     cloud.from('preferences').select('needs').eq('user_id',id).maybeSingle(),
     cloud.from('recommendations').select('*').eq('user_id',id).order('created_at',{ascending:false}),
-    cloud.from('bookings').select('*,sessions(starts_at,experience_id),feedback(rating,comment)').order('created_at',{ascending:false}),
+    cloud.from('bookings').select('*,sessions(starts_at,experience_id),feedback(rating,comment,created_at)').order('created_at',{ascending:false}),
     cloud.from('experiences').select('*').eq('active',true),
     cloud.rpc('available_sessions'),
    ])

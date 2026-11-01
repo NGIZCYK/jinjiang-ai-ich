@@ -1,10 +1,16 @@
-import { useEffect, useState } from 'react'
+import { type CSSProperties, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CinematicHero } from '../components/CinematicHero'
 import { useLanguage } from '../lib/i18n'
 import { useAppStore } from '../lib/store'
 import { clearContinuation, readContinuation } from '../lib/journeyFlow'
 import { useReducedMotion } from '../hooks/useReducedMotion'
+
+const CHAPTER_MEDIA = [
+  { src: '/assets/suxiu-gusu-prosperous.webp', width: 1920, height: 1152, zh: '姑苏水岸与舟船的数字纹理长卷', en: 'A digital-texture scroll of Suzhou waterways and boats' },
+  { src: '/assets/suxiu-silk-splitting-20261029.webp', width: 1200, height: 800, zh: '双手劈分细丝的工艺示意', en: 'An illustration of hands splitting fine silk threads' },
+  { src: '/assets/suxiu-step-03-stitching.webp', width: 1920, height: 1080, zh: '绷架上持针起绣的工艺示意', en: 'An illustration of a first stitch on an embroidery frame' },
+] as const
 
 export function PremiumHomePage() {
   const user = useAppStore((state) => state.user)
@@ -14,67 +20,91 @@ export function PremiumHomePage() {
   const [pausedByUser,setPausedByUser] = useState(false)
   const [continueTo,setContinueTo] = useState(readContinuation)
   const reducedMotion = useReducedMotion()
+  const chaptersRef = useRef<HTMLDivElement>(null)
+  const chaptersRevealed = useRef(false)
+
+  useEffect(() => {
+    const grid = chaptersRef.current
+    if (!grid) return
+    if (reducedMotion || chaptersRevealed.current) {
+      chaptersRevealed.current = true
+      grid.removeAttribute('data-reveal')
+      return
+    }
+    if (typeof IntersectionObserver === 'undefined') return
+    let observer: IntersectionObserver | undefined
+    try {
+      observer = new IntersectionObserver((entries) => {
+        if (!entries.some(entry => entry.isIntersecting)) return
+        observer?.disconnect()
+        if (chaptersRevealed.current) return
+        chaptersRevealed.current = true
+        grid.dataset.reveal = 'visible'
+      }, { threshold: 0 })
+      grid.dataset.reveal = 'pending'
+      observer.observe(grid)
+    } catch {
+      grid.removeAttribute('data-reveal')
+    }
+    return () => observer?.disconnect()
+  }, [reducedMotion])
 
   const copy = language === 'zh'
     ? {
-        heroEyebrow: 'JINJIANG SUZHOU · A SENSE OF PLACE',
         title: '住进苏州，也住进一门手艺。',
-        lead: '以苏绣为线索，让大堂中的一次驻足、客房里的一段静赏与婉娘的一次交谈，成为可感知、可理解、可继续参与的苏州记忆。',
+        lead: '循一根丝线，认识苏绣的细腻。让婉娘陪你从静静欣赏，走向亲手尝试。',
         meet: '咨询婉娘',
         explore: '开始探索',
-        heroNote: '锦江苏州文化礼宾 · 苏绣主题住中体验',
-        journeyEyebrow: 'A CURATED STAY',
+        journeyEyebrow: '住中三章',
         journeyTitle: '一段住中旅程，三次与苏绣相遇。',
-        journeyLead: '不把非遗做成孤立的展板，而是让它自然地出现在抵达、停留与参与的节奏里。',
+        journeyLead: '从一幅绣意、一缕丝光到第一针，按自己的节奏慢慢认识。',
         chapters: [
-          ['01', '大堂 · 观绣', '从《姑苏繁华图》数字纹理长卷进入苏州，在微距观察中辨认水波、桥影与丝光。', '/immersive?focus=artwork'],
-          ['02', '客房 · 识线', '通过丝线、色阶与触感线索理解“劈丝”与丝光，让工艺知识成为安静的房内陪伴。', '/immersive?focus=silk'],
-          ['03', '工坊 · 试针', '沿上绷、配线与起针的次序，把观看转化为一场可预约、可记录的入门体验。', '/immersive?focus=workbench'],
+          ['01', '大堂 · 观绣', '循长卷与微距，发现姑苏的绣意。', '/immersive?focus=artwork'],
+          ['02', '客房 · 识线', '看丝线的色阶与光泽，认识劈丝。', '/immersive?focus=silk'],
+          ['03', '工坊 · 试针', '沿上绷、配线与起针，尝试第一针。', '/immersive?focus=workbench'],
         ],
         discover: '展开这一章',
-        roomEyebrow: 'THE HERITAGE ROOM',
-        roomTitle: '非遗不只被观看，也被空间温柔承接。',
-        roomBody: '主题房以初白、黛青与老木色为底，将苏绣融入床头绢屏、织物细节和房内阅读。视觉克制，信息有据，让文化进入日常而不喧宾夺主。',
+        roomEyebrow: '苏绣主题客房',
+        roomTitle: '让一段手艺，融入停留的片刻。',
+        roomBody: '初白、黛青与暖木，衬出绢屏和织物上的细节。停下来，翻一页双语导览，在休息的片刻继续认识苏绣。',
         roomPoints: ['一处苏绣主题陈设', '一份双语房内导览', '一次工坊体验意向'],
         roomCta: '查看我的行程',
-        conciergeEyebrow: 'CULTURAL CONCIERGE',
+        conciergeEyebrow: '你的文化礼宾',
         conciergeTitle: '有问题，问婉娘。',
-        conciergeBody: '她既能讲清苏绣的材料、技艺与文脉，也能回答更广泛的苏州旅行问题，并把兴趣延伸为适合住客时间的体验建议。',
+        conciergeBody: '问苏绣，也问苏州。告诉婉娘你的兴趣与可用时间，找到适合这段停留的体验。',
         conciergeCta: '开始交谈',
-        collectionEyebrow: 'LOBBY COLLECTION',
-        collectionTitle: '五幅苏绣风格数字展陈。',
+        collectionEyebrow: '江南花鸟集',
+        collectionTitle: '花鸟之间，看见江南。',
         collectionLead: '以花鸟、瑞禽与江南意象构成大堂轮换展陈，在色彩、纹理与构图中感受苏绣之美。',
         previous: '上一幅展陈图',
         next: '下一幅展陈图',
         pause: '将鼠标停留在作品上可暂停轮换',
       }
     : {
-        heroEyebrow: 'JINJIANG SUZHOU · A SENSE OF PLACE',
         title: 'Stay in Suzhou. Enter a living craft.',
-        lead: 'Su embroidery connects a moment in the lobby, a quiet encounter in the guest room and a conversation with Wanniang into one considered memory of place.',
+        lead: 'Discover the quiet detail of Su embroidery. Let Wanniang guide you from a closer look to a first stitch.',
         meet: 'Meet Wanniang',
         explore: 'Enter the embroidery atelier',
-        heroNote: 'Jinjiang Suzhou cultural concierge · A heritage stay',
         journeyEyebrow: 'A CURATED STAY',
         journeyTitle: 'One stay, three encounters with Su embroidery.',
         journeyLead: 'Heritage is not treated as a detached display. It enters the natural rhythm of arrival, pause and participation.',
         chapters: [
-          ['01', 'Lobby · Observe', 'Enter Suzhou through a digital-texture scroll and use the macro view to notice ripples, bridges and silk-like light.', '/immersive?focus=artwork'],
-          ['02', 'Room · Read the thread', 'Learn how splitting, colour and lustre shape the craft through quiet, tactile details in the room.', '/immersive?focus=silk'],
-          ['03', 'Atelier · Take a stitch', 'Move from mounting and thread selection to a first stitch in an introductory experience that can be saved to your stay.', '/immersive?focus=workbench'],
+          ['01', 'Lobby · Observe', 'Explore Suzhou through a scroll and its details.', '/immersive?focus=artwork'],
+          ['02', 'Room · Read the thread', 'Discover silk splitting, colour and lustre.', '/immersive?focus=silk'],
+          ['03', 'Atelier · Take a stitch', 'Follow mounting, threading and your first stitch.', '/immersive?focus=workbench'],
         ],
         discover: 'Explore this chapter',
         roomEyebrow: 'THE HERITAGE ROOM',
-        roomTitle: 'Heritage is not only displayed. It is held by the room.',
-        roomBody: 'Silk ivory, muted slate and aged elm form a quiet setting for an embroidered screen, tactile textiles and concise in-room interpretation. Culture becomes part of the stay without becoming decoration alone.',
+        roomTitle: 'A quiet moment with a living craft.',
+        roomBody: 'Ivory, muted jade and warm wood frame an embroidered screen and tactile textiles. Pause with the bilingual guide and discover another detail of Su embroidery.',
         roomPoints: ['One curated embroidery setting', 'A bilingual in-room guide', 'One atelier preference'],
         roomCta: 'View my stay',
         conciergeEyebrow: 'CULTURAL CONCIERGE',
         conciergeTitle: 'Ask Wanniang.',
-        conciergeBody: 'She explains the materials, techniques and cultural context of Su embroidery, answers wider Suzhou travel questions and shapes an experience around the time you have.',
+        conciergeBody: 'Ask about Su embroidery or Suzhou. Share your interests and available time, and find an experience that suits your stay.',
         conciergeCta: 'Begin a conversation',
         collectionEyebrow: 'LOBBY COLLECTION',
-        collectionTitle: 'Five digital studies inspired by Su embroidery.',
+        collectionTitle: 'Jiangnan, in birds and blossoms.',
         collectionLead: 'Flora, birds and Jiangnan motifs form a rotating lobby collection, exploring the colour, texture and composition of Su embroidery.',
         previous: 'Previous artwork',
         next: 'Next artwork',
@@ -113,39 +143,49 @@ export function PremiumHomePage() {
     <div className="home-page">
       <CinematicHero
         language={language}
-        eyebrow={copy.heroEyebrow}
         title={copy.title}
         lead={copy.lead}
         primaryLabel={user&&continueTo?(language==='zh'?'继续刚才的操作':'Continue your experience'):copy.meet}
         primaryTo={user&&continueTo?continueTo:'/guide'}
         secondaryLabel={copy.explore}
         secondaryTo="/immersive"
-        note={copy.heroNote}
+        onDismissContinuation={user&&continueTo?()=>{clearContinuation();setContinueTo(null)}:undefined}
       />
 
-      {user&&continueTo&&<section className="home-continue" aria-label={language==='zh'?'继续体验':'Continue your experience'}><div><small>{language==='zh'?'欢迎回来':'WELCOME BACK'}</small><h2>{language==='zh'?'接着完成刚才的体验。':'Pick up where you left off.'}</h2><p>{language==='zh'?'你的探索与需求草稿仍在，可以继续核对并保存。':'Your exploration and needs drafts are ready to check and save.'}</p></div><Link className="btn-primary" to={continueTo} onClick={()=>{clearContinuation();setContinueTo(null)}}>{language==='zh'?'继续刚才的操作':'Continue your experience'} →</Link><button className="journey-text-button" onClick={()=>{clearContinuation();setContinueTo(null)}}>{language==='zh'?'稍后再说':'Maybe later'}</button></section>}
-      <section className="home-journey-section">
+      <section className="home-journey-section" id="stay-chapters" tabIndex={-1}>
         <header className="home-section-intro">
           <p className="eyebrow">{copy.journeyEyebrow}</p>
           <h2>{copy.journeyTitle}</h2>
           <p>{copy.journeyLead}</p>
         </header>
-        <div className="home-journey-grid">
-          {copy.chapters.map(([index, title, body, to]) => (
-            <Link to={to} key={index} className="home-journey-item">
-              <span>{index}</span>
-              <h3>{title}</h3>
-              <p>{body}</p>
-              <strong>{copy.discover}<span aria-hidden="true">→</span></strong>
+        <div ref={chaptersRef} className="home-journey-grid" onFocusCapture={() => {
+          chaptersRevealed.current = true
+          chaptersRef.current?.removeAttribute('data-reveal')
+        }}>
+          {copy.chapters.map(([index, title, body, to], position) => (
+            <Link to={to} key={index} className={`home-journey-item ${position === 0 ? 'home-journey-featured' : ''}`}
+              style={{ '--chapter-index': position } as CSSProperties}
+              aria-labelledby={`home-chapter-title-${index}`} aria-describedby={`home-chapter-description-${index}`}>
+              <div className="home-journey-media">
+                <img src={CHAPTER_MEDIA[position].src} width={CHAPTER_MEDIA[position].width} height={CHAPTER_MEDIA[position].height}
+                  alt={CHAPTER_MEDIA[position][language]} loading="lazy" decoding="async" />
+              </div>
+              <div className="home-journey-copy">
+                <span className="home-chapter-number">{index}</span>
+                <h3 id={`home-chapter-title-${index}`}>{title}</h3>
+                <p id={`home-chapter-description-${index}`}>{body}</p>
+                <strong>{copy.discover}<span aria-hidden="true">↗</span></strong>
+              </div>
             </Link>
           ))}
         </div>
       </section>
 
       <section className="home-room-story">
-        <div className="home-room-image">
+        <figure className="home-room-image">
           <img src="/assets/hotel-suxiu-theme-room-v1.webp" alt={language === 'zh' ? '融入苏绣绢屏的苏州酒店主题房' : 'Suzhou hotel heritage room with an embroidered silk screen'} width="1672" height="941" loading="lazy" />
-        </div>
+          <figcaption>{language === 'zh' ? '主题客房空间概念图' : 'Heritage room · concept interior'}</figcaption>
+        </figure>
         <div className="home-room-copy">
           <p className="eyebrow">{copy.roomEyebrow}</p>
           <h2>{copy.roomTitle}</h2>

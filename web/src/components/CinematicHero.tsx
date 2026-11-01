@@ -4,47 +4,58 @@ import type { Language } from '../lib/i18n'
 
 interface CinematicHeroProps {
   language: Language
-  eyebrow: string
   title: string
   lead: string
   primaryLabel: string
   primaryTo: string
   secondaryLabel: string
   secondaryTo: string
-  note: string
+  onDismissContinuation?: () => void
 }
 
 type NavigatorWithConnection = Navigator & {
   connection?: { saveData?: boolean }
 }
 
-const VIDEO_SRC = '/videos/home-heritage-film-20260915-v1.mp4'
-const POSTER_SRC = '/assets/home-heritage-film-poster-20260915-v1.webp'
+export const HERO_MEDIA = {
+  desktop: { video: '/videos/home-embroidery-20261101-v2-desktop.mp4', poster: '/assets/home-embroidery-20261101-v2-desktop.webp', width: 1920, height: 1080 },
+  mobile: { video: '/videos/home-embroidery-20261101-v2-mobile.mp4', poster: '/assets/home-embroidery-20261101-v2-mobile.webp', width: 720, height: 1280 },
+} as const
 
 export function CinematicHero({
   language,
-  eyebrow,
   title,
   lead,
   primaryLabel,
   primaryTo,
   secondaryLabel,
   secondaryTo,
-  note,
+  onDismissContinuation,
 }: CinematicHeroProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const [progress, setProgress] = useState(0)
-  const [duration, setDuration] = useState(20)
   const [isPaused, setIsPaused] = useState(false)
-  const [isReady, setIsReady] = useState(false)
-  const [videoFailed, setVideoFailed] = useState(false)
-  const [wantsVideo,setWantsVideo] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches)
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && !window.matchMedia('(min-width: 768px)').matches)
+  const [mobileRequested, setMobileRequested] = useState(false)
+  const [readyVariant, setReadyVariant] = useState<string | null>(null)
+  const [failedVariant, setFailedVariant] = useState<string | null>(null)
+  const variant = isMobile ? 'mobile' : 'desktop'
+  const media = HERO_MEDIA[variant]
+  const wantsVideo = !isMobile || mobileRequested
+  const videoFailed = failedVariant === variant
+  const isReady = readyVariant === variant
   const [staticMode, setStaticMode] = useState(() => {
     if (typeof window === 'undefined') return false
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const saveData = (navigator as NavigatorWithConnection).connection?.saveData === true
     return reducedMotion || saveData
   })
+
+  useEffect(() => {
+    const query = window.matchMedia('(min-width: 768px)')
+    const sync = () => { setIsMobile(!query.matches); setReadyVariant(null); setFailedVariant(null) }
+    query.addEventListener('change', sync)
+    return () => query.removeEventListener('change', sync)
+  }, [])
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -58,18 +69,12 @@ export function CinematicHero({
 
   useEffect(() => {
     if (!staticMode) return
+    setReadyVariant(null)
     videoRef.current?.pause()
   }, [staticMode])
 
-  const updateProgress = () => {
-    const video = videoRef.current
-    if (!video || !Number.isFinite(video.duration) || video.duration <= 0) return
-    setDuration(video.duration)
-    setProgress((video.currentTime / video.duration) * 100)
-  }
-
   const togglePlayback = async () => {
-    if (!wantsVideo && !staticMode && !videoFailed) { setWantsVideo(true); return }
+    if (!wantsVideo && !staticMode && !videoFailed) { setIsPaused(false); setMobileRequested(true); return }
     const video = videoRef.current
     if (!video || staticMode || videoFailed) return
     if (video.paused) {
@@ -87,66 +92,67 @@ export function CinematicHero({
     ? {
         pause: '暂停影像',
         play: '继续播放',
-        static: '静态模式',
+        unavailable: '视频暂不可用，已显示封面。',
       }
     : {
         pause: 'Pause film',
         play: 'Resume film',
-        static: 'Still mode',
+        unavailable: 'The film is unavailable. Its cover is shown.',
       }
 
-  const elapsed = Math.min(duration, (progress / 100) * duration)
-  const timeLabel = `${Math.floor(elapsed).toString().padStart(2, '0')} / ${Math.round(duration).toString().padStart(2, '0')} SEC`
+  const showPlay = !wantsVideo || isPaused
+  const playbackLabel = !wantsVideo ? (language === 'zh' ? '播放影像' : 'Play film') : isPaused ? copy.play : copy.pause
 
   return (
-    <section className="home-hospitality-hero home-cinematic-hero">
-      <div className={`home-film-media ${isReady ? 'is-ready' : ''}`} aria-hidden="true">
-        <img src={POSTER_SRC} alt="" width="1600" height="900" />
-        {!staticMode && !videoFailed && wantsVideo && (
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            poster={POSTER_SRC}
-            tabIndex={-1}
-            onCanPlay={() => setIsReady(true)}
-            onLoadedMetadata={updateProgress}
-            onTimeUpdate={updateProgress}
-            onPlay={() => setIsPaused(false)}
-            onPause={() => setIsPaused(true)}
-            onError={() => setVideoFailed(true)}
-          >
-            <source src={VIDEO_SRC} type="video/mp4" />
-          </video>
-        )}
-      </div>
-
-      <div className="home-hero-shade" />
-      <div className="home-hero-content">
-        <p className="home-hero-eyebrow">{eyebrow}</p>
-        <h1>{title}</h1>
+    <div className="home-opening">
+      <section id="home-introduction" className="home-introduction" aria-labelledby="home-title" tabIndex={-1}>
+        <h1 id="home-title">{title}</h1>
         <p className="home-hero-lead">{lead}</p>
         <div className="home-hero-actions">
-          <Link to={primaryTo} className="home-hero-primary">{primaryLabel}</Link>
+          <Link to={primaryTo} className="home-hero-primary">{primaryLabel}<span aria-hidden="true">→</span></Link>
           <Link to={secondaryTo} className="home-hero-secondary">{secondaryLabel}<span aria-hidden="true">↗</span></Link>
         </div>
-        <p className="home-hero-note">{note}</p>
-      </div>
+        {onDismissContinuation && <button type="button" className="journey-text-button home-continue-dismiss" onClick={onDismissContinuation}>{language === 'zh' ? '稍后再说' : 'Maybe later'}</button>}
+      </section>
+      <section className="home-hospitality-hero home-cinematic-hero" aria-label={language === 'zh' ? '苏绣主题影像' : 'Embroidery film'}>
+        <div className={`home-film-media ${isReady && !videoFailed && !staticMode ? 'is-ready' : ''}`} aria-hidden="true">
+          <img src={media.poster} alt="" width={media.width} height={media.height} {...{ fetchpriority: 'high' }} />
+          {!staticMode && !videoFailed && wantsVideo && (
+            <video
+              key={variant}
+              ref={videoRef}
+              autoPlay={!isPaused}
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              poster={media.poster}
+              tabIndex={-1}
+              onPlaying={() => setReadyVariant(variant)}
+              onPlay={() => setIsPaused(false)}
+              onPause={() => setIsPaused(true)}
+              onError={() => setFailedVariant(variant)}
+            >
+              <source src={media.video} type="video/mp4" />
+            </video>
+          )}
+        </div>
 
-      <div className="home-film-console">
-        <div className="home-film-meta">
-          <strong>{staticMode || videoFailed || !wantsVideo ? copy.static : timeLabel}</strong>
-        </div>
-        <div className="home-film-progress" aria-hidden="true">
-          <span style={{ width: `${staticMode || videoFailed || !wantsVideo ? 100 : progress}%` }} />
-        </div>
-        <button type="button" onClick={togglePlayback} disabled={staticMode || videoFailed} aria-label={!wantsVideo?(language==='zh'?'播放影像':'Play film'):isPaused ? copy.play : copy.pause}>
-          {staticMode || videoFailed ? copy.static : !wantsVideo?(language==='zh'?'播放影像':'Play film'):isPaused ? copy.play : copy.pause}
-        </button>
-      </div>
-    </section>
+        {!staticMode && !videoFailed && <button
+          type="button"
+          className={`home-film-control ${isMobile && !isReady ? 'home-film-control-center' : ''}`}
+          onClick={togglePlayback}
+          aria-label={playbackLabel}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            {showPlay ? <path d="m9 5 11 7-11 7Z" fill="currentColor" /> : <path d="M8 5v14M16 5v14" fill="none" stroke="currentColor" strokeWidth="3" />}
+          </svg>
+        </button>}
+        <a className="home-film-next" href="#stay-chapters" aria-label={language === 'zh' ? '向下探索住中三章' : 'Explore the three chapters below'}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4v15m-6-6 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </a>
+        <p className="sr-only" role="status">{videoFailed ? copy.unavailable : ''}</p>
+      </section>
+    </div>
   )
 }

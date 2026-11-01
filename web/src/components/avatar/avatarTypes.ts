@@ -71,6 +71,8 @@ export interface AvatarStageProps {
   language: 'zh' | 'en'
   statusText?: string
   eyebrow?: string
+  /** The quiet guide renders its own status line beneath the portrait. */
+  showStatus?: boolean
   name?: string
   className?: string
   fallbackImage?: string

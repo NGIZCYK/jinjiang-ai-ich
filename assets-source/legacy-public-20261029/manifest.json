@@ -1,0 +1,51 @@
+[
+  {
+    "original": "web/public/images/wanniang-concierge-v2.png",
+    "archive": "assets-source/legacy-public-20261029/images/wanniang-concierge-v2.png",
+    "bytes": 2086194,
+    "sha256": "B0AD38641CA1D7E1E66B13E3E026886D07809EBB08B63B69D23845F6120A61F0",
+    "reason": "Superseded asset; no references in current src, index or tests"
+  },
+  {
+    "original": "web/public/videos/wanniang-idle.mp4",
+    "archive": "assets-source/legacy-public-20261029/videos/wanniang-idle.mp4",
+    "bytes": 384017,
+    "sha256": "CC7AD6543E45FA58EB0E464E36552D49867161947836B05665D2338FD0CA75E7",
+    "reason": "Superseded asset; no references in current src, index or tests"
+  },
+  {
+    "original": "web/public/videos/wanniang-listening.mp4",
+    "archive": "assets-source/legacy-public-20261029/videos/wanniang-listening.mp4",
+    "bytes": 360722,
+    "sha256": "48FFB109E4B95EECE0E83828E2F1ECDD3726124CA0818E2864235A9FF0761249",
+    "reason": "Superseded asset; no references in current src, index or tests"
+  },
+  {
+    "original": "web/public/videos/wanniang-speaking.mp4",
+    "archive": "assets-source/legacy-public-20261029/videos/wanniang-speaking.mp4",
+    "bytes": 382365,
+    "sha256": "26B5DD87844EDC5CC3E8F5EA21F8D3220681A3C2547288A84E886B93461CA9A2",
+    "reason": "Superseded asset; no references in current src, index or tests"
+  },
+  {
+    "original": "web/public/videos/home-heritage-film-20260915-v1.mp4",
+    "archive": "assets-source/legacy-public-20261029/videos/home-heritage-film-20260915-v1.mp4",
+    "bytes": 7570550,
+    "sha256": "520C4B3478A8CF72B2E962C4A8B3B8B8C9A9C60E22EE65185107DF0EDEC886A7",
+    "reason": "Superseded asset; no references in current src, index or tests"
+  },
+  {
+    "original": "web/public/assets/home-heritage-film-poster-20260915-v1.webp",
+    "archive": "assets-source/legacy-public-20261029/assets/home-heritage-film-poster-20260915-v1.webp",
+    "bytes": 38240,
+    "sha256": "FFA1E6EA7A89B0E654F15D7E4097871A2B3FEC5DDA5DF4435A9613850BC2983B",
+    "reason": "Superseded asset; no references in current src, index or tests"
+  },
+  {
+    "original": "web/public/assets/suxiu-silk-02-splitting.webp",
+    "archive": "assets-source/legacy-public-20261029/assets/suxiu-silk-02-splitting.webp",
+    "bytes": 167808,
+    "sha256": "D01EC6A0855E7E9AE163609DE6651FAE9B8AC4B8EDA9ECA3A310CEC1D3426E1D",
+    "reason": "Superseded asset; no references in current src, index or tests"
+  }
+]
