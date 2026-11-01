@@ -1915,6 +1915,7 @@
   color: var(--ink-soft);
   font-size: 0.76rem;
 }
+.guide-quiet .guide-sign-in-notice { flex: none; }
 .guide-quiet .guide-preference-card {
   margin: 1.2rem 0 0;
   border-top: 1px solid var(--line);

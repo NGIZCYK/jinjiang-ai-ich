@@ -203,10 +203,10 @@ export function GuidePage() {
     const container = chatScrollRef.current
     if (!container) return
     container.scrollTo({
-      top: container.scrollHeight,
+      top: hasConversation ? container.scrollHeight : 0,
       behavior: visibleMessages.length > 1 || streamingText ? 'smooth' : 'auto',
     })
-  }, [visibleMessages, streamingText, loading])
+  }, [visibleMessages, streamingText, loading, hasConversation])
 
   useEffect(() => {
     if (initializedRef.current[language]) return
@@ -560,6 +560,12 @@ export function GuidePage() {
         </aside>
 
         <section className="guide-dialogue-panel" aria-label={copy.title}>
+          {!user && (
+            <p className="guide-service-notice guide-sign-in-notice" role="status">
+              {copy.signInNotice}{' '}
+              <Link className="underline underline-offset-4" to="/auth?next=%2Fguide">{copy.signInOnline}</Link>
+            </p>
+          )}
           {speechQueue.phase !== 'idle' && (
             <div className="guide-speaking-line" role="status">
               <span className="guide-speaking-dot" aria-hidden="true" />
@@ -576,12 +582,6 @@ export function GuidePage() {
           )}
           <div ref={chatScrollRef} className="guide-thread">
             {speechQueue.error&&<p className="guide-service-notice" role="alert">{speechQueue.error}</p>}
-            {!user && (
-              <p className="guide-service-notice" role="status">
-                {copy.signInNotice}{' '}
-                <Link className="underline underline-offset-4" to="/auth?next=%2Fguide">{copy.signInOnline}</Link>
-              </p>
-            )}
             {serviceNotice && (user || serviceNotice !== 'fallback') && (
               <p className="guide-service-notice" role="status">
                 {serviceNotice === 'stale' ? copy.restartNotice : serviceNotice === 'error' ? copy.errorNotice : copy.fallbackNotice}
