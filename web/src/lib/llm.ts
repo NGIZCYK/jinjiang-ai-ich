@@ -1,4 +1,6 @@
 import { keywordSentiment } from './keywordSentiment'
+import { STAYS_ENABLED } from './stayConfig'
+import { isStayQuestion, stayGuideText } from '../data/stayGuide'
 import { buildGuideKnowledge, type GuideKnowledge } from '../../../supabase/functions/_shared/guideKnowledge.ts'
 import { parseGuideSources } from '../../../supabase/functions/_shared/guideContract.ts'
 import { normalizeCapabilities, capabilityChatMode, type GuideCapabilities, FALLBACK_CAPABILITIES } from './guideCapabilities'
@@ -22,6 +24,7 @@ export function sentimentOf(text: string): 'positive' | 'neutral' | 'negative' {
  * 只为课程原型的“导览 → 分析看板”反馈链路提供聚合数据。
  */
 export function extractGuideSignal(text: string, language: Language): Omit<GuideSignal, 'id' | 'createdAt' | 'sourceMessageId'> | null {
+  if (STAYS_ENABLED && isStayQuestion(text)) return null
   const topics: string[] = []
   if (/苏绣|刺绣|劈丝|针法|纹样|丝线|工艺|embroidery|silk|stitch|craft/i.test(text)) topics.push('craft')
   const hasExperienceTopic = /体验课|工坊|手作|预约|报名|workshop|book|reserve|atelier|hands-on/i.test(text)
@@ -182,6 +185,13 @@ export interface AskWanNiangStreamCallbacks {
   onError?: (error: Error) => void
 }
 
+function localStayReply(question:string,language:Language):WanNiangResult {
+ const content=stayGuideText(language)
+ return {content,answerSource:'local',mode:'demo',sentiment:sentimentOf(question),action:{type:'view_stays'},
+  sources:[{id:'stay-prototype-rules',title:language==='zh'?'住宿原型规则':'Stay prototype rules',category:'prototype',references:[language==='zh'?'课程住宿预订原型 2026.11.02；当前价格及库存以客房查询为准。':'Course stay prototype 2026.11.02; see room search for current rates and inventory.']}],
+  performance:inferSemanticPerformance(question,content)}
+}
+
 function getLocalFallbackReply(
   question: string,
   language: Language,
@@ -238,6 +248,8 @@ export async function askWanNiang(
   language: Language = 'zh',
   signal?: AbortSignal,
 ): Promise<WanNiangResult> {
+  if (signal?.aborted) throw new DOMException('Request cancelled', 'AbortError')
+  if (STAYS_ENABLED && isStayQuestion(question)) return localStayReply(question, language)
   const knowledge = buildGuideKnowledge(question, language)
   const action = extractGuideAction(question, language)
   let failed = false
@@ -296,6 +308,12 @@ export async function askWanNiangStream(
   callbacks: AskWanNiangStreamCallbacks = {},
   signal?: AbortSignal,
 ): Promise<WanNiangResult> {
+  if (signal?.aborted) throw new DOMException('Request cancelled', 'AbortError')
+  if (STAYS_ENABLED && isStayQuestion(question)) {
+    const result = localStayReply(question, language)
+    callbacks.onDone?.(result)
+    return result
+  }
   const knowledge = buildGuideKnowledge(question, language)
   const action = extractGuideAction(question, language)
 
@@ -504,13 +522,13 @@ export function generateItinerary(prefer: string, language: Language = 'zh', con
 **Guest Segment**: ${audience} · **Touchpoint**: ${channel}
 **Total Duration**: ${totalMin} min (Schedule exact match: ${t1} + ${t2} + ${t3} + ${t4} = ${totalMin} min)
 
-## 1. Feature Scroll Curatorial Tour (${t1} min)
-- Observe the Prosperous Suzhou digital scroll interpretation
+## 1. Floral Embroidery Tour (${t1} min)
+- Observe the full floral embroidery composition in the atelier
 - Listen to Wanniang's narrative on Gusu textile origins and double-sided embroidery
 
 ## 2. Digital Texture Studio (${t2} min)
 - Interactive exploration in the Lobby Concierge Atelier
-- Inspect the 3x digital loupe across canal ripples and compare illustrative silk-splitting levels
+- Compare petal gradients and thread direction in the separate detail view, then explore illustrative silk-splitting levels
 
 ## 3. Hands-on Artisan Workshop (${t3} min)
 - Compare illustrative silk-splitting levels with an instructor
@@ -528,12 +546,12 @@ export function generateItinerary(prefer: string, language: Language = 'zh', con
 **目标客群**：${audience} · **触达渠道**：${channel}
 **总时长核验**：${totalMin} 分钟（环节严格对齐：${t1} + ${t2} + ${t3} + ${t4} = ${totalMin} 分钟）
 
-## 1. 公区长卷典藏导览（${t1} 分钟）
-- 驻足大堂《姑苏繁华图》长卷演绎，感悟阊门水关繁盛气象
-- 婉娘依据项目知识卡介绍长卷出处、画面细节与苏州城市文脉
+## 1. 花卉苏绣观察导览（${t1} 分钟）
+- 先看花卉苏绣的完整构图，再选择一处花瓣、花蕊或背景细节
+- 婉娘依据项目知识卡介绍苏绣文化与材料工艺，图像出处以艺境展签为准
 
 ## 2. 数字纹理工坊探微（${t2} 分钟）
-- 使用 3x 数字微距镜观察长卷演绎图中的纹理、色阶与局部构图
+- 使用独立细节窗比较同一原图中的色阶、线向与局部构图
 - 通过交互示意比较整股至 1/32 的相对粗细，观察细度变化与轮廓表现
 
 ## 3. 绣台起针体验（${t3} 分钟）

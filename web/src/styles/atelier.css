@@ -423,6 +423,50 @@
   line-height: 1.75;
 }
 
+/* The portrait photograph and detail share one source-space crop, without cover cropping. */
+.floral-study { container: floral-study / inline-size; min-width:0; }
+.floral-study-heading { display:flex; flex-wrap:wrap; align-items:end; justify-content:space-between; gap:12px; margin-bottom:24px; }
+.floral-study-heading h2 { margin-top:8px; font-family:var(--font-serif); font-size:clamp(22px,2.3vw,30px); line-height:1.4; color:var(--ink); }
+.floral-study-heading>p { color:var(--ink-soft); font-size:13px; line-height:1.7; }
+.floral-study-layout { display:grid; align-items:start; gap:28px; min-width:0; }
+.floral-overview { min-width:0; margin:0; text-align:center; }
+.floral-canvas { display:block; position:relative; width:min(100%,367.6596px); margin:0 auto; border:0; padding:0; background:#e5dce8; cursor:crosshair; isolation:isolate; }
+.floral-canvas img { display:block; width:100%; height:auto; max-height:640px; user-select:none; }
+.floral-crop-marker { position:absolute; z-index:1; pointer-events:none; border:2px solid #fff9ee; box-shadow:0 0 0 1px #304c43,0 2px 10px #253b3326; }
+.floral-map-point { position:absolute; z-index:2; display:grid; place-items:center; transform:translate(-50%,-50%); width:25px; height:25px; border:1px solid #f7f4ed; border-radius:50%; background:#2b4a42d9; color:white; font-size:11px; pointer-events:none; }
+.floral-map-point.is-active { background:#faf6ed; color:#2b4a42; box-shadow:0 0 0 3px #2b4a424d; }
+.floral-overview figcaption { max-width:370px; margin:12px auto 0; font-size:12px; line-height:1.8; color:var(--ink-soft); }
+.floral-inspection { min-width:0; width:100%; max-width:400px; margin-inline:auto; }
+.floral-detail-heading { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:8px; padding-bottom:12px; font-size:13px; color:var(--ink-soft); }
+.floral-detail-heading strong { color:var(--jade); font-weight:500; }
+.floral-detail-image { display:block; width:min(100%,360px); aspect-ratio:1; margin-inline:auto; overflow:hidden; background:#e5dce8; }
+.floral-detail-note { margin-top:10px; color:var(--ink-soft); font-size:11px; line-height:1.7; }
+.floral-spot-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 16px; margin-top:18px; border-top:1px solid var(--line-soft); }
+.floral-spot-list button { display:flex; align-items:center; gap:9px; min-height:48px; text-align:left; border-bottom:1px solid var(--line-soft); color:var(--ink-soft); }
+.floral-spot-list button span { font-size:11px; color:var(--gold-ink); }
+.floral-spot-list button strong { font-size:13px; font-weight:400; }
+.floral-spot-list button[aria-pressed="true"] { color:var(--jade); }
+.floral-spot-list button[aria-pressed="true"] strong { font-weight:600; }
+.floral-reading { min-height:3.6em; margin-top:16px; color:var(--ink-soft); font-size:13px; line-height:1.8; }
+.floral-source { border-top:1px solid var(--line-soft); margin-top:18px; padding-top:12px; font-size:12px; line-height:1.8; color:var(--ink-soft); }
+.floral-source summary { cursor:pointer; color:var(--jade); }
+.floral-source p { margin:10px 0; }
+.floral-source a,.silk-photo-credit a { color:var(--jade); text-decoration:underline; text-underline-offset:3px; }
+.floral-image-error { min-height:360px; display:grid; align-items:center; padding:24px; background:#eee7ef; color:var(--ink-soft); }
+.exploration-floral-thumbnail { display:block; width:100%; height:88px; margin-bottom:10px; overflow:hidden; }
+.silk-material-image.is-cocoons-photo,
+.silk-material-image.is-splitting-photo,
+.silk-material-image.is-palette-photo { aspect-ratio:3 / 2; }
+.silk-material-image.is-palette-photo { background:#e4ece6; }
+.silk-material-image.is-palette-photo img { object-fit:cover; object-position:center 63%; }
+.silk-material-image.is-lustre-photo { aspect-ratio:3 / 2; background:#eee8df; }
+.silk-form-options { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.silk-form-detail { display:block; width:100%; aspect-ratio:660 / 480; overflow:hidden; background:#eee8df; }
+@container floral-study (min-width:660px) {
+  .floral-study-layout { grid-template-columns:minmax(0,1fr) minmax(280px,.95fr); gap:clamp(24px,4cqw,56px); }
+  .floral-inspection { border-left:1px solid var(--line-soft); padding-left:24px; }
+}
+
 /* Thread study: navigation leads; the observation follows the current topic. */
 .silk-study {
   container: silk-study / inline-size;

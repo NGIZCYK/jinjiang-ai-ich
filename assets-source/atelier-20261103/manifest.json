@@ -1,0 +1,116 @@
+[
+  {
+    "source": "assets-source/atelier-20261103/floral-huayun-original.jpg",
+    "runtime": "web/public/assets/suxiu-floral-huayun-20261103.webp",
+    "original_size": [
+      1080,
+      1880
+    ],
+    "runtime_size": [
+      1080,
+      1880
+    ],
+    "source_sha256": "96d927a4112ec6e5f97a09152b61cf12eddadc11fcbe0234f27980fc0b369fd2",
+    "runtime_sha256": "c3cfaa5af99985ef69002277f2ae4f4d736a0b0fa5cf716781b7d25ef4ed3a8c",
+    "bytes": 2138860,
+    "source_page": "https://www.cnacs.net.cn/89/202409/6430.html",
+    "credit": "Exhibition image of Chinese Dream Floral Rhythms series; photographer not specified in report.",
+    "rights": "No open licence found. Local review only; verify permission before publication.",
+    "changes": "Format conversion only"
+  },
+  {
+    "source": "assets-source/atelier-20261103/silk-jim-thompson-original.jpg",
+    "runtime": "web/public/assets/silk-dyed-hanks-20261103.webp",
+    "original_size": [
+      5621,
+      3752
+    ],
+    "runtime_size": [
+      1920,
+      1282
+    ],
+    "source_sha256": "48bf564c0aef6384e1d1098df23a80fdf8770974b45ccdbf70810a783da3fcef",
+    "runtime_sha256": "673b29af2bdecbcb94a99d30eb55257b34d71db1ba1a191ad5d0caec1b543de2",
+    "bytes": 639468,
+    "source_page": "https://commons.wikimedia.org/wiki/File:Silk_thread_at_Jim_Thompson_House_(36345567205).jpg",
+    "credit": "xiquinhosilva, Hanks of dyed silk thread at the Jim Thompson House, Bangkok (2017).",
+    "rights": "CC BY 2.0 https://creativecommons.org/licenses/by/2.0/",
+    "changes": "Resized and converted; no crop or recolouring"
+  },
+  {
+    "source": "assets-source/atelier-20261103/lotus-helujiaoyuyu-original.jpg",
+    "runtime": "web/public/assets/suxiu-lustre-lotus-20261103.webp",
+    "original_size": [
+      1080,
+      733
+    ],
+    "runtime_size": [
+      1080,
+      733
+    ],
+    "source_sha256": "4c7c4c2ba1bcc16994c0440440c8f4a9977b110b844d8dc6ac526ff604cbf97f",
+    "runtime_sha256": "1cb3ff260cfdc512d66155c0349f73de2e3e5ee38f438c904d2f2e64c8cb760c",
+    "bytes": 994034,
+    "source_page": "https://www.cnacs.net.cn/89/202409/6430.html",
+    "credit": "Yao Jianping, He Lu Jiao Yu Yu (lotus embroidery), exhibition image; photographer not specified in report.",
+    "rights": "No open licence found. Local review only; verify permission before publication.",
+    "changes": "Format conversion only"
+  },
+  {
+    "source": "assets-source/atelier-20261103/cocoons-wood-original.jpg",
+    "runtime": "web/public/assets/silk-cocoons-wood-20261103.webp",
+    "original_size": [
+      1200,
+      800
+    ],
+    "runtime_size": [
+      1200,
+      800
+    ],
+    "source_sha256": "9ea1d1145a89be1b1cafd4dfc3925580f5303aae7ca816e41d25906908f278f5",
+    "runtime_sha256": "d7da9e614072e1ae961f681a6078a4a991b5e202400bc1f33893f109d0fedf8f",
+    "bytes": 719872,
+    "source_page": "https://favorric.com/blogs/column/whatis-silk",
+    "credit": "Cocoon image referenced by FAVORRIC; original image identified as Adobe Stock 431686398.",
+    "rights": "Commercial stock image. Local review only; obtain a valid licence before publication.",
+    "changes": "Format conversion only"
+  },
+  {
+    "source": "assets-source/atelier-20261103/silk-pastel-tray-original.jpg",
+    "runtime": "web/public/assets/silk-pastel-tray-20261103.webp",
+    "original_size": [
+      2048,
+      2048
+    ],
+    "runtime_size": [
+      1600,
+      1600
+    ],
+    "source_sha256": "5e258c1d638640629915a60504998f75c38a5cc32e9134e5bc6945006b65658e",
+    "runtime_sha256": "9f91d6fffbe502fb5b10b16ca41a1ffe39ad0ca41be9aa2ebc4439ebf202be82",
+    "bytes": 191656,
+    "source_page": "https://www.lanseichina.com/products/untwisted-mulberry-silk-threads-spring",
+    "credit": "Lansei China, Spring untwisted mulberry silk material display photograph.",
+    "rights": "No open licence found. Local review only; verify permission before publication.",
+    "changes": "Resized and converted; no crop or recolouring"
+  },
+  {
+    "source": "assets-source/atelier-20261103/silk-shading-rsn-original.jpg",
+    "runtime": "web/public/assets/silk-shading-petals-20261103.webp",
+    "original_size": [
+      2560,
+      1706
+    ],
+    "runtime_size": [
+      1920,
+      1280
+    ],
+    "source_sha256": "07cfdf3023ce92e17b028c7e754ea92cac73d372c3f4af856ae2b88c97f84421",
+    "runtime_sha256": "b11bf0f9c63f9a1b06ce348793d3e07d9540f62f491b7bb074ed12d17dfc4118",
+    "bytes": 476066,
+    "source_page": "https://rsn.org.uk/products/the-double-sided-art-chinese-silk-shading-in-the-su-embroidery-tradition-with-joni-zhou",
+    "credit": "Royal School of Needlework, Chinese Silk Shading in the Su Embroidery Tradition with Joni Zhou, course demonstration image.",
+    "rights": "All rights reserved by source. Local review only; verify permission before publication.",
+    "changes": "Resized and converted; no crop or recolouring"
+  }
+]

@@ -1,0 +1,112 @@
+{
+  "date": "2026-11-02",
+  "revision": "20261102-v2",
+  "tool": "built-in imagegen",
+  "purpose": "Frontal ivory classic king versus diagonal jade embroidery king",
+  "assets": [
+    {
+      "id": "classic-main",
+      "prompt": "Generate ONE landscape 3:2 high-resolution architectural editorial concept photograph of a contemporary Jiangnan hotel bedroom in Suzhou. Natural bright daytime light, realistic proportions, refined tactile linen and wood, a calm upscale hotel consistent with ivory and warm wood. No people, no text, labels, watermark, logos, collage, pool, terrace or extra beds. Do not imitate the previous bed-on-right/window-on-left layout. Compose all identifying elements well inside the frame so mobile crops remain meaningful. ROOM A — JIANGNAN KING: The camera looks STRAIGHT ON at the foot of ONE centered king bed, an almost symmetrical frontal bedroom composition. The bed headboard is on the BACK wall; the headboard is LOW, LIGHT OAK, with a plain warm ivory plaster wall and one SMALL minimalist ink landscape artwork above it. The king bed is plain ivory linen with an OATMEAL BEIGE throw, no green bed runner. RIGHT side of the photograph: daylight window with sheer cream curtains and a compact reading nook: one rounded ivory armchair, a small round pale-oak table and a cream-shaded reading lamp. The floor in front of the bed is visibly OPEN: NO bench, no ottoman, no foot-of-bed furniture. Smaller lighter oak furniture, airy white/oatmeal palette. No embroidered floral wall or decorative magnolia panel. This should look like a distinct standard king room with its own floorplan, not a variant of a suite.",
+      "source": "C:\\Users\\21701\\.codex\\generated_images\\01a181fc-f6a3-7093-90f1-dc23bcaef4c6\\exec-b4dfe533-4cd4-4ab6-b9fd-6f2a546582b3.png",
+      "original": "assets-source/stay-rooms-20261102-v2/classic-main.png",
+      "originalSha256": "fe3081d8ced7128e8e79dc3e39af29f5769d8855b23e0b8eb5e0c9d4893ff3bb"
+    },
+    {
+      "id": "embroidery-main",
+      "prompt": "Generate ONE landscape 3:2 high-resolution architectural editorial concept photograph of a contemporary Jiangnan hotel bedroom in Suzhou. Natural bright daytime light, realistic proportions, refined tactile linen and wood, a calm upscale hotel consistent with ivory and warm wood. No people, no text, labels, watermark, logos, collage, pool, terrace or extra beds. Do not imitate the previous bed-on-right/window-on-left layout. Compose all identifying elements well inside the frame so mobile crops remain meaningful. ROOM B — EMBROIDERY KING: Photograph from the RIGHT FRONT of the bedroom, angled diagonally about 35 degrees toward the headboard wall. ONE king bed occupies the LEFT TWO THIRDS of the image and projects diagonally from the back-left toward the viewer; it must NOT appear on the right. Behind it on the LEFT wall is a tall cream-silk MAGNOLIA EMBROIDERED PANEL with restrained white blossoms and delicate branches in a medium-dark warm WALNUT frame. The bed has ivory linen, a substantial MUTED JADE GREEN runner and jade embroidered accent cushions. Preserve a low upholstered BED-END BENCH. On the RIGHT side is a daylight window and a long low upholstered WINDOW BENCH. Distinct layered silhouette: magnolia silk wall left, diagonal bed left/centre, jade runner, bed-end bench, window seat right. No sofa or separate living room. Bright natural light and comparable quality to Room A; deeper wood and jade distinguish it, not dim lighting. Avoid any standard-room frontal symmetry or plain picture above the bed.",
+      "source": "C:\\Users\\21701\\.codex\\generated_images\\01a181fc-f6a3-7093-90f1-dc23bcaef4c6\\exec-02165fa6-424c-4a53-af74-b663b3422fc1.png",
+      "original": "assets-source/stay-rooms-20261102-v2/embroidery-main.png",
+      "originalSha256": "82a964f1f70fc5e5d99acdc19b1e7135f72a2da79105d0135fd0df90e9078dde"
+    },
+    {
+      "id": "classic-detail",
+      "parent": "classic-main",
+      "prompt": "Generate one landscape 3:2 editorial interior detail concept photograph of EXACTLY THE SAME ROOM in the supplied reference. Keep all visible furniture designs, wood tone, window placement, fabric colors, artwork and natural daytime light consistent. Use closer camera framing, not a redesigned room. No people, text, logos, watermark, collage, or new furniture. Frame the RIGHT-HAND reading nook of this frontal standard king bedroom: the same rounded ivory boucle armchair, small round pale-oak pedestal table, cream-shaded tall reading lamp and right-side sheer-curtained window. Include the LEFT edge of the photograph showing a little of the same centered bed with plain ivory linen and oatmeal throw, so the spatial relationship is unmistakable. Emphasize the ivory fabric weave, pale oak grain and quiet light. No floral embroidered panel, no green runner, no bed-end bench, no swapping the window to the left.",
+      "source": "C:\\Users\\21701\\.codex\\generated_images\\01a181fc-f6a3-7093-90f1-dc23bcaef4c6\\exec-a9e9c188-d61e-4538-9cd5-d0723bda5426.png",
+      "original": "assets-source/stay-rooms-20261102-v2/classic-detail.png",
+      "originalSha256": "b0b94f877b4674985a0d89678e06d7e10e92aaa548ab01492483eaf1c62dc913"
+    },
+    {
+      "id": "embroidery-detail",
+      "parent": "embroidery-main",
+      "prompt": "Generate one landscape 3:2 editorial interior detail concept photograph of EXACTLY THE SAME ROOM in the supplied reference. Keep all visible furniture designs, wood tone, window placement, fabric colors, artwork and natural daytime light consistent. Use closer camera framing, not a redesigned room. No people, text, logos, watermark, collage, or new furniture. Close view of the LEFT-side bed headboard and the large magnolia silk panel above it. Match the reference's exact white magnolia branches, walnut framework and jade floral cushions. Include part of the substantial muted jade runner and the same bedside lamp; a small glimpse toward the RIGHT should retain the window-bench direction. Reveal silk-like embroidered texture without turning the panel into sculpture. Retain the diagonal camera direction and warm walnut, ivory and jade identity; do not use the centered standard-room arrangement.",
+      "source": "C:\\Users\\21701\\.codex\\generated_images\\01a181fc-f6a3-7093-90f1-dc23bcaef4c6\\exec-b5e6f9e7-533e-491e-a3f4-ea964a130d53.png",
+      "original": "assets-source/stay-rooms-20261102-v2/embroidery-detail.png",
+      "originalSha256": "41d3e2e502e626ddbe87e13b1b0699b18e14ee3296391f1c8839b57c9d1adba5"
+    }
+  ],
+  "outputs": [
+    {
+      "id": "classic-main",
+      "width": 960,
+      "height": 640,
+      "file": "web/public/assets/stays/20261102-v2/classic-main-960.webp",
+      "bytes": 68952,
+      "quality": 86,
+      "sha256": "f5af19919e2757af498b5fb806e0be86a4e3dab798e0f55a1b1a11d9170665f1"
+    },
+    {
+      "id": "classic-main",
+      "width": 1440,
+      "height": 960,
+      "file": "web/public/assets/stays/20261102-v2/classic-main-1440.webp",
+      "bytes": 156668,
+      "quality": 86,
+      "sha256": "0c357a9f4582c0be6494e808d145480f5b930a4820a797f0dc3a0312366c272f"
+    },
+    {
+      "id": "embroidery-main",
+      "width": 960,
+      "height": 640,
+      "file": "web/public/assets/stays/20261102-v2/embroidery-main-960.webp",
+      "bytes": 117352,
+      "quality": 86,
+      "sha256": "37f8ccfd165445211a11d0ac818c56f21d3d4c9291cb2cc118aaea4323fcdb8e"
+    },
+    {
+      "id": "embroidery-main",
+      "width": 1440,
+      "height": 960,
+      "file": "web/public/assets/stays/20261102-v2/embroidery-main-1440.webp",
+      "bytes": 251516,
+      "quality": 86,
+      "sha256": "2bd779b3b0f1dea39ea049fc66b67a284d6696f0e7619fc0bef12f7da15aa91b"
+    },
+    {
+      "id": "classic-detail",
+      "width": 960,
+      "height": 640,
+      "file": "web/public/assets/stays/20261102-v2/classic-detail-960.webp",
+      "bytes": 78236,
+      "quality": 86,
+      "sha256": "3ee9156e0f17e706533686e429fab332586a984779895592d4e85779869f583f"
+    },
+    {
+      "id": "classic-detail",
+      "width": 1440,
+      "height": 960,
+      "file": "web/public/assets/stays/20261102-v2/classic-detail-1440.webp",
+      "bytes": 165968,
+      "quality": 86,
+      "sha256": "c83df8701a4a94ee25c3f5b63ac79bf1a4c0292e67fe87e1fbb8bffbede03e5e"
+    },
+    {
+      "id": "embroidery-detail",
+      "width": 960,
+      "height": 640,
+      "file": "web/public/assets/stays/20261102-v2/embroidery-detail-960.webp",
+      "bytes": 95922,
+      "quality": 86,
+      "sha256": "e733b73d0994f4fa6dc5a2e29129cfa35662cec726392d2907394fc0172a9dd3"
+    },
+    {
+      "id": "embroidery-detail",
+      "width": 1440,
+      "height": 960,
+      "file": "web/public/assets/stays/20261102-v2/embroidery-detail-1440.webp",
+      "bytes": 190688,
+      "quality": 86,
+      "sha256": "c4959327665211c5a3b2be4704feb5727db06b53979e74b2966b501753b92537"
+    }
+  ]
+}

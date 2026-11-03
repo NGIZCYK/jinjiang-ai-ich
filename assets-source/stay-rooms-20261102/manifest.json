@@ -1,0 +1,162 @@
+{
+  "date": "2026-11-02",
+  "tool": "built-in imagegen",
+  "purpose": "AI conceptual room interiors, not real hotel photographs",
+  "assets": [
+    {
+      "id": "classic-main",
+      "prompt": "Create one landscape 3:2 high-resolution editorial architectural interior concept image for a Suzhou hotel website. Use the reference ONLY for the hotel's warm wood, ivory linen, muted jade palette and contemporary Jiangnan atmosphere; design the requested specific room. Refined realistic architectural photography, brighter natural daytime light, neutral whites, soft warm wood, visible linen texture, balanced realistic lens, no fisheye. All important furniture and craft elements within the central 75% for responsive cropping. No people, no text, no logos, no labels, no collage, no watermark. This is a conceptual hotel interior, not an existing branded property. Jiangnan King room: a modest, beautifully proportioned contemporary king bedroom, ivory bed linen, clean light-oak headboard, small restrained ink-inspired artwork instead of an embroidered feature wall, muted jade throw. A welcoming window-side reading nook with one upholstered reading chair, round oak table, a cream-shaded lamp, and a closed book. Daylight through sheer curtains, subtle suggestion of foliage outside with no specific promised view. Calm and spacious but clearly a standard room, not a suite. Three-quarter wide composition with the king bed and reading nook both visible. Avoid large flower embroidery, opulent decor, extra beds, or separate living rooms.",
+      "source": "C:\\Users\\21701\\.codex\\generated_images\\01a181fc-f6a3-7093-90f1-dc23bcaef4c6\\exec-64ce373a-0481-4394-bb91-286a5523bb3d.png",
+      "original": "assets-source/stay-rooms-20261102/classic-main.png",
+      "originalSha256": "e0a1ee195cf0b47e8929a2b372cd6b1f352f2f62435bd9eb276ba5ef0dabb237"
+    },
+    {
+      "id": "embroidery-main",
+      "prompt": "Create one landscape 3:2 high-resolution editorial architectural interior concept image for a Suzhou hotel website. Use the reference ONLY for the hotel's warm wood, ivory linen, muted jade palette and contemporary Jiangnan atmosphere; design the requested specific room. Refined realistic architectural photography, brighter natural daytime light, neutral whites, soft warm wood, visible linen texture, balanced realistic lens, no fisheye. All important furniture and craft elements within the central 75% for responsive cropping. No people, no text, no logos, no labels, no collage, no watermark. This is a conceptual hotel interior, not an existing branded property. Embroidery King room: contemporary warm-wood king bedroom, ivory linen and a muted jade bed runner. The signature focal point is a beautiful cream silk embroidered panel above the headboard: restrained white magnolia blossom and delicate branches, visibly tactile silk threads, not printed wallpaper. A quiet low window bench and slim bedside lamp complement the room. A medium-wide three-quarter architectural photograph reveals the bed, floral silk headboard panel, and window-side seat. The room feels like the same Jiangnan hotel as the reference but lit by luminous soft daylight rather than dark amber light. Sophisticated craft accents, minimal decoration, no panoramic garden or extra services.",
+      "source": "C:\\Users\\21701\\.codex\\generated_images\\01a181fc-f6a3-7093-90f1-dc23bcaef4c6\\exec-d8e0ed8a-3153-4eb5-8a19-ec2d6e687a07.png",
+      "original": "assets-source/stay-rooms-20261102/embroidery-main.png",
+      "originalSha256": "9bdf3a9273ee8a63ec9a3266b1dc4aa8d8f7f2057cc92e99e6f63220d66158aa"
+    },
+    {
+      "id": "suite-main",
+      "prompt": "Create one landscape 3:2 high-resolution editorial architectural interior concept image for a Suzhou hotel website. Use the reference ONLY for the hotel's warm wood, ivory linen, muted jade palette and contemporary Jiangnan atmosphere; design the requested specific room. Refined realistic architectural photography, brighter natural daytime light, neutral whites, soft warm wood, visible linen texture, balanced realistic lens, no fisheye. All important furniture and craft elements within the central 75% for responsive cropping. No people, no text, no logos, no labels, no collage, no watermark. This is a conceptual hotel interior, not an existing branded property. Embroidery Suite: a graceful contemporary Jiangnan king suite with a visually distinct sitting area and bedroom connected through an open warm-oak frame and sliding lattice partition. Foreground: a restrained ivory two-seat sofa, a low rounded oak tea table with a small dark ceramic tea set, and a muted jade cushion with a small delicate embroidered white magnolia. Background: one king bed in ivory linen, a cream silk floral embroidered headboard panel, warm wood and a slim reading lamp. Show the living area and the bed in one coherent architecturally plausible wide composition, elegant but not palatial. Soft daylight, no chandelier, pool, terrace, ornate imperial styling, or exaggerated dimensions. The room identity will be reused for a close-up of the sitting area.",
+      "source": "C:\\Users\\21701\\.codex\\generated_images\\01a181fc-f6a3-7093-90f1-dc23bcaef4c6\\exec-a5ed5c5b-f8a5-485a-9bf9-d7e2a26ce62d.png",
+      "original": "assets-source/stay-rooms-20261102/suite-main.png",
+      "originalSha256": "d706df0dda21c70330cc5fecf9d3e9d7b2dd6416d7d3e66148b52151ffad26e0"
+    },
+    {
+      "id": "classic-detail",
+      "parent": "classic-main",
+      "prompt": "Generate one refined landscape editorial architectural detail photograph of EXACTLY THE SAME CONCEPT ROOM as the supplied reference main image. Preserve the room's furniture identity, fabric colors, wood species, lamp designs and natural daytime lighting. Change only the camera framing to a closer view of the requested feature; do not redesign the room. Realistic material texture, restrained visual composition, no people, text, branding, watermark or collage. Focus on the window-side reading nook: the same ivory upholstered chair with muted jade cushion, the round warm-oak table with the same cream-shaded lamp, small ceramic vase and stacked closed books. Include sheer curtains in soft light and a small edge of the bed or wall in the background to establish the same standard king room. Quiet, inviting, luminous daylight; emphasize woven fabric and wood grain rather than external scenery.",
+      "source": "C:\\Users\\21701\\.codex\\generated_images\\01a181fc-f6a3-7093-90f1-dc23bcaef4c6\\exec-c310308b-f1b7-47ce-9536-ae55e3d997fd.png",
+      "original": "assets-source/stay-rooms-20261102/classic-detail.png",
+      "originalSha256": "9ec531db9e2db539a285bfb0258df00fa8a5cf70622d188bc5cfe13bbc2a9632"
+    },
+    {
+      "id": "embroidery-detail",
+      "parent": "embroidery-main",
+      "prompt": "Generate one refined landscape editorial architectural detail photograph of EXACTLY THE SAME CONCEPT ROOM as the supplied reference main image. Preserve the room's furniture identity, fabric colors, wood species, lamp designs and natural daytime lighting. Change only the camera framing to a closer view of the requested feature; do not redesign the room. Realistic material texture, restrained visual composition, no people, text, branding, watermark or collage. Close view of the cream silk magnolia embroidered headboard panel and the edge of the ivory bed, with a little of the warm oak frame and the same slim bedside lamp visible. The magnolia petals and branches must match the reference panel. Fine silk-thread texture and delicately raised stitches should be visible in soft daylight. An artful interior detail photograph, not a diagram or a different artwork; avoid changing the motif or adding new furniture.",
+      "source": "C:\\Users\\21701\\.codex\\generated_images\\01a181fc-f6a3-7093-90f1-dc23bcaef4c6\\exec-edaaff0a-cc24-41e2-864d-7c3f56dc0fd8.png",
+      "original": "assets-source/stay-rooms-20261102/embroidery-detail.png",
+      "originalSha256": "5e499fa2ebc3edbc242652e899a447db026f84a96583567803ddbef24d0769ae"
+    },
+    {
+      "id": "suite-detail",
+      "parent": "suite-main",
+      "prompt": "Generate one refined landscape editorial architectural detail photograph of EXACTLY THE SAME CONCEPT ROOM as the supplied reference main image. Preserve the room's furniture identity, fabric colors, wood species, lamp designs and natural daytime lighting. Change only the camera framing to a closer view of the requested feature; do not redesign the room. Realistic material texture, restrained visual composition, no people, text, branding, watermark or collage. Closer framing of the suite sitting area: the same ivory sofa and muted jade magnolia-embroidered cushion, round warm-oak tea table with the same dark ceramic tea tray and teapot. Include the open lattice partition and a soft glimpse of the bedroom in the background, consistent with the reference main photograph. Emphasize layered space, quiet conversation and textile craftsmanship without introducing any people or extra amenities.",
+      "source": "C:\\Users\\21701\\.codex\\generated_images\\01a181fc-f6a3-7093-90f1-dc23bcaef4c6\\exec-7d340a02-0e4d-4ee6-9378-8322d7679603.png",
+      "original": "assets-source/stay-rooms-20261102/suite-detail.png",
+      "originalSha256": "daf3e711e0d1c85df0bceb7f7b324ad20abe96f7b03af247e7dc6e9f839336cb"
+    }
+  ],
+  "outputs": [
+    {
+      "id": "classic-main",
+      "width": 960,
+      "height": 640,
+      "file": "web/public/assets/stays/20261102/classic-main-960.webp",
+      "bytes": 100892,
+      "quality": 86,
+      "sha256": "dfa98885892fcb7054c4a89b7ffb55ff016e7a83af43f96f9123800e01254606"
+    },
+    {
+      "id": "classic-main",
+      "width": 1440,
+      "height": 960,
+      "file": "web/public/assets/stays/20261102/classic-main-1440.webp",
+      "bytes": 207658,
+      "quality": 86,
+      "sha256": "797a7697e12b73f2fca8eb640db156ff59c79320a06b5b13aa414c7d7f139037"
+    },
+    {
+      "id": "embroidery-main",
+      "width": 960,
+      "height": 640,
+      "file": "web/public/assets/stays/20261102/embroidery-main-960.webp",
+      "bytes": 105748,
+      "quality": 86,
+      "sha256": "c0501f2062a2b64e2a99c5f5815c7a2b5a903c4d4ecdcdbd7f5fe8b8c8119f54"
+    },
+    {
+      "id": "embroidery-main",
+      "width": 1440,
+      "height": 960,
+      "file": "web/public/assets/stays/20261102/embroidery-main-1440.webp",
+      "bytes": 212770,
+      "quality": 86,
+      "sha256": "bd31c0c6da5acdd0af4c0d39de9355999b1117ae2d08535dd375666f23a72802"
+    },
+    {
+      "id": "suite-main",
+      "width": 960,
+      "height": 640,
+      "file": "web/public/assets/stays/20261102/suite-main-960.webp",
+      "bytes": 125762,
+      "quality": 86,
+      "sha256": "2bca49c2c6e99a8daaaea046dc33b0f1d2a0c191113845b17423d0823a266598"
+    },
+    {
+      "id": "suite-main",
+      "width": 1440,
+      "height": 960,
+      "file": "web/public/assets/stays/20261102/suite-main-1440.webp",
+      "bytes": 258734,
+      "quality": 86,
+      "sha256": "384e7f8d7c6d58ca44998d5da1b33344d8217fc148b0050eaef1cb7766224c18"
+    },
+    {
+      "id": "classic-detail",
+      "width": 960,
+      "height": 640,
+      "file": "web/public/assets/stays/20261102/classic-detail-960.webp",
+      "bytes": 86326,
+      "quality": 86,
+      "sha256": "6387a850822d8f3985bfb9198d73450409b41db7292f4507490808aa0c12b3c6"
+    },
+    {
+      "id": "classic-detail",
+      "width": 1440,
+      "height": 960,
+      "file": "web/public/assets/stays/20261102/classic-detail-1440.webp",
+      "bytes": 162830,
+      "quality": 86,
+      "sha256": "2b1be27f98c3085eb85fc521b1f0e1e1f91a4e12b58a8a9ea67532e3e62788cf"
+    },
+    {
+      "id": "embroidery-detail",
+      "width": 960,
+      "height": 640,
+      "file": "web/public/assets/stays/20261102/embroidery-detail-960.webp",
+      "bytes": 96878,
+      "quality": 86,
+      "sha256": "013e8d79aa54fe7359775956aafbd0480386f37688560200b7067951114594bf"
+    },
+    {
+      "id": "embroidery-detail",
+      "width": 1440,
+      "height": 960,
+      "file": "web/public/assets/stays/20261102/embroidery-detail-1440.webp",
+      "bytes": 194432,
+      "quality": 86,
+      "sha256": "9736014226b048093b798b649ef939b64af0085215f98323a846a7ee1d95329c"
+    },
+    {
+      "id": "suite-detail",
+      "width": 960,
+      "height": 640,
+      "file": "web/public/assets/stays/20261102/suite-detail-960.webp",
+      "bytes": 115144,
+      "quality": 86,
+      "sha256": "575e71f039c9ddf31843ff09cc2a4cafbc37736df35b5b8c25996d6d31e6055d"
+    },
+    {
+      "id": "suite-detail",
+      "width": 1440,
+      "height": 960,
+      "file": "web/public/assets/stays/20261102/suite-detail-1440.webp",
+      "bytes": 226308,
+      "quality": 86,
+      "sha256": "183d2a361c94aa61cfae8218a8c0a361ebb36dc7d74663b2e6f792d360cc4be0"
+    }
+  ]
+}

@@ -3,12 +3,12 @@ import { reasonFor, type Experience, type Locale, type Needs } from './journey'
 
 const activities: Record<string, [string, string]> = {
   scroll: [
-    '可以先浏览《姑苏繁华图》的整体布局，再选择城楼、古桥、运河或市街中的一个点位，用微距观察比较人物、线条方向和色彩层次。这样的观看顺序能把苏州城市故事与画面细节联系起来，也方便你找到想继续了解的主题。',
-    'Start with the overall layout of Prosperous Suzhou, then choose a gate, bridge, canal or market detail. Use the macro view to compare figures, line direction and colour layers. This connects the city story with details you can explore further.',
+    '可以先浏览花卉绣品的完整构图，再选择粉瓣、白瓣、花蕊或背景线向中的一处，在独立细节窗中比较色阶与线条方向。这样的观看顺序方便你从整体走向局部，找到想继续了解的主题。',
+    'Start with the full floral composition, then choose pink petals, white petals, stamens or background threads. Compare colour layers and thread direction in the separate detail view to find a theme to explore further.',
   ],
   materials: [
-    '可以按蚕茧、劈丝、取色和丝光的顺序探索：先认识丝线的材料起点，再比较不同粗细与色样，最后切换受光方向，观察高光和明暗变化。建议保留一种喜欢的配色和两个粗细档位，让探索卡记录具体发现。',
-    'Explore cocoon, splitting, colour and lustre in order. Begin with the material, compare thread levels and swatches, then change the light direction to observe highlights and shade. Keep a favourite palette and two comparison levels on your exploration card.',
+    '可以按蚕茧、劈丝、取色和丝光的顺序探索：先认识丝线的材料起点，再比较不同粗细与色样，最后比较花瓣的排线、色阶与前后层次，观察丝线怎样塑造体积感。建议保留一种喜欢的配色和两个粗细档位，让探索卡记录具体发现。',
+    'Explore cocoon, splitting, colour and lustre in order. Begin with the material, compare thread levels and swatches, then compare petal thread directions, tonal transitions and overlapping layers to explore visual volume. Keep a favourite palette and two comparison levels on your exploration card.',
   ],
   workshop: [
     '可以围绕上绷、配线、起针和回看四个环节了解入门过程。先观察底布张力与配色，再关注落针位置、走线方向和丝光变化，把材料观察连接到基础制作步骤。你也可以先在艺境中完成试针章节，整理希望进一步学习的问题。',

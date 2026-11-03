@@ -1,3 +1,4 @@
+import { FLORAL_SPOTS } from './artworkStudy'
 export type Locale = 'zh' | 'en'
 export type Party = 'solo' | 'family' | 'business'
 export type Interest = 'culture' | 'craft' | 'experience'
@@ -10,6 +11,7 @@ export interface Experience {
 export interface SessionSlot { id: string; experience_id: string; starts_at: string; capacity: number; available: number }
 export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'declined'
 export interface JourneyBooking {
+  stay_entitlement_id?: string | null;
   id: string; user_id: string; session_id: string; party_size: number; status: BookingStatus;
   reason: string; created_at: string; batch_id: string; recommendation_id: string | null;
   // feedback.booking_id is a primary key: the embedded relation is one object or null.
@@ -23,7 +25,10 @@ export const CATALOG: Experience[] = [
 ]
 export const EMPTY_EXPLORATION: Exploration = { motif: '', palette: '', levels: [], answer: '' }
 export const DEFAULT_NEEDS: Needs = { minutes: 90, budget: 150, party: 'solo', interest: 'culture' }
-export const MOTIFS = [['gate','阊门城楼','Changmen gate'],['bridge','古桥人物','Bridge & figures'],['boats','运河水纹','Canal ripples'],['market','市街层次','Market layers']]
+export const LEGACY_MOTIFS = [['gate','阊门城楼','Changmen gate'],['bridge','古桥人物','Bridge & figures'],['boats','运河水纹','Canal ripples'],['market','市街层次','Market layers']]
+export const FLORAL_MOTIFS = FLORAL_SPOTS.map(spot => [spot.id, spot.labelZh, spot.labelEn])
+// Display and validate historic choices without changing their meaning.
+export const MOTIFS = [...LEGACY_MOTIFS, ...FLORAL_MOTIFS]
 export const PALETTES = [['jade','黛青','Jade','#46665e'],['ivory','初白','Ivory','#ded6bf'],['rose','海棠','Rose','#a66e73'],['gold','秋金','Gold','#aa854b'],['indigo','靛蓝','Indigo','#52617c']]
 export const LEVELS = ['full','1/4','1/16','1/32']
 export function toggleExplorationChoice(draft: Exploration, field: 'motif' | 'palette' | 'levels', value: string): Exploration {

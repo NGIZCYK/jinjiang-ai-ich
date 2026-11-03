@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { STAYS_ENABLED, useStayStore } from '../../lib/stays'
 import { Link } from 'react-router-dom'
 import { useJourneyStore } from '../../lib/journeyStore'
 import { useAppStore } from '../../lib/store'
@@ -56,6 +57,7 @@ export function OpsDashboardPage() {
     setRosterReload(value => value + 1)
     try {
       await refresh()
+      if (STAYS_ENABLED) await useStayStore.getState().refresh()
       if (useAppStore.getState().user?.role === 'ops') await useAppStore.getState().refreshContents().catch(() => {})
     } finally {
       setRefreshing(false)
@@ -78,6 +80,7 @@ export function OpsDashboardPage() {
 
     {error && <OpsNotice error>{zh ? '暂时无法更新数据，已保留上一次读取结果。' : 'Data could not be refreshed. The last loaded values are kept.'} <button type="button" className="ops-link" onClick={() => void reload()}>{zh ? '重试' : 'Retry'}</button></OpsNotice>}
 
+    {STAYS_ENABLED && <StayDashboardSummary cohort={cohort} zh={zh} />}
     <section className="ops-kpis" aria-label={zh ? '运营概览指标' : 'Operations summary'}>
       <OpsKpi label={zh ? '待处理申请' : 'Pending requests'} value={zh ? `${pending.length} 条` : `${pending.length} requests`} meta={zh ? '当前批次 · 按提交先后处理' : 'Selected cohort · oldest first'} />
       <OpsKpi label={zh ? '未来 7 天已确认申请' : 'Confirmed requests · next 7 days'} value={zh ? `${confirmed.length} 条` : `${confirmed.length} requests`} meta={zh ? `当前批次 · 合计 ${confirmedPlaces} 个名额（人次）` : `Selected cohort · ${confirmedPlaces} places in total (not unique guests)`} />
@@ -179,4 +182,10 @@ export function OpsDashboardPage() {
       </div>
     </div>
   </div>
+}
+
+function StayDashboardSummary({cohort,zh}:{cohort:string;zh:boolean}) {
+ const {bookings,refresh,error}=useStayStore()
+ useEffect(()=>{void refresh()},[])
+ return <div className="stay-dashboard-link"><strong>{zh?'住宿待确认':'Stay requests'} · {error?'—':bookings.filter(b=>b.batch_id===cohort&&b.status==='pending').length}</strong><Link to="/ops/stays" className="ops-link">{zh?'进入住宿管理':'Open accommodation management'} →</Link></div>
 }

@@ -5,6 +5,7 @@ import { useLanguage } from '../lib/i18n'
 import { useAppStore } from '../lib/store'
 import { clearContinuation, readContinuation } from '../lib/journeyFlow'
 import { useReducedMotion } from '../hooks/useReducedMotion'
+import { STAYS_ENABLED } from '../lib/stays'
 
 const CHAPTER_MEDIA = [
   { src: '/assets/suxiu-gusu-prosperous.webp', width: 1920, height: 1152, zh: '姑苏水岸与舟船的数字纹理长卷', en: 'A digital-texture scroll of Suzhou waterways and boats' },
@@ -191,7 +192,7 @@ export function PremiumHomePage() {
           <h2>{copy.roomTitle}</h2>
           <p>{copy.roomBody}</p>
           <ul>{copy.roomPoints.map((point) => <li key={point}>{point}</li>)}</ul>
-          <Link to="/my">{copy.roomCta}<span aria-hidden="true">→</span></Link>
+          <Link to={STAYS_ENABLED ? '/stays' : '/my'}>{STAYS_ENABLED ? (language === 'zh' ? '查看客房与套餐' : 'View rooms & packages') : copy.roomCta}<span aria-hidden="true">→</span></Link>
         </div>
       </section>
 

@@ -10,6 +10,8 @@ import './experience-flow.css'
 import './voice-settings.css'
 import './styles/ops.css'
 import './styles/guest-ui.css'
+import './styles/stays.css'
+import './styles/rooms.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

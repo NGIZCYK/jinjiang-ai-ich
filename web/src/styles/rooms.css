@@ -1,0 +1,104 @@
+.room-editorial{--room-line:#deded2;--room-muted:#657267;--room-header-offset:8rem;padding-top:3rem}
+.room-overview-intro,.room-detail-intro{max-width:56rem;margin:0 auto 2.5rem;text-align:center}
+.room-editorial h1{font-family:var(--font-serif,serif);font-weight:400;font-size:clamp(2rem,4.2vw,3.75rem);line-height:1.4;letter-spacing:.015em;margin:1rem 0}
+.room-overview-intro>p:not(.eyebrow),.room-detail-intro>p:not(.eyebrow){font-size:1rem;line-height:1.9;color:var(--room-muted);max-width:43rem;margin:1rem auto}
+.room-text-link{display:inline-flex;align-items:center;gap:1.5rem;min-height:44px;color:#375c4d;font-size:.875rem;line-height:1.6;text-decoration:none;border:0;border-bottom:1px solid #8e9c88;background:transparent;padding:.25rem 0;cursor:pointer}
+.room-text-link span{transition:transform .2s ease}.room-editorial figure{margin:0}.room-editorial figcaption{font-size:.7rem;color:#7b8075;line-height:1.8;padding-top:.65rem;text-align:right}
+.room-photo{aspect-ratio:3/2;overflow:hidden;background:#e9e5d9;position:relative;width:100%}
+.room-photo img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;transition:transform .35s ease}
+.room-photo-fallback{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;background:#eae8dd;color:#526a5b;padding:1rem;box-sizing:border-box;text-align:center}
+.room-photo-fallback>span{font-family:var(--font-serif,serif);font-size:2.5rem}.room-photo-fallback p{font-size:.85rem}
+.room-overview-cover>.room-photo{height:clamp(16rem,38vw,35rem);aspect-ratio:auto}.room-overview-cover>.room-photo img{object-position:center 47%}
+.room-availability{margin:3.5rem 0 5rem;padding:2rem 0;border-bottom:1px solid var(--room-line);scroll-margin-top:calc(var(--room-header-offset) + 1.5rem)}
+.room-section-heading{display:grid;grid-template-columns:1fr auto;gap:.5rem 2rem;align-items:center;margin-bottom:1.75rem}.room-section-heading>.eyebrow{grid-column:1/-1}.room-section-heading h2{font-family:var(--font-serif,serif);font-weight:400;font-size:1.8rem;line-height:1.5}.room-section-heading>p:last-child{color:var(--room-muted);font-size:.875rem;line-height:1.8}
+.room-search-form{display:grid;grid-template-columns:minmax(0,1fr) 132px auto;align-items:end;gap:1rem}
+.room-search-guests{display:grid;gap:.6rem;font-size:.8rem;letter-spacing:.025em;min-width:0}
+.room-search-form .input{min-width:0;width:100%;box-sizing:border-box;min-height:48px;background:#fffdf8;border-color:#d5d7ca}
+.room-search-form>.btn-primary{min-height:48px;white-space:normal}
+.room-search-status{grid-column:1/-1;margin:-.3rem 0 0;min-height:1.35rem;font-size:.78rem;line-height:1.6;color:#5b705f;font-variant-numeric:tabular-nums}.room-availability .stay-demo-notice{border-top:0;padding-top:0;margin-top:1rem}
+.date-range{position:relative;display:grid;gap:.6rem;min-width:0}
+.date-range-label{font-size:.8rem;letter-spacing:.025em}
+.date-range-trigger{display:grid;grid-template-columns:1fr auto;align-items:center;gap:1px .75rem;width:100%;min-height:52px;padding:.55rem .85rem;background:#fffdf8;border:1px solid #d5d7ca;color:#29473e;text-align:left;font:inherit;cursor:pointer;box-sizing:border-box}
+.date-range-trigger:hover{border-color:#87987e}
+.date-range-trigger[aria-expanded=true]{border-color:#29473e}
+.date-range-main{grid-column:1;font-size:.95rem;line-height:1.6;font-variant-numeric:tabular-nums}
+.date-range-sub{grid-column:1;font-size:.75rem;line-height:1.5;color:#657267;font-variant-numeric:tabular-nums}
+.date-range-icon{grid-column:2;grid-row:1/3;width:18px;height:18px;color:#657267}
+.date-panel{position:absolute;z-index:30;top:calc(100% + .55rem);left:0;width:min(40rem,calc(100vw - 2rem));background:#fffdf8;border:1px solid #deded1;padding:1.1rem 1.15rem 1rem;box-shadow:0 18px 44px rgba(24,36,28,.16);box-sizing:border-box}
+.date-panel[hidden]{display:none}
+.date-panel-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:.6rem}
+.date-panel-title{font-family:var(--font-serif,serif);font-size:.95rem;font-variant-numeric:tabular-nums}
+.date-nav{display:flex;gap:.35rem}.date-nav button{width:34px;height:34px;border:1px solid #d5d7ca;background:transparent;color:#29473e;font-size:1rem;line-height:1;cursor:pointer}.date-nav button:disabled{opacity:.35;cursor:not-allowed}
+.date-months{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+.date-month-title{margin:0 0 .3rem;font-size:.72rem;color:#78816e;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.date-weekdays,.date-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.date-weekdays span{padding:.15rem 0 .25rem;text-align:center;font-size:.68rem;letter-spacing:.02em;color:#78816e}
+.date-day{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:46px;padding:.15rem 0;border:0;border-radius:2px;background:transparent;color:#29473e;font:inherit;cursor:pointer}
+.date-day:hover:not(:disabled){background:#eef0e5}
+.date-day-number{font-size:.85rem;line-height:1.3;font-variant-numeric:tabular-nums}
+.date-day-price{font-size:.7rem;line-height:1.25;color:#7b8576;font-variant-numeric:tabular-nums}
+.date-day-tag{font-size:.62rem;line-height:1.25;letter-spacing:.02em;white-space:nowrap;color:inherit;opacity:.92}
+.date-day:disabled{cursor:not-allowed;color:#b3b8a9}
+.date-day:disabled .date-day-price{color:#b3b8a9}
+.date-day.is-in{background:#e9ecdf}
+.date-day.is-preview-end{background:#e9ecdf;box-shadow:inset 0 0 0 1px #87987e}
+.date-day.is-start,.date-day.is-end{background:#29473e;color:#fffdf8}
+.date-day.is-start .date-day-price,.date-day.is-end .date-day-price{color:#dfe3d4}
+.date-plans{display:flex;justify-content:space-between;align-items:center;gap:.75rem;flex-wrap:wrap;margin-top:.9rem;padding-top:.9rem;border-top:1px solid #e4e4d8}
+.date-label{font-size:.75rem;color:#657267}
+.date-seg{display:flex;border:1px solid #d5d7ca}
+.date-seg button{border:0;background:transparent;color:#29473e;font:inherit;font-size:.78rem;padding:0 .8rem;min-height:38px;cursor:pointer}
+.date-seg button+button{border-left:1px solid #d5d7ca}
+.date-seg button[aria-pressed=true]{background:#29473e;color:#fffdf8}
+.date-sessions{display:grid;gap:.5rem;margin-top:.85rem}
+.date-sessions-head{margin:0;font-size:.75rem;color:#375c4d;line-height:1.7}
+.date-sessions-head span{color:#7b8576;margin-left:.4rem}
+.date-session-row{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.date-session-date{min-width:5.5rem;font-size:.75rem;color:#7b8576;font-variant-numeric:tabular-nums}
+.date-session-time{min-height:38px;padding:0 .65rem;border:1px solid #d5d7ca;background:transparent;color:#29473e;font:inherit;font-size:.75rem;cursor:pointer;font-variant-numeric:tabular-nums}
+.date-session-time[aria-pressed=true]{background:#29473e;color:#fffdf8;border-color:#29473e}
+.date-session-time:disabled{opacity:.45;cursor:not-allowed;text-decoration:line-through}
+.date-sessions-note{margin:0;font-size:.72rem;color:#7b8576;line-height:1.7}
+.date-panel-foot{display:flex;justify-content:space-between;align-items:center;gap:.75rem;flex-wrap:wrap;margin-top:.9rem;padding-top:.9rem;border-top:1px solid #e4e4d8}
+.date-foot-left,.date-foot-right{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap}
+.date-foot-right{margin-left:auto}
+.date-rule{font-size:.72rem;color:#7b8576}
+.date-total{font-size:.75rem;color:#375c4d;font-variant-numeric:tabular-nums}
+.date-panel-foot .btn-primary{min-height:40px;padding:0 1.1rem}
+.room-collection-head{display:flex;justify-content:space-between;align-items:end;gap:2rem;margin-bottom:2.75rem}
+.room-collection-head h2,.room-package-story h2,.room-related>h2{font-family:var(--font-serif,serif);font-size:clamp(1.6rem,2.6vw,2.2rem);font-weight:400;line-height:1.55;margin:.75rem 0 0}
+.room-category{display:flex;gap:1.25rem;flex-wrap:wrap}.room-category button{border:0;border-bottom:1px solid transparent;padding:.5rem .1rem;min-height:44px;background:transparent;font-size:.85rem;color:#788274;cursor:pointer}.room-category button[aria-pressed=true]{border-bottom-color:#375c4d;color:#29473e}
+.room-editorial-list{display:grid;gap:5rem}
+.room-editorial-card{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(2rem,4vw,4.5rem);align-items:start;padding-bottom:4rem;border-bottom:1px solid var(--room-line)}
+.room-editorial-card:nth-child(even)>figure{order:2}.room-editorial-card:nth-child(even)>.room-editorial-copy{order:1}
+.room-editorial-card>figure{position:sticky;top:calc(var(--room-header-offset) + 1.25rem)}
+.room-editorial-card>figure>a{display:block}.room-editorial-copy h3{font-family:var(--font-serif,serif);font-size:clamp(1.6rem,2.3vw,2rem);font-weight:400;line-height:1.5;margin:.6rem 0 1rem}.room-editorial-copy h3 a{text-decoration:none;color:inherit}
+.room-card-lead{font-family:var(--font-serif,serif);font-size:1.1rem;line-height:1.8;margin-bottom:.75rem}.room-card-summary{font-size:.9rem;line-height:1.9;color:var(--room-muted)}
+.room-card-features{display:flex;flex-wrap:wrap;gap:.5rem 1rem;margin:1.25rem 0;list-style:none;padding:0;color:#5b705f;font-size:.78rem}.room-card-features li{padding-left:.8rem;position:relative}.room-card-features li:before{content:'';width:3px;height:3px;position:absolute;left:0;top:.6em;border-radius:50%;background:#9e8b66}
+.room-facts{font-size:.8rem;color:#75806e;margin:.75rem 0}.room-editorial-copy>.room-text-link{margin-bottom:1rem}
+.room-rate{border-top:1px solid var(--room-line);padding-top:1rem;margin-top:1rem;display:grid;gap:.75rem}.room-rate>span,.room-rate>small{font-size:.75rem;color:#73806d;line-height:1.75}.room-rate>div{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap}.room-rate>div>span{font-size:.8rem}.room-rate strong{font-family:var(--font-serif,serif);font-size:1.9rem;font-weight:400}.room-rate>.btn-primary{justify-self:start;min-height:46px}.room-rate-empty{font-size:.8rem;line-height:1.8;color:#78816e;border-top:1px solid var(--room-line);padding-top:1rem;margin-top:1rem}
+.room-package-story{max-width:54rem;margin:4.5rem auto;text-align:center}.room-package-story>p:not(.eyebrow){line-height:1.95;font-size:.95rem;color:var(--room-muted);margin:1.25rem 0}.room-package-story>.room-text-link{margin-top:.75rem}
+.room-back{margin-bottom:1.75rem}.room-detail-intro{margin-bottom:2rem}.room-detail-hero .room-photo{aspect-ratio:auto;height:clamp(18rem,43vw,40rem)}
+.room-gallery-trigger{position:relative;display:block;padding:0;border:0;width:100%;background:transparent;color:inherit;cursor:pointer;text-align:left}.room-gallery-trigger>span{position:absolute;right:1.25rem;bottom:1.25rem;display:inline-flex;align-items:center;gap:.9rem;min-height:44px;padding:.5rem 1rem;background:#fffdf4ed;color:#375443;font-size:.8rem}
+.room-detail-facts{display:flex;justify-content:center;flex-wrap:wrap;gap:1rem 3rem;border-bottom:1px solid var(--room-line);padding:2rem 0;color:#65755f;font-size:.85rem}
+.room-detail-story{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:clamp(2rem,6vw,7rem);align-items:center;margin:4.5rem 0}
+.room-detail-story h2{font-family:var(--font-serif,serif);font-size:clamp(1.6rem,2.6vw,2.3rem);font-weight:400;line-height:1.6;margin:.8rem 0 1.5rem}.room-detail-story>div>p:last-child{font-size:.95rem;color:var(--room-muted);line-height:2}
+.room-feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3rem;margin:4rem 0 5rem;padding:2rem 0;border-block:1px solid var(--room-line)}
+.room-feature-grid>article>span{color:#a08b62;font-size:.75rem;letter-spacing:.1em}.room-feature-grid h2{font-family:var(--font-serif,serif);font-size:1.3rem;font-weight:400;margin:.8rem 0}.room-feature-grid p{color:var(--room-muted);font-size:.875rem;line-height:1.9}
+.room-detail-reservation{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.95fr);gap:clamp(2rem,6vw,7rem);align-items:start;scroll-margin-top:calc(var(--room-header-offset) + 1.5rem)}
+.room-detail-information>h2{font-family:var(--font-serif,serif);font-size:1.8rem;font-weight:400;margin:.75rem 0 1.5rem;line-height:1.6}.room-configurations{list-style:none;padding:0;margin:0 0 1rem;display:grid;gap:1rem}.room-configurations li{border-bottom:1px solid var(--room-line);padding-bottom:1rem;font-size:.9rem;line-height:1.8}.room-package-note{margin-top:2.5rem}.room-package-note h3{font-family:var(--font-serif,serif);font-size:1.3rem;line-height:1.6;font-weight:400}.room-package-note p{font-size:.875rem;color:var(--room-muted);line-height:1.95;margin:1rem 0}
+.room-booking-panel{background:#f4f2e9;border:1px solid #deded1;padding:1.75rem;min-width:0}.room-booking-panel h2{font-family:var(--font-serif,serif);font-size:1.45rem;line-height:1.6;font-weight:400;margin:.75rem 0 1.5rem}.room-booking-panel .room-search-form{grid-template-columns:minmax(0,1fr) auto}.room-booking-panel .date-range{grid-column:1/-1}.date-range.is-compact .date-panel{left:auto;right:0;width:min(23rem,calc(100vw - 2rem))}.date-range.is-compact .date-months{grid-template-columns:1fr}.date-range.is-compact .date-month-2{display:none}.room-booking-panel .room-rate>.btn-primary{justify-self:stretch;text-align:center;justify-content:center}
+.room-related{margin:5rem 0 2rem;padding-top:3rem;border-top:1px solid var(--room-line)}.room-related>div{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:2rem}.room-related a{text-decoration:none;color:inherit}.room-related h3{font-family:var(--font-serif,serif);font-weight:400;font-size:1.3rem;line-height:1.6;margin:1rem 0;display:flex;justify-content:space-between;gap:1rem}.room-related article>p{font-size:.875rem;line-height:1.9;color:var(--room-muted)}
+.room-mobile-booking{display:none}.room-not-found{padding-block:5rem}.room-not-found h1{font-family:var(--font-serif,serif);font-size:2rem;margin-bottom:1rem}.room-not-found p{margin-bottom:1.5rem}
+.room-checkout-photo{margin-bottom:2rem}.room-checkout-photo>.room-photo{aspect-ratio:2/1}.room-checkout-photo figcaption{font-size:.7rem;color:#7b8075;padding-top:.5rem}
+.room-gallery{border:0;background:#fbf9f2;color:#29473e;padding:1rem 1.25rem;width:min(94vw,84rem);max-width:94vw;max-height:95dvh;overflow:auto;box-sizing:border-box;margin:auto}
+.room-gallery::backdrop{background:rgba(20,32,26,.78)}.room-gallery-top{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}.room-gallery h2{font-family:var(--font-serif,serif);font-size:1.2rem;font-weight:400}.room-gallery button{min-width:44px;min-height:44px;color:#29473e;cursor:pointer}.room-gallery-close{font-size:1.75rem;border:1px solid #d7dbce;background:transparent}
+.room-gallery figure{margin:0}.room-gallery .room-photo{aspect-ratio:auto;height:min(68dvh,56vw);background:#eeece2}.room-gallery img{object-fit:contain;transform:none!important}.room-gallery figcaption{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;font-size:.75rem;line-height:1.8;padding:.9rem 0;text-align:left}.room-gallery-controls{display:flex;gap:1.5rem;justify-content:center;align-items:center;font-size:.8rem}.room-gallery-controls button{background:transparent;border:1px solid #c9d0bf;font-size:1.25rem}
+.room-editorial a:focus-visible,.room-editorial button:focus-visible,.room-gallery button:focus-visible{outline:2px solid #46665e;outline-offset:4px}
+@media(min-width:64rem) and (min-height:56rem){.room-booking-panel{position:sticky;top:calc(var(--room-header-offset) + 1rem)}}
+@media(hover:hover) and (pointer:fine){.room-editorial-card>figure a:hover img,.room-related a:hover img{transform:scale(1.018)}.room-text-link:hover span{transform:translate(2px,-2px)}}
+@media(max-width:63.99rem){.room-editorial-card{grid-template-columns:1fr 1fr;gap:2rem}.room-section-heading{grid-template-columns:1fr}.room-collection-head{align-items:start;flex-direction:column}.room-search-form{grid-template-columns:minmax(0,1fr) auto}.room-search-form .date-range{grid-column:1/-1}.room-detail-reservation{grid-template-columns:1fr 1fr;gap:2rem}.room-detail-story{gap:2rem}.room-booking-panel{padding:1.25rem}.room-editorial-copy h3{font-size:1.55rem}}
+@media(max-width:47.99rem){.room-editorial{padding-top:1.75rem}.room-editorial h1{font-size:2rem;line-height:1.5}.room-overview-intro,.room-detail-intro{margin-bottom:1.75rem}.room-overview-intro>p:not(.eyebrow),.room-detail-intro>p:not(.eyebrow){font-size:.9rem}.room-overview-cover>.room-photo{height:auto;aspect-ratio:3/2}.room-availability{margin:2rem 0 3rem;padding:1.5rem 0}.room-section-heading{margin-bottom:1.25rem;gap:.65rem}.room-section-heading h2{font-size:1.5rem}.room-collection-head{gap:1rem;margin-bottom:1.5rem}.room-category{gap:1.5rem}.room-editorial-list{gap:2.75rem}.room-editorial-card{grid-template-columns:1fr;gap:1.5rem;padding-bottom:2.75rem}.room-editorial-card>figure{position:static}.room-editorial-card:nth-child(even)>figure,.room-editorial-card:nth-child(even)>.room-editorial-copy{order:initial}.room-editorial-copy h3{font-size:1.65rem;margin:.6rem 0}.room-card-lead{font-size:1rem}.room-card-summary{font-size:.875rem}.room-card-features{margin:1rem 0}.room-package-story{margin:3rem auto}.room-package-story>p:not(.eyebrow){font-size:.875rem}.room-detail-hero .room-photo{height:auto;aspect-ratio:3/2}.room-gallery-trigger>span{right:.75rem;bottom:.75rem;padding:.4rem .75rem;font-size:.75rem}.room-detail-facts{gap:.75rem 1.5rem;font-size:.78rem;padding:1.25rem 0}.room-detail-story{grid-template-columns:1fr;gap:1.5rem;margin:2.75rem 0}.room-detail-story h2{font-size:1.65rem;margin:.75rem 0 1rem}.room-detail-story>div>p:last-child{font-size:.9rem}.room-feature-grid{grid-template-columns:1fr;gap:1.5rem;margin:2.5rem 0 3rem;padding:1.5rem 0}.room-feature-grid>article{padding-left:2rem;position:relative}.room-feature-grid>article>span{position:absolute;left:0;top:.2rem}.room-feature-grid h2{font-size:1.15rem;margin:0 0 .5rem}.room-detail-reservation{grid-template-columns:1fr;gap:2rem}.room-detail-information>h2{font-size:1.55rem}.room-booking-panel{padding:1.25rem}.room-related{margin-top:3rem;padding-top:2rem}.room-related>div{grid-template-columns:1fr;gap:2rem;margin-top:1.5rem}.room-mobile-booking{display:flex;position:fixed;z-index:18;bottom:0;left:0;right:0;justify-content:space-between;align-items:center;gap:1rem;padding:1rem 1.25rem calc(1rem + env(safe-area-inset-bottom));background:#f9f7efed;backdrop-filter:blur(10px);border-top:1px solid #d6d9ca;color:#29473e;font-size:.875rem;min-height:52px;box-sizing:border-box;text-decoration:none}.room-detail{padding-bottom:7rem}.room-gallery{padding:.75rem;max-width:calc(100vw - 1rem);width:calc(100vw - 1rem)}.room-gallery .room-photo{height:60dvh}.room-gallery figcaption{font-size:.7rem;gap:.4rem}.room-gallery h2{font-size:1rem}.room-gallery-controls{gap:1rem}.room-checkout-photo>.room-photo{aspect-ratio:3/2}}
+@media(max-width:47.99rem){.date-panel{position:static;width:auto;margin-top:.75rem;box-shadow:none;padding:.9rem .8rem}.date-range.is-compact .date-panel{width:auto;right:auto;left:auto}.date-months{grid-template-columns:1fr}.date-month-2{display:none}.date-session-date{min-width:0}.date-rule{display:none}.room-booking-panel .room-search-form{grid-template-columns:1fr auto}}
+@media(max-width:29.99rem){.room-search-form{grid-template-columns:1fr}.room-search-form>button{grid-column:1}.room-rate>.btn-primary{justify-self:stretch;justify-content:center}}
+@media(prefers-reduced-motion:reduce){.room-editorial *,.room-gallery *{animation:none!important;transition:none!important;scroll-behavior:auto!important}.room-editorial img{transform:none!important}}

@@ -6,10 +6,12 @@ import { PageErrorBoundary } from '../PageErrorBoundary'
 import { OpsCohortProvider, useOpsCohort, OPS_COHORTS, cohortLabel } from '../../lib/opsCohort'
 import { OpsSheet } from './OpsUI'
 import { ExternalIcon, InsightsIcon, OverviewIcon, ExperiencesIcon, StudioIcon } from './icons'
+import { STAYS_ENABLED } from '../../lib/stays'
 
 const NAV_ITEMS = [
   { to: '/ops', end: true, zh: '总览', en: 'Overview', Icon: OverviewIcon },
   { to: '/ops/experiences', end: false, zh: '体验管理', en: 'Experiences', Icon: ExperiencesIcon },
+  ...(STAYS_ENABLED ? [{ to: '/ops/stays', end: false, zh: '住宿管理', en: 'Stays', Icon: ExperiencesIcon }] : []),
   { to: '/ops/studio', end: false, zh: '内容工作台', en: 'Content studio', Icon: StudioIcon },
   { to: '/ops/insights', end: false, zh: '运营洞察', en: 'Insights', Icon: InsightsIcon },
 ] as const
@@ -17,6 +19,7 @@ const NAV_ITEMS = [
 const PAGE_TITLES: Record<string, { zh: string; en: string }> = {
   '/ops': { zh: '运营总览', en: 'Operations overview' },
   '/ops/experiences': { zh: '体验管理', en: 'Experience management' },
+  '/ops/stays': { zh: '住宿管理', en: 'Accommodation' },
   '/ops/studio': { zh: '内容工作台', en: 'Content studio' },
   '/ops/insights': { zh: '运营洞察', en: 'Operations insights' },
 }
@@ -47,7 +50,7 @@ function OpsShellFrame() {
     void logout().then(() => { if (!useAppStore.getState().user) nav('/auth') })
   }
 
-  return <div className="ops-shell">
+  return <div className={`ops-shell ${STAYS_ENABLED ? 'ops-shell-stays' : ''}`}>
     <a className="ops-skip" href="#ops-main">{zh ? '跳到主要内容' : 'Skip to main content'}</a>
 
     <aside className="ops-rail">

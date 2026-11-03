@@ -25,6 +25,16 @@ beforeEach(async()=>{
 })
 afterAll(async()=>{await db.close()})
 describe('PostgreSQL journey, authorization and state invariants',()=>{
+ it('accepts new floral themes and retains legacy card meaning without changing permissions',async()=>{
+  for(const motif of ['gate','bridge','boats','market','huayun-pink-petal','huayun-white-petal','huayun-stamen','huayun-ground']){
+   await as(guest,'select save_exploration($1)',[{...exploration,motif}])
+   const rows=await as<{body:{motif:string};completed:boolean}>(guest,'select body,completed from explorations')
+   expect(rows[0].body.motif).toBe(motif);expect(rows[0].completed).toBe(true)
+  }
+  await expect(as(guest,'select save_exploration($1)',[{...exploration,motif:'unknown-flower'}])).rejects.toThrow('INVALID_EXPLORATION')
+  expect(await as(other,'select * from explorations')).toHaveLength(0)
+  expect(await as(ops,'select * from explorations')).toHaveLength(0)
+ })
  it('summarizes the whole cohort independently of the latest 50 feedback details',async()=>{
   for(let n=0;n<51;n++){
    const slot=crypto.randomUUID();await db.query("insert into sessions(id,experience_id,starts_at,capacity) values($1,'scroll',now()+($2||' days')::interval,2)",[slot,String(n+4)])

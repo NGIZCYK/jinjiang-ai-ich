@@ -17,11 +17,11 @@ type Detail = {
 const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
   zh: {
     artwork: {
-      title: '观绣：《姑苏繁华图》数字纹理演绎',
+      title: '观绣：花韵与丝线层次',
       eyebrow: '01 · 观绣',
-      body: '参照清代画家徐扬《姑苏繁华图》中的城市风貌，以数字纹理呈现阊门、运河、桥梁与市井人物。观察构图、色阶与丝光，发现画面细节与苏州故事之间的联系。',
-      tags: ['姑苏胜景', '数字纹理', '微距观察'],
-      observe: '选择画面中的四个点位，比较水波、人物与商铺的纹理方向和色阶变化；需要时再开启 3x 微距镜。',
+      body: '从浅紫绣面上的粉白花卉出发，先看完整构图，再在独立细节窗中比较花瓣晕色、明暗、花蕊与背景线向。',
+      tags: ['花卉苏绣', '色阶层次', '局部观察'],
+      observe: '选择四个观察点，或点击全图移动观察框；独立细节窗展示同一原图的对应范围。',
       stay: '把感兴趣的点位带入婉娘导览继续提问，或在“我的行程”中记录工坊体验意向。',
     },
     silk: {
@@ -29,7 +29,7 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
       eyebrow: '02 · 识线',
       body: '从蚕茧到丝光，观察材料、色样与相对细度如何影响绣面的视觉表现。',
       tags: ['材料序列', '相对细度', '策展取色'],
-      observe: '从上方切换蚕茧、劈丝、取色与丝光。劈丝可与整股基准比较，取色可预览线束颜色，丝光可切换三种受光方向；示意均用于概念观察。',
+      observe: '从上方切换蚕茧、劈丝、取色与丝光。劈丝可与整股基准比较，取色可预览线束颜色，丝光可从线向、色阶和前后层次观察花瓣的体积感。',
       stay: '选中的色样可作为入门练习的配色参考；也可以继续了解配线与起针的过程。',
     },
     workbench: {
@@ -43,11 +43,11 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
   },
   en: {
     artwork: {
-      title: 'Observe: A Digital Interpretation of Prosperous Suzhou',
+      title: 'Observe: Floral rhythms and thread layers',
       eyebrow: '01 · OBSERVE',
-      body: 'Referencing Xu Yang’s Qing-dynasty scroll Prosperous Suzhou, this digital study explores Changmen Gate, canals, bridges and street life through textile-like texture. Follow composition, tonal layers and lustre to connect visual details with stories of the city.',
-      tags: ['Suzhou cityscape', 'Digital texture', 'Macro study'],
-      observe: 'Select one of four points to compare directional texture and tonal transitions across water, figures and shopfronts. Open the 3x loupe only when needed.',
+      body: 'Begin with pink and white flowers on violet embroidery. See the full composition, then compare petal gradients, light, stamens and background threads in a separate detail view.',
+      tags: ['Floral embroidery', 'Tonal layers', 'Detail study'],
+      observe: 'Choose one of four details or click the overview to move the frame. The independent detail view shows the matching area of the same photograph.',
       stay: 'Continue the selected topic with Wanniang or save an atelier preference in My Stay.',
     },
     silk: {
@@ -55,7 +55,7 @@ const DETAIL_COPY: Record<Language, Record<LobbyHotspotId, Detail>> = {
       eyebrow: '02 · THREAD',
       body: 'From cocoon to lustre, explore how materials, colour and relative thread fineness shape the embroidered surface.',
       tags: ['Material sequence', 'Relative fineness', 'Curated palette'],
-      observe: 'Use the navigation above to explore Cocoon, Splitting, Palette and Lustre. Compare fineness with a full-strand baseline, preview a colour, then change the illustrated light direction. These illustrations support conceptual observation.',
+      observe: 'Use the navigation above to explore Cocoon, Splitting, Palette and Lustre. Compare fineness with a full-strand baseline, preview a colour, then explore thread direction, tonal transitions and overlapping petals to understand visual volume.',
       stay: 'A selected palette can inform an introductory practice piece; continue with thread selection and the first-stitch process.',
     },
     workbench: {
@@ -73,7 +73,7 @@ const PAGE_COPY = {
   zh: {
     eyebrow: '锦江苏州 · 苏绣艺境',
     title: '苏绣艺境',
-    lead: '看一幅长卷，识一缕丝线，了解第一针。选择感兴趣的一章，慢慢探索。',
+    lead: '看一幅花卉绣品，识一缕丝线，了解第一针。选择感兴趣的一章，慢慢探索。',
     selected: '当前展签',
     close: '收起展签',
     open: '展开展签',

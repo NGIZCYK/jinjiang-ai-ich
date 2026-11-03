@@ -10,11 +10,11 @@ export interface User {
 export type { ICHItem, GuideSource } from '../../supabase/functions/_shared/guideContract.ts'
 import type { GuideSource } from '../../supabase/functions/_shared/guideContract.ts'
 
-export interface GuideAction {
+export type GuideAction = {
   type: 'record_preference'
   slot: string
   durationMinutes?: number
-}
+} | { type: 'view_stays' }
 
 export interface ChatMessage {
   id: string

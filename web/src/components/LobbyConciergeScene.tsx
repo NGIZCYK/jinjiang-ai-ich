@@ -1,5 +1,7 @@
 import type { Exploration } from '../lib/journey'
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
+import { ArtworkStudy } from './ArtworkStudy'
+import { SilkFormStudy, SILK_FORM_IMAGE } from './SilkFormStudy'
 import { Link } from 'react-router-dom'
 import type { Language } from '../lib/i18n'
 
@@ -15,12 +17,12 @@ export interface LobbyHotspotMeta {
 
 const hotspotCopy: Record<Language, LobbyHotspotMeta[]> = {
   zh: [
-    { id: 'artwork', index: '01', code: '01 · 观绣', label: '观绣 · 《姑苏繁华图》', hint: '移动 3x 数字微距镜探索运河水纹与阊门繁华' },
+    { id: 'artwork', index: '01', code: '01 · 观绣', label: '观绣 · 花韵', hint: '从完整花卉绣品到独立细节窗，比较色阶与线向' },
     { id: 'silk', index: '02', code: '02 · 识线', label: '识线 · 丝色百宝阁', hint: '观察材料、策展色样与相对细度' },
     { id: 'workbench', index: '03', code: '03 · 试针', label: '试针 · 传统绣台', hint: '认识上绷、配线、起针与留存四步工序' },
   ],
   en: [
-    { id: 'artwork', index: '01', code: '01 · OBSERVE', label: '01 · Observe Masterpiece', hint: 'Explore canal ripples with 3x digital loupe' },
+    { id: 'artwork', index: '01', code: '01 · OBSERVE', label: '01 · Observe Masterpiece', hint: 'Compare floral colours and threads in a separate detail view' },
     { id: 'silk', index: '02', code: '02 · THREAD', label: '02 · Thread & Palettes', hint: 'Explore materials, curated colours and relative fineness' },
     { id: 'workbench', index: '03', code: '03 · STITCH', label: '03 · Stitch at Workbench', hint: '4-step sequence & rosewood desk screen' },
   ],
@@ -39,71 +41,6 @@ interface Props {
   onExplore?: (value: Partial<Exploration>) => void
   onSelect: (id: LobbyHotspotId) => void
 }
-
-/** 《姑苏繁华图》微距观察点位 */
-interface ArtworkSpot {
-  id: string
-  xPct: number
-  yPct: number
-  macroImg: string
-  labelZh: string
-  labelEn: string
-  techniqueZh: string
-  techniqueEn: string
-  descZh: string
-  descEn: string
-}
-
-const ARTWORK_SPOTS: ArtworkSpot[] = [
-  {
-    id: 'gate',
-    xPct: 34.0,
-    yPct: 10.0,
-    macroImg: '/assets/suxiu-macro-gate.webp',
-    labelZh: '阊门水关 · 巍峨城楼',
-    labelEn: 'Changmen Gate & Bastion',
-    techniqueZh: '纹理观察 · 青砖垛口',
-    techniqueEn: 'Texture Study · Masonry',
-    descZh: '比较城楼砖石的平齐线性肌理，观察线向与明暗如何共同塑造建筑轮廓。',
-    descEn: 'Compare aligned linear textures in the masonry and how line direction and shade shape the building.',
-  },
-  {
-    id: 'bridge',
-    xPct: 68.0,
-    yPct: 7.0,
-    macroImg: '/assets/suxiu-macro-bridge.webp',
-    labelZh: '古石拱桥 · 市井人潮',
-    labelEn: 'Stone Arch Bridge Crowd',
-    techniqueZh: '人物细节 · 细丝示意',
-    techniqueEn: 'Figure Detail · Fine-thread Study',
-    descZh: '聚焦桥上人物的衣褶、姿态与空间层次，比较细密线条与色阶变化。',
-    descEn: 'Focus on clothing folds, gestures and spatial depth, comparing fine lines and tonal transitions.',
-  },
-  {
-    id: 'boats',
-    xPct: 48.0,
-    yPct: 52.0,
-    macroImg: '/assets/suxiu-macro-boats.webp',
-    labelZh: '万商泊舟 · 运河水纹',
-    labelEn: 'River Barges & Water Ripples',
-    techniqueZh: '水纹方向 · 丝光示意',
-    techniqueEn: 'Ripple Direction · Lustre Study',
-    descZh: '交互通过方向性纹理模拟丝线受光差异，帮助理解水面层次如何被组织。',
-    descEn: 'Directional texture simulates how silk responds to light and helps explain the organisation of water layers.',
-  },
-  {
-    id: 'market',
-    xPct: 88.0,
-    yPct: 82.0,
-    macroImg: '/assets/suxiu-macro-market.webp',
-    labelZh: '山塘市街 · 繁华商埠',
-    labelEn: 'Shantang Market & Shops',
-    techniqueZh: '层次过渡 · 粉墙黛瓦',
-    techniqueEn: 'Layered Gradient · Roofscape',
-    descZh: '观察商铺、招牌与粉墙黛瓦的色阶关系；本页呈现的是数字纹理练习而非馆藏绣品复制。',
-    descEn: 'Observe tonal transitions across shops and roofs, and compare texture direction and spatial layers.',
-  },
-]
 
 /** 丝线百宝阁材料观察序列 */
 export interface SilkGalleryView {
@@ -126,11 +63,11 @@ const SILK_GALLERY_VIEWS: SilkGalleryView[] = [
     titleEn: 'Cocoon · Material Origin',
     navZh: '蚕茧',
     navEn: 'Cocoon',
-    image: '/assets/suxiu-silk-03-cocoons.webp',
+    image: '/assets/silk-cocoons-wood-20261103.webp',
     captionZh: '观察茧体表面细密交叠的纹理，认识丝线的材料起点。',
     captionEn: 'Observe the closely interwoven surface of a cocoon, the material starting point of silk.',
-    leadZh: '观察茧体表面细密交叠的纹理，认识丝线从原料到缫丝的材料旅程。',
-    leadEn: 'Observe the closely interwoven cocoon surface and explore the material journey from cocoon to silk thread.',
+    leadZh: '观察木碗中蚕茧表面细密交叠的纹理，认识丝线从原料到缫丝的材料旅程。图像来自 FAVORRIC 丝绸材料介绍所引用的图库照片，用作材料观察参考。',
+    leadEn: 'Observe the closely interwoven cocoon surface in a wooden bowl and explore the material journey from cocoon to silk thread. A stock photograph referenced in FAVORRIC’s introduction to silk provides this material reference.',
   },
   {
     id: 'splitting',
@@ -150,23 +87,23 @@ const SILK_GALLERY_VIEWS: SilkGalleryView[] = [
     titleEn: 'Palette · Five Curated Swatches',
     navZh: '取色',
     navEn: 'Palette',
-    image: '/assets/suxiu-silk-01-palette.webp',
-    captionZh: '观察五组丝色的冷暖与明度，选择一种颜色查看线束示意。',
-    captionEn: 'Compare the warmth and value of five colours, then choose a swatch to preview a thread bundle.',
-    leadZh: '以数字长卷中的水色、荷粉、青黛、暖金与初白组织五组配色，帮助比较冷暖、明度与丝光；它们是本项目的策展色样，不是传统标准色谱。',
-    leadEn: 'Five project swatches drawn from the digital scroll compare temperature, value and sheen. They are a curatorial palette, not a traditional colour standard.',
+    image: '/assets/silk-pastel-tray-20261103.webp',
+    captionZh: '染色丝线实物参考；搭配右侧五组数字色卡，比较冷暖与明度。',
+    captionEn: 'Real dyed silk hanks alongside five digital swatches for comparing colour temperature and value.',
+    leadZh: '图像来自 Lansei China 的 Spring 桑蚕丝材料展示，以木托盘上的浅绿、淡粉、淡紫等丝色作配色参考。五组数字色卡用于比较冷暖、明度与丝光，是本项目的策展配色，不是照片逐色采样或传统标准色谱。',
+    leadEn: 'A photograph from Lansei China’s Spring mulberry-silk material display provides a reference in pale greens, pinks and violets on a wooden tray. The five digital swatches are project-curated colours, not exact samples of the photograph or a traditional colour standard.',
   },
   {
     id: 'lustre',
-    titleZh: '丝光 · 受光观察',
-    titleEn: 'Lustre · Light & Direction',
+    titleZh: '丝光 · 以线塑形',
+    titleEn: 'Lustre · Shaping with Thread',
     navZh: '丝光',
     navEn: 'Lustre',
-    image: '/assets/suxiu-silk-04-lustre.webp',
-    captionZh: '留意成绣表面的线向与明暗，再切换示意中的受光方向。',
-    captionEn: 'Notice thread direction and tonal changes on the embroidered surface, then explore illustrated lighting directions.',
-    leadZh: '通过成绣表面近景观察丝线方向、覆盖密度与受光角度如何共同形成光泽变化；图片不承担单丝截面或微观结构证明。',
-    leadEn: 'A finished-surface close-up shows how thread direction, coverage and viewing angle shape lustre; it does not claim to show a filament cross-section.',
+    image: SILK_FORM_IMAGE,
+    captionZh: '观察花瓣随形排线、明暗色阶与前后叠压怎样共同呈现立体感。',
+    captionEn: 'Observe how thread direction, tonal transitions and overlapping petals work together to suggest volume.',
+    leadZh: '图像来自英国皇家刺绣学院的苏绣丝线晕色课程介绍（导师：Joni Zhou）。通过花瓣的线向、色阶和遮挡关系观察视觉体积；旁侧局部窗取自同一图片，只改变观察区域。',
+    leadEn: 'Image published by the Royal School of Needlework for its Su embroidery silk-shading course with Joni Zhou. Explore visual volume through petal thread directions, tonal transitions and overlap; the adjacent detail view crops different areas of the same photograph.',
   },
 ]
 
@@ -247,22 +184,10 @@ const SPLIT_LEVELS = [
   },
 ]
 
-const SILK_LIGHTS = [
-  { id: 'left', labelZh: '左侧光', labelEn: 'Left', position: 20, opacity: 0.65,
-    noteZh: '高光偏向左侧，比较线束不同位置的明暗。',
-    noteEn: 'The highlight moves left; compare light and shade across the bundle.' },
-  { id: 'front', labelZh: '正面光', labelEn: 'Front', position: 50, opacity: 0.95,
-    noteZh: '高光集中在中部，留意亮部与周围线色的关系。',
-    noteEn: 'The highlight sits in the centre; notice its relation to the surrounding colour.' },
-  { id: 'right', labelZh: '右侧光', labelEn: 'Right', position: 80, opacity: 0.65,
-    noteZh: '高光移向右侧，回看与左侧受光的视觉差异。',
-    noteEn: 'The highlight moves right; compare it with light from the left.' },
-]
-
 function SilkMaterialImage({ view, isZh }: { view: SilkGalleryView; isZh: boolean }) {
   const [failed, setFailed] = useState(false)
   return (
-    <div className="silk-material-image">
+    <div className={`silk-material-image is-${view.id}-photo`}>
       {failed ? (
         <div className="silk-image-fallback" role="status">
           <strong>{isZh ? view.titleZh : view.titleEn}</strong>
@@ -275,18 +200,17 @@ function SilkMaterialImage({ view, isZh }: { view: SilkGalleryView; isZh: boolea
   )
 }
 
-function SilkThreadPreview({ palette, gauge, light, label }: {
+function SilkThreadPreview({ palette, gauge, label }: {
   palette: typeof SILK_PALETTES[number]
   gauge: number
-  light?: typeof SILK_LIGHTS[number]
   label: string
 }) {
   const style = {
     '--silk-color': palette.hex,
     '--silk-highlight': palette.lightHex,
     '--silk-gauge': `${gauge}px`,
-    '--silk-light-position': `${light?.position ?? 50}%`,
-    '--silk-light-opacity': light?.opacity ?? 0.7,
+    '--silk-light-position': '50%',
+    '--silk-light-opacity': 0.7,
   } as CSSProperties
   return (
     <div className={`silk-thread-preview ${palette.id === 'white' ? 'is-pale' : ''}`} style={style} role="img" aria-label={label}>
@@ -337,138 +261,16 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
   const currentTab = active ?? 'artwork'
   const isZh = language === 'zh'
 
-  // 放大镜物理与几何参数
-  const LOUPE_SCALE = 3
-
-  // 模式与放大镜状态（默认关闭，保持视野完整，支持主动/智能唤醒）
-  const [loupeActive, setLoupeActive] = useState(false)
-  const [isFreeExploring, setIsFreeExploring] = useState(false)
-  const [selectedSpot, setSelectedSpot] = useState<ArtworkSpot>(ARTWORK_SPOTS[0])
-  const imageContainerRef = useRef<HTMLDivElement | null>(null)
-  const loupeRef = useRef<HTMLDivElement | null>(null)
-  const loupeBgRef = useRef<HTMLDivElement | null>(null)
-
   // 丝线百宝阁状态
   const [silkViewIndex, setSilkViewIndex] = useState(0)
   const [selectedPalette, setSelectedPalette] = useState(SILK_PALETTES[0])
   const [splitIndex, setSplitIndex] = useState(1) // 默认相对 1/4
-  const [silkLightIndex, setSilkLightIndex] = useState(1)
   const silkView = SILK_GALLERY_VIEWS[silkViewIndex]
   const splitLabel = splitIndex === 0 ? (isZh ? '整股' : 'Full') : ['full', '1/4', '1/16', '1/32'][splitIndex]
   const paletteName = isZh ? selectedPalette.nameZh : selectedPalette.nameEn
-  const silkLight = SILK_LIGHTS[silkLightIndex]
 
   // 绣台工序状态
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
-
-  // 辅助函数：更新放大镜在长卷上的显示（直接更新 DOM 样式，减少 React 重复重排）
-  const updateLoupePosition = (xPct: number, yPct: number) => {
-    const container = imageContainerRef.current
-    if (!container || !loupeRef.current || !loupeBgRef.current) return
-    const rect = container.getBoundingClientRect()
-    const x = (xPct / 100) * rect.width
-    const y = (yPct / 100) * rect.height
-
-    loupeRef.current.style.display = 'block'
-    loupeRef.current.style.left = `${x}px`
-    loupeRef.current.style.top = `${y}px`
-    loupeBgRef.current.style.backgroundSize = `${rect.width * LOUPE_SCALE}px ${rect.height * LOUPE_SCALE}px`
-    const loupeRadius = loupeRef.current.offsetWidth / 2 || 96
-    loupeBgRef.current.style.backgroundPosition = `${-x * LOUPE_SCALE + loupeRadius}px ${-y * LOUPE_SCALE + loupeRadius}px`
-  }
-
-  // 当外部切换到长卷展位时定位默认点位
-  useEffect(() => {
-    if (active === 'artwork') {
-      setSelectedSpot(ARTWORK_SPOTS[0])
-      setIsFreeExploring(false)
-      if (loupeActive) {
-        const timer = setTimeout(() => {
-          updateLoupePosition(ARTWORK_SPOTS[0].xPct, ARTWORK_SPOTS[0].yPct)
-        }, 60)
-        return () => clearTimeout(timer)
-      }
-    }
-  }, [active, focusRequest])
-
-  // 光标/触控移动自由探索 (支持鼠标与移动端 Touch 指尖滑动)
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!loupeActive) return
-    const container = imageContainerRef.current
-    if (!container || !loupeRef.current || !loupeBgRef.current) return
-    const rect = container.getBoundingClientRect()
-    const clientX = e.clientX - rect.left
-    const clientY = e.clientY - rect.top
-    const x = Math.max(0, Math.min(rect.width, clientX))
-    const y = Math.max(0, Math.min(rect.height, clientY))
-
-    loupeRef.current.style.display = 'block'
-    loupeRef.current.style.left = `${x}px`
-    loupeRef.current.style.top = `${y}px`
-    loupeBgRef.current.style.backgroundSize = `${rect.width * LOUPE_SCALE}px ${rect.height * LOUPE_SCALE}px`
-    const loupeRadius = loupeRef.current.offsetWidth / 2 || 96
-    loupeBgRef.current.style.backgroundPosition = `${-x * LOUPE_SCALE + loupeRadius}px ${-y * LOUPE_SCALE + loupeRadius}px`
-
-    const xPct = (x / rect.width) * 100
-    const yPct = (y / rect.height) * 100
-    const nearby = ARTWORK_SPOTS.find((s) => Math.hypot(s.xPct - xPct, s.yPct - yPct) < 7)
-    if (nearby) {
-      setSelectedSpot(nearby)
-      setIsFreeExploring(false)
-    } else {
-      setIsFreeExploring(true)
-    }
-  }
-
-  const handleMouseEnter = () => {
-    if (loupeActive && loupeRef.current) {
-      loupeRef.current.style.display = 'block'
-    }
-  }
-
-  const handleMouseLeave = () => {
-    if (loupeRef.current && selectedSpot && loupeActive) {
-      updateLoupePosition(selectedSpot.xPct, selectedSpot.yPct)
-      setIsFreeExploring(false)
-    }
-  }
-
-  // 聚焦选中点位：切换点位详情；若当前微距镜已开启，则平滑移动微距镜至该点位；若未开启，保持关闭状态，绝不强制开启
-  const focusSpot = (spot: ArtworkSpot) => {
-    onExplore?.({motif: spot.id})
-    setSelectedSpot(spot)
-    setIsFreeExploring(false)
-    if (loupeActive) {
-      setTimeout(() => {
-        updateLoupePosition(spot.xPct, spot.yPct)
-      }, 20)
-    }
-  }
-
-  // 点击/轻触长卷：若未开启微距镜，仅当点击在点位附近时切换点位，不自动开启微距；若已开启微距镜，则移动微距镜
-  const handleScrollPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    const container = imageContainerRef.current
-    if (!container) return
-    const rect = container.getBoundingClientRect()
-    const clientX = e.clientX - rect.left
-    const clientY = e.clientY - rect.top
-    const xPct = (clientX / rect.width) * 100
-    const yPct = (clientY / rect.height) * 100
-
-    const nearby = ARTWORK_SPOTS.find((s) => Math.hypot(s.xPct - xPct, s.yPct - yPct) < 7)
-    if (nearby) {
-      setSelectedSpot(nearby)
-      setIsFreeExploring(false)
-    } else {
-      setIsFreeExploring(true)
-    }
-
-    if (loupeActive) {
-      setTimeout(() => {
-        updateLoupePosition(xPct, yPct)
-      }, 20)
-    }
-  }
 
   return (
     <div className="atelier-shell">
@@ -488,196 +290,7 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
 
       {/* 展位主体视口 */}
       <div className="atelier-stage-content relative min-h-[460px] p-3 md:min-h-[530px] md:p-5">
-        {/* ======================= 展位 1: 观绣 · 《姑苏繁华图》 ======================= */}
-        {currentTab === 'artwork' && (
-          <div className="space-y-4">
-            {/* 顶部长卷模式状态说明条 */}
-            <div className="atelier-context-line">
-              <div className="flex items-center gap-2">
-                <span className="inline-block h-2 w-2 rounded-full bg-jade" />
-                <span className="font-medium text-stone-700">
-                  {isZh ? '徐扬《姑苏繁华图》· 苏绣数字肌理演绎长卷（设色画底本）' : 'Prosperous Suzhou Silk Interpretation (Xu Yang Painting Reference)'}
-                </span>
-                <span className="hidden text-stone-400 sm:inline">|</span>
-                <span className="hidden text-stone-500 sm:inline">
-                  {isZh ? '支持光标与触控在长卷上滑移微距镜，或点击下方点位' : 'Move the cursor or touch the scroll to inspect digital texture'}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] text-stone-500">
-                  {isZh ? '当前聚焦：' : 'Focused: '}
-                  <strong className="text-stone-800">
-                    {isFreeExploring
-                      ? isZh
-                        ? '自由探索（经纬走线观察）'
-                        : 'Free Exploration (Silk Grain)'
-                      : isZh
-                      ? selectedSpot.labelZh
-                      : selectedSpot.labelEn}
-                  </strong>
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  const next = !loupeActive
-                  setLoupeActive(next)
-                  if (next) setTimeout(() => updateLoupePosition(selectedSpot.xPct, selectedSpot.yPct), 20)
-                }}
-                aria-pressed={loupeActive}
-                className="atelier-loupe-toggle"
-              >
-                {isZh ? (loupeActive ? '收起 3x 微距' : '开启 3x 微距') : (loupeActive ? 'Close 3x loupe' : 'Open 3x loupe')}
-              </button>
-            </div>
-
-            {/* 主画卷视窗 */}
-            <div
-              ref={imageContainerRef}
-              onPointerDown={handleScrollPointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerEnter={handleMouseEnter}
-              onPointerLeave={handleMouseLeave}
-              className={`atelier-scroll-stage group relative overflow-hidden select-none ${
-                loupeActive ? 'cursor-crosshair touch-none' : 'cursor-zoom-in'
-              }`}
-            >
-              {/* 底图：高精度苏绣长卷 */}
-              <img
-                src="/assets/suxiu-gusu-prosperous.webp"
-                alt={isZh ? '参照《姑苏繁华图》城市风貌的数字纹理长卷' : 'Digital texture scroll referencing the cityscape of Prosperous Suzhou'}
-                className="block aspect-[16/9] w-full object-cover select-none"
-                draggable={false}
-              />
-
-              {/* 四个高光点位图钉 */}
-              {ARTWORK_SPOTS.map((spot, idx) => (
-                <button
-                  key={spot.id}
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    focusSpot(spot)
-                  }}
-                  style={{ left: `${spot.xPct}%`, top: `${spot.yPct}%` }}
-                  className={`atelier-hotspot group/spot pointer-events-auto absolute -translate-x-1/2 -translate-y-1/2 transition-all ${
-                    selectedSpot?.id === spot.id ? 'is-active z-10' : 'hover:scale-105 z-0'
-                  }`}
-                  title={isZh ? spot.labelZh : spot.labelEn}
-                  aria-pressed={selectedSpot?.id === spot.id}
-                >
-                  <span>
-                    0{idx + 1}
-                  </span>
-                  <span className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-stone-900/90 px-2 py-1 text-[10px] text-stone-100 backdrop-blur group-hover/spot:block">
-                    {isZh ? spot.labelZh : spot.labelEn}
-                  </span>
-                </button>
-              ))}
-
-              {/* 黄铜手持微距放大镜 (纯原生 DOM 绝对坐标计算，彻底杜绝偏位与空白卡死) */}
-              {loupeActive && (
-                <div
-                  ref={loupeRef}
-                  style={{
-                    display: 'none',
-                    transform: 'translate(-50%, -50%)',
-                  }}
-                  className="pointer-events-none absolute z-20 h-48 w-48 overflow-hidden rounded-full border-4 border-amber-400 bg-[#f7f2ea] shadow-[0_12px_45px_rgba(0,0,0,0.7)] ring-4 ring-black/40 sm:h-52 sm:w-52 md:h-56 md:w-56"
-                >
-                  {/* 高清放大材质层 */}
-                  <div
-                    ref={loupeBgRef}
-                    style={{
-                      backgroundImage: 'url(/assets/suxiu-gusu-prosperous-hd.webp)',
-                      backgroundRepeat: 'no-repeat',
-                    }}
-                    className="absolute inset-0 h-full w-full"
-                  />
-                  {/* 微距十字准星与刻度环 */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="h-5 w-5 rounded-full border border-amber-500/70" />
-                    <div className="absolute h-full w-px bg-amber-500/25" />
-                    <div className="absolute w-full h-px bg-amber-500/25" />
-                  </div>
-                  {/* 倍率微标 */}
-                  <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 rounded-full bg-black/75 px-2 py-0.5 text-[9px] font-semibold tracking-wider text-amber-300 backdrop-blur">
-                    3x MACRO
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* 点位精读与微距丝缕解析卡（清晰直观，一目了然） */}
-            <div className="grid gap-4 rounded-xl border border-stone-200 bg-white p-4 shadow-sm md:grid-cols-12">
-              {/* 左侧 4 个点位切换器 */}
-              <div className="grid grid-cols-2 gap-2 md:col-span-6 lg:grid-cols-4">
-                {ARTWORK_SPOTS.map((spot, idx) => (
-                  <button
-                    key={spot.id}
-                    type="button"
-                    onClick={() => focusSpot(spot)}
-                    className={`rounded-xl p-2.5 text-left transition ${
-                      selectedSpot?.id === spot.id
-                        ? 'border-2 border-jade bg-jade/[0.05] ring-2 ring-jade/20 shadow-sm'
-                        : 'border border-stone-200 hover:border-stone-300 hover:bg-stone-50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className={`flex h-4 w-4 items-center justify-center rounded text-[10px] font-bold ${
-                          selectedSpot?.id === spot.id ? 'bg-jade text-white' : 'bg-stone-100 text-stone-500'
-                        }`}
-                      >
-                        0{idx + 1}
-                      </span>
-                      <span className="text-xs font-semibold text-stone-800">
-                        {isZh ? spot.labelZh.split(' · ')[0] : spot.labelEn.split(' · ')[0]}
-                      </span>
-                    </div>
-                    <span className="mt-1 block text-[10px] font-medium text-jade">
-                      {isZh ? spot.techniqueZh.split(' · ')[0] : spot.techniqueEn.split(' · ')[0]}
-                    </span>
-                  </button>
-                ))}
-              </div>
-
-              {/* 右侧当前选中点位的微距实拍特写与技法解析 */}
-              <div className="flex flex-col justify-between rounded-xl border border-stone-100 bg-stone-50/80 p-3.5 sm:flex-row sm:items-center sm:gap-4 md:col-span-6">
-                <div className="flex items-center gap-3">
-                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 border-amber-400 bg-white shadow-md">
-                    <img
-                      src={selectedSpot.macroImg}
-                      alt={selectedSpot.labelZh}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-xs font-bold text-stone-800">
-                        {isZh ? selectedSpot.labelZh : selectedSpot.labelEn}
-                      </h3>
-                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800">
-                        {isZh ? selectedSpot.techniqueZh : selectedSpot.techniqueEn}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-[11px] leading-4 text-stone-600">
-                      {isZh ? selectedSpot.descZh : selectedSpot.descEn}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => focusSpot(selectedSpot)}
-                  className="mt-2.5 shrink-0 rounded-lg bg-jade/10 px-3 py-1.5 text-center text-xs font-semibold text-jade transition hover:bg-jade hover:text-white sm:mt-0"
-                >
-                  {isZh ? '定位长卷' : 'Focus'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {currentTab === 'artwork' && <ArtworkStudy language={language} focusRequest={focusRequest} onExplore={onExplore} />}
 
         {/* ======================= 展位 2: 识线 · 丝色百宝阁 ======================= */}
         {currentTab === 'silk' && (
@@ -697,6 +310,9 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
                 <figcaption className="silk-material-caption">
                   <h3>{isZh ? silkView.titleZh : silkView.titleEn}</h3>
                   <p>{isZh ? silkView.captionZh : silkView.captionEn}</p>
+                  {silkView.id === 'cocoons' && <p className="silk-photo-credit">{isZh ? '图像参考：' : 'Image reference: '}<a href="https://favorric.com/blogs/column/whatis-silk" target="_blank" rel="noreferrer">FAVORRIC · Adobe Stock</a></p>}
+                  {silkView.id === 'palette' && <p className="silk-photo-credit">Lansei China · <a href="https://www.lanseichina.com/products/untwisted-mulberry-silk-threads-spring" target="_blank" rel="noreferrer">{isZh ? '材料图像来源' : 'Material image source'}</a></p>}
+                  {silkView.id === 'lustre' && <p className="silk-photo-credit">{isZh ? '英国皇家刺绣学院 · ' : 'Royal School of Needlework · '}<a href="https://rsn.org.uk/products/the-double-sided-art-chinese-silk-shading-in-the-su-embroidery-tradition-with-joni-zhou" target="_blank" rel="noreferrer">{isZh ? '课程图像来源' : 'Course image source'}</a></p>}
                 </figcaption>
               </figure>
 
@@ -774,26 +390,7 @@ export function LobbyConciergeScene({ language, active, focusRequest, onSelect, 
                   </div>
                 )}
 
-                {silkView.id === 'lustre' && (
-                  <div className="silk-topic-content">
-                    <h3>{isZh ? '让光移过丝线' : 'Let light cross the threads'}</h3>
-                    <p>{isZh ? '切换受光方向，留意示意线束的高光与明暗。' : 'Change the light direction and watch the highlights and shade in the illustrated bundle.'}</p>
-                    <div className="silk-options silk-light-options" role="group" aria-label={isZh ? '受光方向' : 'Light direction'}>
-                      {SILK_LIGHTS.map((light, index) => (
-                        <button key={light.id} type="button" aria-pressed={silkLightIndex === index}
-                          onClick={() => setSilkLightIndex(index)}>{isZh ? light.labelZh : light.labelEn}</button>
-                      ))}
-                    </div>
-                    <SilkThreadPreview palette={selectedPalette} gauge={SPLIT_LEVELS[splitIndex].gauge} light={silkLight}
-                      label={isZh ? `${paletteName} · ${splitLabel} · ${silkLight.labelZh}受光示意` : `${paletteName} · ${splitLabel} · ${silkLight.labelEn} light illustration`} />
-                    <div className="silk-selection-copy" aria-live="polite" aria-atomic="true">
-                      <h4>{isZh ? silkLight.labelZh : `${silkLight.labelEn} light`}</h4>
-                      <p>{isZh ? silkLight.noteZh : silkLight.noteEn}</p>
-                      <p className="silk-current-material">{paletteName} · {splitLabel}</p>
-                    </div>
-                    <p className="silk-concept-label">{isZh ? '受光概念示意 · 用于观察明暗关系' : 'Conceptual light illustration · For observing light and shade'}</p>
-                  </div>
-                )}
+                {silkView.id === 'lustre' && <SilkFormStudy isZh={isZh} />}
 
                 <details className="silk-material-details" key={silkView.id}>
                   <summary>{isZh ? '材料与图像说明' : 'Material & image notes'}</summary>

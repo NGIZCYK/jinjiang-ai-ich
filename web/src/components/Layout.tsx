@@ -6,8 +6,9 @@ import { PageErrorBoundary } from './PageErrorBoundary'
 import { JourneySteps } from './JourneySteps'
 import { OpsPreviewBar } from './OpsPreviewBar'
 import { clearContinuation, readContinuation } from '../lib/journeyFlow'
+import { STAYS_ENABLED } from '../lib/stays'
 
-const GUEST_ROUTES = ['/', '/guide', '/immersive', '/my']
+const GUEST_ROUTES = ['/', '/guide', '/immersive', '/my', '/stays', '/stays/book']
 
 export function Layout() {
   const user = useAppStore((s) => s.user)
@@ -16,7 +17,7 @@ export function Layout() {
   const location = useLocation()
   const { language, setLanguage } = useLanguage()
   const isHome = location.pathname === '/'
-  const showPreview = user?.role === 'ops' && GUEST_ROUTES.includes(location.pathname)
+  const showPreview = user?.role === 'ops' && (GUEST_ROUTES.includes(location.pathname) || location.pathname.startsWith('/stays/'))
   useEffect(() => {
     document.title = language === 'zh' ? '婉娘 · 锦江苏绣非遗体验' : 'Wanniang · Jinjiang Su Embroidery Experience'
   }, [language, location.pathname])
@@ -63,6 +64,7 @@ export function Layout() {
       }
   const guestLinks = [
     { to: '/', label: copy.guestLinks[0], end: true },
+    ...(STAYS_ENABLED ? [{ to: '/stays', label: language === 'zh' ? '客房与套餐' : 'Rooms & Packages' }] : []),
     { to: '/guide', label: copy.guestLinks[1] },
     { to: '/immersive', label: copy.guestLinks[2] },
     { to: '/my', label: copy.guestLinks[3] },

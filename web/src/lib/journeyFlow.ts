@@ -4,7 +4,7 @@ import { safeSessionStorage } from './guideSignalStorage'
 
 const CONTINUE_KEY = 'jj_continue_journey'
 export function continuationPath(value: string | null): string | null {
-  if (!value || value.length > 1000 || !/^\/(immersive|guide|my)([?#]|$)/.test(value) || /[\\\r\n]/.test(value)) return null
+  if (!value || value.length > 1000 || !/^\/(immersive|guide|my|stays(?:\/book)?)([?#]|$)/.test(value) || /[\\\r\n]/.test(value)) return null
   return value
 }
 export function rememberContinuation(path: string | null) {

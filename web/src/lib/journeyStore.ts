@@ -4,6 +4,10 @@ import { CATALOG, EMPTY_EXPLORATION, type Exploration, type Experience, type Ses
 import { useAppStore } from './store'
 import { actionError } from './actionErrors'
 import type { Language } from './i18n'
+import { ATELIER_PREVIEW } from './atelierPreview'
+
+const DRAFT = ATELIER_PREVIEW ? 'jj_atelier_preview_draft_v1' : 'jj_v2_exploration_draft'
+const PREVIEW_SAVED = 'jj_atelier_preview_saved_v1'
 
 /** Keep server diagnostics out of the guest-facing refresh notice. */
 export function journeyRefreshError(error: string, language: Language) {
@@ -19,9 +23,10 @@ interface JourneyState {
 }
 let refreshVersion=0
 export const useJourneyStore=create<JourneyState>((set,get)=>({
- owner:null,exploration:null,recommendations:[],bookings:[],catalog:CATALOG,sessions:[],needs:null,loading:false,error:'',
- reset(){refreshVersion++;set({owner:null,exploration:null,recommendations:[],bookings:[],sessions:[],needs:null,loading:false,error:''})},
+ owner:null,exploration:ATELIER_PREVIEW?storedDraft(PREVIEW_SAVED):null,recommendations:[],bookings:[],catalog:CATALOG,sessions:[],needs:null,loading:false,error:'',
+ reset(){refreshVersion++;set({owner:null,exploration:ATELIER_PREVIEW?storedDraft(PREVIEW_SAVED):null,recommendations:[],bookings:[],sessions:[],needs:null,loading:false,error:''})},
  async refresh(){
+  if(ATELIER_PREVIEW){set({exploration:storedDraft(PREVIEW_SAVED),loading:false,error:''});return}
   const id=useAppStore.getState().user?.id; if(!id || !cloud)return
   const version=++refreshVersion
   set({loading:true,error:''})
@@ -39,11 +44,10 @@ export const useJourneyStore=create<JourneyState>((set,get)=>({
    set({owner:id,exploration:(results[0].data as {body:Exploration}|null)?.body??null,needs:(results[1].data as {needs:Needs}|null)?.needs??null,recommendations:results[2].data as SavedRecommendation[],bookings:results[3].data as unknown as JourneyBooking[],catalog:results[4].data as Experience[],sessions:results[5].data as SessionSlot[],loading:false})
   }catch(e){if(version===refreshVersion)set({loading:false,error:e instanceof Error?e.message:String((e as {message?:string}).message??e)})}
  },
- async saveExploration(body){const owner=useAppStore.getState().user?.id;if(!owner)throw new Error('SIGN_IN_REQUIRED');await rpc('save_exploration',{p_body:body});if(owner!==useAppStore.getState().user?.id)return;set({exploration:body,owner});await get().refresh()},
+ async saveExploration(body){if(ATELIER_PREVIEW){sessionStorage.setItem(PREVIEW_SAVED,JSON.stringify(body));set({exploration:body});return}const owner=useAppStore.getState().user?.id;if(!owner)throw new Error('SIGN_IN_REQUIRED');await rpc('save_exploration',{p_body:body});if(owner!==useAppStore.getState().user?.id)return;set({exploration:body,owner});await get().refresh()},
 }))
-const DRAFT='jj_v2_exploration_draft'
-function storedDraft():Exploration|null {
- try { const x=JSON.parse(sessionStorage.getItem(DRAFT)||'null'); if(x&&typeof x.motif==='string'&&typeof x.palette==='string'&&Array.isArray(x.levels)&&x.levels.every((level:unknown)=>typeof level==='string')&&typeof x.answer==='string')return x }catch{}
+function storedDraft(key=DRAFT):Exploration|null {
+ try { const x=JSON.parse(sessionStorage.getItem(key)||'null'); if(x&&typeof x.motif==='string'&&typeof x.palette==='string'&&Array.isArray(x.levels)&&x.levels.every((level:unknown)=>typeof level==='string')&&typeof x.answer==='string')return x }catch{}
  return null
 }
 export function hasDraft(){return storedDraft()!==null}

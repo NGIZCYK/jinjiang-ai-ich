@@ -3,6 +3,7 @@ import { GuideSettings } from '../components/GuideSettings'
 import { WANNIANG_PORTRAIT } from '../components/avatar/avatarPortrait'
 import { isKnownVersionMismatch } from '../lib/serviceCompatibility'
 import { capabilityChatMode } from '../lib/guideCapabilities'
+import { STAYS_ENABLED } from '../lib/stays'
 import { RecommendationPanel } from '../components/RecommendationPanel'
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -645,6 +646,7 @@ export function GuidePage() {
                     </div>
                   )}
                   {isAssistant && <SourceDisclosure sources={m.sources} language={language} />}
+                  {STAYS_ENABLED && isAssistant && m.action?.type === 'view_stays' && <div className="guide-preference-card"><Link to="/stays">{language === 'zh' ? '查询客房与套餐' : 'Search rooms & packages'} →</Link></div>}
                   {isAssistant && m.action?.type === 'record_preference' && (
                     <div className="guide-preference-card">
                       <div>
@@ -733,6 +735,7 @@ export function GuidePage() {
         </section>
       </div>
       <RecommendationPanel />
+      {STAYS_ENABLED && <section className="journey-card stay-guide-entry"><p className="eyebrow">ROOMS & CULTURAL STAYS</p><h2>{language === 'zh' ? '也为这段旅程，选一间客房。' : 'Find a room for your journey.'}</h2><p>{language === 'zh' ? '客房与苏绣体验套餐按入住日期查询；实时房价和可订情况以查询页为准，婉娘不代替你确认订单。' : 'Search rooms and embroidery packages by arrival date. Current rates and availability are shown on the booking page; Wanniang does not confirm orders.'}</p><Link className="btn-primary" to="/stays">{language === 'zh' ? '查看客房与套餐' : 'View rooms & packages'} →</Link></section>}
       <GuideSettings
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
