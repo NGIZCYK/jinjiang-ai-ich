@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach,beforeEach,describe,it,expect,vi } from 'vitest'
 import { createElement as h } from 'react'
-import { cleanup,fireEvent,render,screen,waitFor,within } from '@testing-library/react'
+import { act,cleanup,fireEvent,render,screen,waitFor,within } from '@testing-library/react'
 import { MemoryRouter,Route,Routes,useLocation } from 'react-router-dom'
 import { LanguageProvider } from '../src/lib/i18n'
 import { useAppStore } from '../src/lib/store'
@@ -74,15 +74,74 @@ describe('Accommodation guest interactions',()=>{
  })
  it('requires an explicit second action before cancelling accommodation',async()=>{
   const b:StayBooking={id:'stay-one',user_id:'guest',batch_id:'demo',room_id:'classic',plan_id:'room_only',check_in:next(),check_out:addDays(next(),1),guests:2,status:'pending',quote:q(),reason:'',created_at:new Date().toISOString(),stay_entitlements:null}
-  show(h(StayOrderCard,{booking:b}));fireEvent.click(screen.getByRole('button',{name:'取消住宿申请'}));expect(api.rpc).not.toHaveBeenCalled();fireEvent.click(screen.getByRole('button',{name:'保留订单'}));expect(api.rpc).not.toHaveBeenCalled()
+  show(h(StayOrderCard,{booking:b}));const transitions=()=>api.rpc.mock.calls.filter(call=>call[0]==='transition_stay_booking')
+  fireEvent.click(screen.getByRole('button',{name:'取消住宿申请'}));expect(transitions()).toHaveLength(0);fireEvent.click(screen.getByRole('button',{name:'保留订单'}));expect(transitions()).toHaveLength(0)
  })
 })
 
 describe('Accommodation operations interactions',()=>{
  it('saves nightly rates through the validating RPC and retains entered values after a rejection',async()=>{
   useAppStore.setState({user:{id:'ops',name:'Operator',role:'ops',email:'ops@example.test'}})
-  show(h(OpsStaysPage),'/ops/stays');fireEvent.click(screen.getByRole('button',{name:'房价房量'}));fireEvent.click(screen.getByRole('button',{name:'查看14天'}));const rate=await screen.findByLabelText('每晚房价（元）');fireEvent.change(rate,{target:{value:'700.50'}})
+  show(h(OpsStaysPage),'/ops/stays');fireEvent.click(screen.getByRole('button',{name:'房价房量'}));const roomSelect=await screen.findByRole('combobox',{name:'房型'});await waitFor(()=>expect((roomSelect as HTMLSelectElement).value).toBe('classic'));fireEvent.click(screen.getByRole('button',{name:'查看14天'}));const rate=await screen.findByLabelText('每晚房价（元）');fireEvent.change(rate,{target:{value:'700.50'}})
   api.rpc.mockRejectedValue(new Error('STAY_CAPACITY_BELOW_BOOKED'));fireEvent.click(screen.getByRole('button',{name:'保存当日'}));await screen.findByRole('alert')
   expect(api.rpc).toHaveBeenCalledWith('set_stay_inventory',{p_room:'classic',p_night:next(),p_price:70050,p_capacity:5});expect((rate as HTMLInputElement).value).toBe('700.50');expect(screen.getByText(/可售房量不能低于/)).toBeTruthy()
+ })
+ it('requires an operator to confirm a stay in two steps',async()=>{
+  useAppStore.setState({user:{id:'ops',name:'Operator',role:'ops',email:'ops@example.test'}})
+  const b:StayBooking={id:'stay-two',user_id:'guest',batch_id:'demo',room_id:'classic',plan_id:'room_only',check_in:next(),check_out:addDays(next(),1),guests:2,status:'pending',quote:q(),reason:'',created_at:new Date().toISOString(),stay_entitlements:null}
+  show(h(StayOrderCard,{booking:b,operations:true}))
+  const transitions=()=>api.rpc.mock.calls.filter(call=>call[0]==='transition_stay_booking')
+  fireEvent.click(screen.getByRole('button',{name:'确认住宿'}))
+  expect(transitions()).toHaveLength(0)
+  fireEvent.click(screen.getByRole('button',{name:'确认占用房量'}))
+  await waitFor(()=>expect(transitions()).toHaveLength(1))
+  expect(transitions()[0][1]).toMatchObject({p_id:'stay-two',p_status:'confirmed'})
+ })
+ it('lets operators close an expired stay as a no-show in two steps',async()=>{
+  useAppStore.setState({user:{id:'ops',name:'Operator',role:'ops',email:'ops@example.test'}})
+  const b:StayBooking={id:'stay-three',user_id:'guest',batch_id:'demo',room_id:'classic',plan_id:'room_only',check_in:addDays(shanghaiDate(),-3),check_out:addDays(shanghaiDate(),-1),guests:2,status:'confirmed',quote:q(),reason:'',created_at:new Date().toISOString(),stay_entitlements:null}
+  show(h(StayOrderCard,{booking:b,operations:true}))
+  const transitions=()=>api.rpc.mock.calls.filter(call=>call[0]==='transition_stay_booking')
+  fireEvent.click(await screen.findByRole('button',{name:'标记未入住'}))
+  expect(transitions()).toHaveLength(0)
+  fireEvent.click(screen.getByRole('button',{name:'确认标记未入住'}))
+  await waitFor(()=>expect(transitions()).toHaveLength(1))
+  expect(transitions()[0][1]).toMatchObject({p_id:'stay-three',p_status:'no_show'})
+ })
+ it('ignores a stale inventory response after the room changes',async()=>{
+  useAppStore.setState({user:{id:'ops',name:'Operator',role:'ops',email:'ops@example.test'}})
+  const deferred:((value:unknown)=>void)[]=[]
+  api.from.mockImplementation((table:string)=>{
+   if(table==='stay_inventory'){
+    let resolve:(value:unknown)=>void=()=>{}
+    const promise=new Promise<unknown>(done=>{resolve=done});deferred.push(resolve)
+    const chain:any={select:()=>chain,eq:()=>chain,gte:()=>chain,lte:()=>chain,order:()=>promise}
+    return chain
+   }
+   const result={data:table==='stay_rooms'?[{id:'classic',title_zh:'江南雅居大床房',title_en:'Jiangnan King'},{id:'embroidery',title_zh:'苏绣主题大床房',title_en:'Embroidery King'}]:[],error:null}
+   const promise=Promise.resolve(result);const chain:any={select:()=>chain,eq:()=>chain,gte:()=>chain,lte:()=>chain,order:()=>promise,then:promise.then.bind(promise)};return chain
+  })
+  show(h(OpsStaysPage),'/ops/stays');fireEvent.click(screen.getByRole('button',{name:'房价房量'}))
+  const roomSelect=await screen.findByRole('combobox',{name:'房型'});await waitFor(()=>expect((roomSelect as HTMLSelectElement).value).toBe('classic'))
+  fireEvent.click(screen.getByRole('button',{name:'查看14天'}))
+  fireEvent.change(roomSelect,{target:{value:'embroidery'}})
+  await act(async()=>{deferred[0]({data:[{room_id:'classic',night:next(),price:68000,capacity:5}],error:null})})
+  expect(screen.queryByLabelText('可售总房量')).toBeNull()
+ })
+ it('keeps the last inventory window when a refresh fails',async()=>{
+  useAppStore.setState({user:{id:'ops',name:'Operator',role:'ops',email:'ops@example.test'}})
+  let fail=false
+  api.from.mockImplementation((table:string)=>{
+   const result:any=table==='stay_rooms'?{data:[{id:'classic',title_zh:'江南雅居大床房',title_en:'Jiangnan King'}],error:null}
+    :table==='stay_inventory'?(fail?{data:null,error:{message:'NETWORK_DOWN'}}:{data:[{room_id:'classic',night:next(),price:68000,capacity:5}],error:null})
+    :{data:[],error:null}
+   const promise=Promise.resolve(result);const chain:any={select:()=>chain,eq:()=>chain,gte:()=>chain,lte:()=>chain,order:()=>promise,then:promise.then.bind(promise)};return chain
+  })
+  show(h(OpsStaysPage),'/ops/stays');fireEvent.click(screen.getByRole('button',{name:'房价房量'}))
+  const roomSelect=await screen.findByRole('combobox',{name:'房型'});await waitFor(()=>expect((roomSelect as HTMLSelectElement).value).toBe('classic'))
+  fireEvent.click(screen.getByRole('button',{name:'查看14天'}));await screen.findByLabelText('可售总房量')
+  fail=true;fireEvent.click(screen.getByRole('button',{name:'查看14天'}))
+  await screen.findByText(/已保留上次结果/)
+  expect((screen.getByLabelText('可售总房量') as HTMLInputElement).value).toBe('5')
  })
 })

@@ -3,7 +3,7 @@ import { requireCloud, rpc } from './cloud'
 import { useAppStore } from './store'
 
 export { STAYS_ENABLED, STAY_VERSION } from './stayConfig'
-export type StayStatus = 'pending' | 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled' | 'declined'
+export type StayStatus = 'pending' | 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled' | 'declined' | 'no_show'
 export interface StaySearch { checkIn: string; checkOut: string; guests: number }
 export type RoomPlan = 'room_only' | 'heritage'
 export interface StayQuote {
@@ -24,7 +24,7 @@ export interface StaySessionOption { id: string; starts_at: string; available: n
 export interface StayInventory { room_id: string; night: string; price: number; capacity: number }
 export interface StayRoom { id: string; title_zh: string; title_en: string; theme: boolean; max_guests: number }
 export const stayStatus: Record<StayStatus,[string,string]> = {
- pending:['待确认','Awaiting review'],confirmed:['已确认','Confirmed'],checked_in:['已入住','Checked in'],checked_out:['已离店','Checked out'],cancelled:['已取消','Cancelled'],declined:['未通过','Declined'],
+ pending:['待确认','Awaiting review'],confirmed:['已确认','Confirmed'],checked_in:['已入住','Checked in'],checked_out:['已离店','Checked out'],cancelled:['已取消','Cancelled'],declined:['未通过','Declined'],no_show:['未入住','No-show'],
 }
 export function money(cents: number | null) { return cents === null ? '—' : new Intl.NumberFormat('zh-CN',{style:'currency',currency:'CNY',maximumFractionDigits:cents%100 ? 2 : 0}).format(cents/100) }
 export function shanghaiDate(now = new Date()) { return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(now) }
@@ -59,6 +59,14 @@ export function stayError(error: unknown, zh: boolean){const raw=error instanceo
 export function searchStays(s: StaySearch){return rpc<StayQuote[]>('search_stays',{p_in:s.checkIn,p_out:s.checkOut,p_guests:s.guests})}
 export function quoteStay(q: Pick<StayQuote,'room_id'|'plan_id'|'check_in'|'check_out'|'guests'>){return rpc<StayQuote>('quote_stay',{p_room:q.room_id,p_plan:q.plan_id,p_in:q.check_in,p_out:q.check_out,p_guests:q.guests})}
 export function staySlots(id:string){return rpc<StaySlot[]>('stay_session_options',{p_booking:id})}
+let clockCache:{at:number;promise:Promise<string>}|null=null
+export function stayClock(){
+ if(!clockCache||Date.now()-clockCache.at>60000){
+  const at=Date.now();clockCache={at,promise:rpc<string>('stay_clock',{})}
+  clockCache.promise.catch(()=>{if(clockCache?.at===at)clockCache=null})
+ }
+ return clockCache.promise
+}
 export function stayRateCalendar(room?:string){return rpc<StayNightRate[]>('stay_rate_calendar',{p_room:room??null})}
 export function staySessionPreview(plan:string,checkIn:string,checkOut:string){return rpc<StaySessionOption[]>('stay_session_preview',{p_plan:plan,p_in:checkIn,p_out:checkOut})}
 export function formatStaySession(iso:string,zh:boolean){return new Intl.DateTimeFormat(zh?'zh-CN':'en-GB',{timeZone:'Asia/Shanghai',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(iso))}

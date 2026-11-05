@@ -471,6 +471,7 @@
 .ops-studio-brief .ops-field { margin-top: 10px; }
 .ops-studio-brief .studio-theme { grid-column: auto; }
 .ops-shell .studio-brief-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 12px 0; padding: 0; border: 0; }
+.ops-shell .studio-brief-grid label { display: grid; gap: 10px; min-width: 0; color: var(--ops-muted); font-size: 11.5px; }
 .ops-shell .studio-brief-grid .input { width: 100%; }
 .ops-shell .studio-theme { grid-column: 1 / -1; }
 .ops-shell .studio-workflow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin: 0 0 16px; padding: 0; border: 1px solid var(--ops-line); border-radius: var(--ops-radius); background: #fff; list-style: none; }
@@ -579,6 +580,38 @@
 .ops-shell .status-cancelled { background: #f0f1ee; color: var(--ops-faint); }
 .ops-shell .status-completed { background: var(--ops-slate-soft); color: var(--ops-slate); }
 .ops-shell .experience-result { padding: 13px; border: 1px solid var(--ops-line); border-left: 2px solid var(--ops-gold); border-radius: 6px; background: #fff; }
+
+
+/* ---------- operations workbench fixes ---------- */
+
+.ops-tabpanel { display: grid; gap: 16px; min-width: 0; }
+.ops-btn:focus-visible,
+.ops-link:focus-visible,
+.ops-icon-button:focus-visible,
+.ops-tab:focus-visible,
+.ops-segment:focus-visible { outline: 2px solid var(--ops-jade); outline-offset: 1px; }
+
+.ops-shell .status-no_show { background: var(--ops-red-soft); color: var(--ops-red); }
+
+.ops-shell .stay-tabs button[aria-pressed="true"] { background: var(--ops-jade); border-color: var(--ops-jade); color: #fff; }
+.ops-shell .stay-status-filter { color: var(--ops-muted); font-size: 12px; }
+.ops-shell .stay-ops-kpis > div { background: var(--ops-surface); border-color: var(--ops-line); border-radius: var(--ops-radius); }
+.ops-shell .stay-ops-kpis span { color: var(--ops-muted); font-size: 12px; }
+.ops-shell .stay-ops-kpis strong { color: var(--ops-text); font-weight: 600; }
+.ops-shell .stay-inventory .stay-search { background: var(--ops-surface-muted); border-color: var(--ops-line); border-radius: var(--ops-radius); }
+.ops-shell .stay-inventory-day { background: var(--ops-surface); border-color: var(--ops-line); border-radius: var(--ops-radius); }
+.ops-shell .stay-inventory .input,
+.ops-shell .stay-ops-actions .input,
+.ops-shell .stay-search .input { min-height: 36px; }
+.ops-shell .stay-order { background: var(--ops-surface); border-color: var(--ops-line); border-radius: var(--ops-radius); color: var(--ops-text); }
+.ops-shell .stay-order h2 { font-family: var(--font-sans); }
+.ops-shell .stay-order .status-pill { border-radius: 4px; }
+.ops-shell .stay-order .status-no_show { background: var(--ops-red-soft); color: var(--ops-red); }
+.ops-shell .stay-benefit { background: var(--ops-jade-soft); border-left-color: var(--ops-jade-line); border-radius: 0 var(--ops-radius) var(--ops-radius) 0; }
+.ops-shell .stay-history { border-color: var(--ops-line); }
+.ops-shell .stay-dashboard-link { background: var(--ops-surface); border-color: var(--ops-line); border-radius: var(--ops-radius); }
+.ops-shell .stay-ops-confirm { display: grid; gap: 8px; }
+.ops-shell .stay-ops-confirm-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
 /* ---------- responsive ---------- */
 

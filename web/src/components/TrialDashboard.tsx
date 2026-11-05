@@ -5,6 +5,20 @@ import { Notice, useCopy } from './JourneyCommon'
 import type { FeedbackSummary } from '../../../supabase/functions/_shared/feedbackSummary'
 import { actionError } from '../lib/actionErrors'
 
+const STATE_ORDER = ['pending','confirmed','completed','declined','cancelled','stay_pending','stay_confirmed','stay_checked_in','stay_checked_out','stay_no_show','stay_declined','stay_cancelled']
+const STATE_LABELS: Record<string,[string,string]> = {
+  pending:['待处理','Pending'], confirmed:['已确认','Confirmed'], completed:['已完成','Completed'], declined:['未通过','Declined'], cancelled:['已取消','Cancelled'],
+  stay_pending:['住宿待确认','Stay pending'], stay_confirmed:['住宿已确认','Stay confirmed'], stay_checked_in:['已入住','Checked in'],
+  stay_checked_out:['已离店','Checked out'], stay_no_show:['住宿未入住','Stay no-show'], stay_declined:['住宿未通过','Stay declined'], stay_cancelled:['住宿已取消','Stay cancelled'],
+}
+function formatStates(counts: Record<string, number>, zh: boolean) {
+  return Object.entries(counts)
+    .filter(([, value]) => value > 0)
+    .sort(([a],[b]) => (STATE_ORDER.indexOf(a) + 1 || 99) - (STATE_ORDER.indexOf(b) + 1 || 99))
+    .map(([key, value]) => `${STATE_LABELS[key]?.[zh ? 0 : 1] ?? key} ${value}`)
+    .join(' · ') || '0'
+}
+
 export interface TrialData {
   batch: string
   counts: number[]
@@ -78,7 +92,7 @@ export function TrialDashboard({ onData, batch: controlledBatch }: { onData?: (d
           <small>{index === 0 ? t('本批次人数', 'Cohort size') : prior ? `${(100 * count / prior).toFixed(0)}% (${count}/${prior})` : t('无上一步样本', 'No prior-stage sample')}</small>
         </li>
       })}</ol>
-      <p>{t('当前意向状态（独立申请，包含跳步用户）', 'Current request states (including users who skipped steps)')}: {Object.entries(data.statusCounts).map(([key, value]) => `${key}: ${value}`).join(' · ') || '0'}</p>
+      <p>{t('当前申请状态（体验与住宿，独立申请，包含跳步用户）', 'Current request states (experiences and stays, including users who skipped steps)')}: {formatStates(data.statusCounts, language === 'zh')}</p>
       <h3>{t('探索兴趣分布', 'Exploration interests')}</h3>
       <div className="choice-row">{data.interests.map(item => <span className="status-pill" key={item.field + item.choice}>
         {(item.field === 'motif' ? MOTIFS : PALETTES).find(row => row[0] === item.choice)?.[language === 'zh' ? 1 : 2] || item.choice}: {item.users}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { StayOrderCard } from '../../components/StayOrders'
 import { StayMessage, useStayAction } from '../../components/StayCommon'
 import { useCopy, Notice } from '../../components/JourneyCommon'
@@ -9,15 +9,41 @@ import { addDays, money, shanghaiDate, stayError, useStayStore, type StayInvento
 
 export function OpsStaysPage(){
  const {language,t}=useCopy();const zh=language==='zh';const {cohort}=useOpsCohort();const {bookings,refresh,loading,error}=useStayStore();const [tab,setTab]=useState('orders');const [status,setStatus]=useState('pending')
- const [rooms,setRooms]=useState<StayRoom[]>([]);const [room,setRoom]=useState('classic');const [start,setStart]=useState(addDays(shanghaiDate(),1));const [rows,setRows]=useState<StayInventory[]>([]);const action=useStayAction();const [loaded,setLoaded]=useState(false)
- useEffect(()=>{void refresh();void requireCloud().from('stay_rooms').select('*').then(({data})=>setRooms(data??[]))},[])
- async function load(){setLoaded(false);const {data,error}=await requireCloud().from('stay_inventory').select('*').eq('room_id',room).gte('night',start).lte('night',addDays(start,13)).order('night');if(error)throw new Error(error.message);setRows(data??[]);setLoaded(true)}
+ const [rooms,setRooms]=useState<StayRoom[]>([]);const [roomsError,setRoomsError]=useState(false);const [room,setRoom]=useState('');const [start,setStart]=useState(addDays(shanghaiDate(),1));const [rows,setRows]=useState<StayInventory[]>([]);const [inventoryError,setInventoryError]=useState('');const action=useStayAction();const [loaded,setLoaded]=useState(false);const loadSeq=useRef(0)
+ async function loadRooms(){
+  setRoomsError(false)
+  try{
+   const {data,error}=await requireCloud().from('stay_rooms').select('*')
+   if(error){setRoomsError(true);return}
+   const list=data??[];setRooms(list);setRoom(prev=>list.some(item=>item.id===prev)?prev:list[0]?.id??'')
+  }catch{setRoomsError(true)}
+ }
+ useEffect(()=>{void refresh();void loadRooms()},[])
+ async function load(){
+  const seq=++loadSeq.current
+  if(!room)return
+  setInventoryError('')
+  try{
+   const {data,error}=await requireCloud().from('stay_inventory').select('*').eq('room_id',room).gte('night',start).lte('night',addDays(start,13)).order('night')
+   if(seq!==loadSeq.current)return
+   if(error)throw new Error(error.message)
+   setRows(data??[]);setLoaded(true)
+  }catch(e){
+   if(seq===loadSeq.current)setInventoryError(stayError(e,zh))
+  }
+ }
+ function resetInventory(){loadSeq.current++;setRows([]);setLoaded(false);setInventoryError('')}
  const scoped=bookings.filter(b=>b.batch_id===cohort);const filtered=scoped.filter(b=>status==='all'||b.status===status)
+ const nightCount=(list:string[])=>scoped.filter(b=>list.includes(b.status)).reduce((n,b)=>n+b.quote.nights.length,0)
+ const amount=(list:string[])=>scoped.filter(b=>list.includes(b.status)).reduce((n,b)=>n+(b.quote.total??0),0)
  return <div className="ops-page"><OpsPageHeader eyebrow="ROOMS & STAYS" title={t('住宿管理','Accommodation')} description={t('处理住宿申请，维护逐晚房价房量；含体验套餐在确认时同时保留活动名额。','Review stay requests and nightly inventory. Package confirmation also holds experience places.')} actions={<button className="ops-btn ops-btn-secondary" disabled={loading} onClick={()=>void refresh()}>{t('更新订单','Refresh orders')}</button>}/>
  <div className="stay-tabs" role="group" aria-label={t('住宿管理分类','Accommodation sections')}><button className="ops-btn ops-btn-secondary" aria-pressed={tab==='orders'} onClick={()=>setTab('orders')}>{t('住宿订单','Stay orders')} · {scoped.filter(b=>b.status==='pending').length}</button><button className="ops-btn ops-btn-secondary" aria-pressed={tab==='inventory'} onClick={()=>setTab('inventory')}>{t('房价房量','Rates & inventory')}</button></div>
- {tab==='orders'?<>{error&&<Notice error>{stayError(error,zh)}</Notice>}<label className="stay-status-filter">{t('订单状态','Status')}<select className="ops-select" value={status} onChange={e=>setStatus(e.target.value)}>{[['pending','待确认','Pending'],['confirmed','已确认','Confirmed'],['checked_in','已入住','Checked in'],['checked_out','已离店','Checked out'],['cancelled','已取消','Cancelled'],['declined','未通过','Declined'],['all','全部','All']].map(([id,zh,en])=><option value={id} key={id}>{language==='zh'?zh:en}</option>)}</select></label>
- <div className="stay-ops-kpis"><div><span>{t('待确认住宿','Pending stays')}</span><strong>{scoped.filter(b=>b.status==='pending').length}</strong></div><div><span>{t('已确认演示房晚','Confirmed demo room nights')}</span><strong>{scoped.filter(b=>['confirmed','checked_in','checked_out'].includes(b.status)).reduce((n,b)=>n+b.quote.nights.length,0)}</strong></div><div><span>{t('已确认演示订单金额','Confirmed demo order amount')}</span><strong>{money(scoped.filter(b=>['confirmed','checked_in','checked_out'].includes(b.status)).reduce((n,b)=>n+(b.quote.total??0),0))}</strong></div></div>
- {!loading&&!error&&!filtered.length&&<Notice>{t('当前批次和状态没有住宿订单。','No stay orders match this cohort and status.')}</Notice>}{filtered.map(b=><StayOrderCard key={b.id} booking={b} operations/>)}</>:<section className="ops-card stay-inventory"><p className="stay-caption">{t('酒店房量由所有批次共享，不随统计批次改变。房价修改只影响新的报价，不改写已有订单。','Hotel inventory is shared across cohorts. Rate changes affect new quotes, not existing orders.')}</p><form className="stay-search" onSubmit={e=>{e.preventDefault();void action.run(load)}}><label>{t('房型','Room')}<select className="input" value={room} onChange={e=>{setRoom(e.target.value);setLoaded(false)}}>{rooms.map(r=><option key={r.id} value={r.id}>{zh?r.title_zh:r.title_en}</option>)}</select></label><label>{t('日历起始日期','Calendar starts')}<input className="input" type="date" required min={shanghaiDate()} max={addDays(shanghaiDate(),91)} value={start} onChange={e=>{setStart(e.target.value);setLoaded(false)}}/></label><button className="ops-btn ops-btn-primary" disabled={action.busy}>{t('查看14天','View 14 days')}</button></form>
+ {tab==='orders'?<>{error&&<Notice error>{stayError(error,zh)}</Notice>}<label className="stay-status-filter">{t('订单状态','Status')}<select className="ops-select" value={status} onChange={e=>setStatus(e.target.value)}>{[['pending','待确认','Pending'],['confirmed','已确认','Confirmed'],['checked_in','已入住','Checked in'],['checked_out','已离店','Checked out'],['no_show','未入住','No-show'],['cancelled','已取消','Cancelled'],['declined','未通过','Declined'],['all','全部','All']].map(([id,zhLabel,enLabel])=><option value={id} key={id}>{language==='zh'?zhLabel:enLabel}</option>)}</select></label>
+ <div className="stay-ops-kpis"><div><span>{t('待确认住宿','Pending stays')}</span><strong>{scoped.filter(b=>b.status==='pending').length}</strong></div><div><span>{t('已确认演示房晚','Confirmed demo room nights')}</span><strong>{nightCount(['confirmed','checked_in','checked_out'])}</strong></div><div><span>{t('已确认演示订单金额','Confirmed demo order amount')}</span><strong>{money(amount(['confirmed','checked_in','checked_out']))}</strong></div><div><span>{t('未入住订单','No-show orders')}</span><strong>{scoped.filter(b=>b.status==='no_show').length}</strong></div></div>
+ {!loading&&!error&&!filtered.length&&<Notice>{t('当前批次和状态没有住宿订单。','No stay orders match this cohort and status.')}</Notice>}{filtered.map(b=><StayOrderCard key={b.id} booking={b} operations/>)}</>:<section className="ops-card stay-inventory"><p className="stay-caption">{t('酒店房量由所有批次共享，不随统计批次改变。房价修改只影响新的报价，不改写已有订单。','Hotel inventory is shared across cohorts. Rate changes affect new quotes, not existing orders.')}</p>
+ {roomsError&&<Notice error>{t('房型列表加载失败。','Room list unavailable.')} <button type="button" className="room-text-link" onClick={()=>void loadRooms()}>{t('重试','Retry')}</button></Notice>}
+ <form className="stay-search" onSubmit={e=>{e.preventDefault();void action.run(load)}}><label>{t('房型','Room')}<select className="input" value={room} disabled={!rooms.length} onChange={e=>{setRoom(e.target.value);resetInventory()}}>{rooms.map(r=><option key={r.id} value={r.id}>{zh?r.title_zh:r.title_en}</option>)}</select></label><label>{t('日历起始日期','Calendar starts')}<input className="input" type="date" required min={shanghaiDate()} max={addDays(shanghaiDate(),91)} value={start} onChange={e=>{setStart(e.target.value);resetInventory()}}/></label><button className="ops-btn ops-btn-primary" disabled={action.busy||!room}>{t('查看14天','View 14 days')}</button></form>
+ {inventoryError&&<Notice error>{t('房价房量读取失败，已保留上次结果。','Inventory could not be loaded; the previous results are kept.')} {inventoryError} <button type="button" className="room-text-link" onClick={()=>void load()}>{t('重试','Retry')}</button></Notice>}
  {loaded&&!rows.length&&<Notice>{t('此日期区间尚未配置房量，请联系项目管理员。','Inventory is not configured for these dates. Contact the project administrator.')}</Notice>}
  {loaded&&<div className="stay-inventory-grid">{rows.map(row=><InventoryDay key={row.room_id+row.night} row={row} used={bookings.filter(b=>b.room_id===row.room_id&&b.check_in<=row.night&&b.check_out>row.night&&['confirmed','checked_in','checked_out'].includes(b.status)).length} onSaved={load}/>)}</div>}
  </section>}
@@ -27,5 +53,6 @@ export function OpsStaysPage(){
 function InventoryDay({row,used,onSaved}:{row:StayInventory;used:number;onSaved:()=>Promise<void>}){
  const {t}=useCopy();const [price,setPrice]=useState(String(row.price/100));const [capacity,setCapacity]=useState(row.capacity);const action=useStayAction()
  useEffect(()=>{setPrice(String(row.price/100));setCapacity(row.capacity)},[row.price,row.capacity])
- return <form className="stay-inventory-day" onSubmit={e=>{e.preventDefault();void action.run(async()=>{await rpc('set_stay_inventory',{p_room:row.room_id,p_night:row.night,p_price:Math.round(Number(price)*100),p_capacity:capacity});await onSaved()},t('已保存','Saved'))}}><h3>{row.night}</h3><p className="stay-caption">{t(`已确认占用${used}间 · 还可确认${Math.max(0,row.capacity-used)}间`,`Occupied: ${used} · Available: ${Math.max(0,row.capacity-used)}`)}</p><label>{t('每晚房价（元）','Nightly rate (CNY)')}<input className="input" type="number" min={0} max={100000} step="0.01" required value={price} disabled={action.busy} onChange={e=>setPrice(e.target.value)}/></label><label>{t('可售总房量','Total rooms for sale')}<input className="input" type="number" min={used} max={1000} step={1} required value={capacity} disabled={action.busy} onChange={e=>setCapacity(Number(e.target.value))}/></label><button className="ops-btn ops-btn-secondary" disabled={action.busy} aria-busy={action.busy}>{t('保存当日','Save day')}</button><StayMessage message={action.message} error={action.failed}/></form>
+ const cents=Math.round(Number(price)*100)
+ return <form className="stay-inventory-day" onSubmit={e=>{e.preventDefault();if(!Number.isFinite(cents))return;void action.run(async()=>{await rpc('set_stay_inventory',{p_room:row.room_id,p_night:row.night,p_price:cents,p_capacity:capacity});await onSaved()},t('已保存','Saved'))}}><h3>{row.night}</h3><p className="stay-caption">{t(`已确认占用${used}间 · 还可确认${Math.max(0,row.capacity-used)}间`,`Occupied: ${used} · Available: ${Math.max(0,row.capacity-used)}`)}</p><label>{t('每晚房价（元）','Nightly rate (CNY)')}<input className="input" type="number" min={0} max={100000} step="0.01" required value={price} disabled={action.busy} onChange={e=>setPrice(e.target.value)}/></label><label>{t('可售总房量','Total rooms for sale')}<input className="input" type="number" min={used} max={1000} step={1} required value={capacity} disabled={action.busy} onChange={e=>setCapacity(Number(e.target.value))}/></label><button className="ops-btn ops-btn-secondary" disabled={action.busy} aria-busy={action.busy}>{t('保存当日','Save day')}</button><StayMessage message={action.message} error={action.failed}/></form>
 }

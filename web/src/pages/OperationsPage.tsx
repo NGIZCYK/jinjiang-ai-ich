@@ -76,7 +76,9 @@ export function OperationsPage() {
     }
   }
 
-  useEffect(() => { void loadParticipants() }, [])
+  useEffect(() => {
+    if (tab === 'participants' && !participants.length && !participantLoading) void loadParticipants()
+  }, [tab])
 
   function openBooking(id: string) {
     action.clear()
@@ -150,11 +152,12 @@ export function OperationsPage() {
         { id: 'requests', label: t('申请处理', 'Requests'), count: cohortRows.length },
         { id: 'participants', label: t('参与者与批次', 'Participants & cohorts'), count: participants.length },
       ]}
+      panelId={id => `ops-exp-${id}`}
     />
 
     {(error || action.message) && <OpsNotice error={!!error || action.failed}>{error || action.message}</OpsNotice>}
 
-    {tab === 'requests' ? <>
+    {tab === 'requests' ? <div role="tabpanel" id="ops-exp-requests" aria-labelledby="ops-exp-requests-tab" className="ops-tabpanel">
       <OpsSegmented
         label={t('按状态筛选', 'Filter by status')}
         value={status}
@@ -227,7 +230,7 @@ export function OperationsPage() {
           <div className="ops-actions"><button type="button" className="ops-btn ops-btn-secondary ops-btn-sm" onClick={() => openBooking(booking.id)}>{t('查看与处理', 'View & review')} <span aria-hidden="true">→</span></button></div>
         </article>)}
       </div>}
-    </> : <>
+    </div> : <div role="tabpanel" id="ops-exp-participants" aria-labelledby="ops-exp-participants-tab" className="ops-tabpanel">
       <section className="ops-card">
         <div className="ops-card-head">
           <div>
@@ -280,7 +283,7 @@ export function OperationsPage() {
           </table>
         </div>}
       </section>
-    </>}
+    </div>}
 
     <OpsDrawer
       open={!!selected}

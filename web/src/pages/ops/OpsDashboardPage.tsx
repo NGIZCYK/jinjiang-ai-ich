@@ -187,5 +187,6 @@ export function OpsDashboardPage() {
 function StayDashboardSummary({cohort,zh}:{cohort:string;zh:boolean}) {
  const {bookings,refresh,error}=useStayStore()
  useEffect(()=>{void refresh()},[])
- return <div className="stay-dashboard-link"><strong>{zh?'住宿待确认':'Stay requests'} · {error?'—':bookings.filter(b=>b.batch_id===cohort&&b.status==='pending').length}</strong><Link to="/ops/stays" className="ops-link">{zh?'进入住宿管理':'Open accommodation management'} →</Link></div>
+ const count=bookings.filter(b=>b.batch_id===cohort&&b.status==='pending').length
+ return <div className="stay-dashboard-link">{error?<><span className="ops-meta">{zh?'住宿数据暂时不可用':'Stay data unavailable'}</span><button type="button" className="ops-link" onClick={()=>void refresh()}>{zh?'重试':'Retry'}</button></>:<strong>{zh?'住宿待确认':'Stay requests'} · {count}</strong>}<Link to="/ops/stays" className="ops-link">{zh?'进入住宿管理':'Open accommodation management'} →</Link></div>
 }

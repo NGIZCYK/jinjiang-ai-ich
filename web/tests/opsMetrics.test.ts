@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { CATALOG, type JourneyBooking, type SessionSlot } from '../src/lib/journey'
 import {
   averageRating, byCohort, registeredCohortCounts, confirmedWithin, countByStatus, pendingQueue,
-  recentFeedback, relativeTime, sessionBooked, shanghaiDay, sortForReview, upcomingSessions,
+  recentFeedback, relativeTime, sessionBooked, shanghaiDay, shanghaiWindowEnd, sortForReview, upcomingSessions,
 } from '../src/lib/opsMetrics'
 
 const now = Date.parse('2026-11-01T04:00:00Z')
@@ -91,5 +91,18 @@ describe('operations metrics', () => {
 
   it('keeps the catalog fixture available to the dashboard', () => {
     expect(CATALOG.find(item => item.id === 'workshop')?.minutes).toBe(90)
+  })
+
+  it('uses Shanghai calendar days for the seven-day window', () => {
+    expect(shanghaiWindowEnd(now, 7)).toBe(Date.parse('2026-11-08T00:00:00+08:00'))
+    const slots: SessionSlot[] = [
+      { id: 'inside', experience_id: 'workshop', starts_at: '2026-11-07T10:00:00Z', capacity: 8, available: 3 },
+      { id: 'next-day', experience_id: 'workshop', starts_at: '2026-11-07T17:00:00Z', capacity: 8, available: 3 },
+    ]
+    expect(upcomingSessions(slots, now, 7).map(slot => slot.id)).toEqual(['inside'])
+    expect(confirmedWithin([
+      booking('a', 'confirmed', '2026-10-30T00:00:00Z', { sessions: { starts_at: '2026-11-07T10:00:00Z', experience_id: 'workshop' } }),
+      booking('b', 'confirmed', '2026-10-30T00:00:00Z', { sessions: { starts_at: '2026-11-07T17:00:00Z', experience_id: 'workshop' } }),
+    ], now, 7).map(item => item.id)).toEqual(['a'])
   })
 })

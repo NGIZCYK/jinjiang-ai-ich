@@ -1,0 +1,27 @@
+[
+  {
+    "source": "web/public/assets/suxiu-floral-huayun-20261103.webp",
+    "runtime": "web/public/assets/suxiu-floral-huayun-card-20261104.webp",
+    "original_size": [
+      1080,
+      1880
+    ],
+    "runtime_size": [
+      1080,
+      600
+    ],
+    "crop_box": [
+      0,
+      700,
+      1080,
+      1300
+    ],
+    "source_sha256": "c3cfaa5af99985ef69002277f2ae4f4d736a0b0fa5cf716781b7d25ef4ed3a8c",
+    "runtime_sha256": "056c0dfeded124d1cd7560169841d2cf976664ec46aa92092f0cb57a026f4ac5",
+    "bytes": 113340,
+    "source_page": "https://www.cnacs.net.cn/89/202409/6430.html",
+    "credit": "Exhibition image of Chinese Dream Floral Rhythms series; photographer not specified in report.",
+    "rights": "No open licence found. Local review only; verify permission before publication.",
+    "changes": "Cropped for the homepage 01 chapter card and re-encoded; no recolouring or upscaling"
+  }
+]

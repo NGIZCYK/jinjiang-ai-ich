@@ -96,4 +96,16 @@ describe('PostgreSQL journey, authorization and state invariants',()=>{
  it('rejects a recommendation belonging to another user or another experience',async()=>{const rec=(await as<{id:string}>(other,'select save_recommendation($1,$2,$3) id',['scroll',{minutes:90,budget:200,party:'family',interest:'culture'},request()]))[0].id;await expect(as(guest,'select submit_intention($1,1,$2,$3)',[session,request(),rec])).rejects.toThrow('INVALID_RECOMMENDATION')})
  it('persists reviewer identity and forbids guest content approval',async()=>{await expect(as(guest,"select save_reviewed_content('copy','Title','Body','en','Checked')")).rejects.toThrow('FORBIDDEN');await as(ops,"select save_reviewed_content('copy','Title','Body','en','Checked')");expect((await as(ops,'select reviewer_id from reviewed_contents'))[0].reviewer_id).toBe(ops)})
  it('limits model calls without leaking quota rows',async()=>{for(let n=0;n<60;n++)await as(guest,'select claim_ai_request()');await expect(as(guest,'select claim_ai_request()')).rejects.toThrow('RATE_LIMIT');await expect(as(guest,'select * from ai_usage')).rejects.toThrow()})
+ it('includes accommodation status and deduplicates content saves',async()=>{
+  await db.exec("insert into stay_inventory select r.id,stay_today()+d,r.default_price,1 from stay_rooms r cross join generate_series(1,8) d on conflict do nothing")
+  const q=(await db.query<any>("select quote_stay('classic','room_only',stay_today()+2,stay_today()+3,1) q")).rows[0].q
+  await as(guest,'select submit_stay_request($1,$2,stay_today()+2,stay_today()+3,1,$3,$4)',['classic','room_only',q.token,request()])
+  const stats=(await as<any>(ops,"select trial_analytics('pilot-01') data"))[0].data
+  expect(stats.statusCounts.stay_pending).toBe(1)
+  const req=request()
+  const first=(await as<{id:string}>(ops,'select save_reviewed_content($1,$2,$3,$4,$5,$6) id',['itinerary','Title','Body','zh','Reviewed',req]))[0].id
+  const second=(await as<{id:string}>(ops,'select save_reviewed_content($1,$2,$3,$4,$5,$6) id',['itinerary','Title','Body','zh','Reviewed',req]))[0].id
+  expect(second).toBe(first)
+  expect((await db.query('select * from reviewed_contents where request_id=$1',[req])).rows).toHaveLength(1)
+ })
 })

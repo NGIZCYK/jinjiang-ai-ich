@@ -13,7 +13,7 @@ interface AppState {
  addMessage: (m:Omit<ChatMessage,'id'|'createdAt'>) => ChatMessage;
  addGuideSignal: (s:Omit<GuideSignal,'id'|'createdAt'>) => Promise<void>;
  clearMessages: (language?:Language) => void; clearGuideSignals: (language?:Language) => void;
- addContent: (type:GeneratedContent['type'],title:string,content:string,language:Language,notes:string) => Promise<void>;
+ addContent: (type:GeneratedContent['type'],title:string,content:string,language:Language,notes:string,requestId:string) => Promise<void>;
 }
 let started = false
 let authVersion = 0
@@ -90,8 +90,7 @@ export const useAppStore = create<AppState>((set,get) => ({
   if(id!==get().user?.id) return
   set({contents:data.map(c=>({id:c.id,userId:c.user_id,type:c.type,title:c.title,content:c.content,language:c.language,reviewStatus:c.review_status,auditNotes:c.audit_notes,reviewerId:c.reviewer_id,createdAt:new Date(c.created_at).getTime()}))})
  },
- async addContent(type,title,content,language,notes) {
-  await rpc('save_reviewed_content',{p_type:type,p_title:title,p_content:content,p_language:language,p_notes:notes})
-  await get().refreshContents()
+ async addContent(type,title,content,language,notes,requestId) {
+  await rpc('save_reviewed_content',{p_type:type,p_title:title,p_content:content,p_language:language,p_notes:notes,p_request:requestId})
  },
 }))

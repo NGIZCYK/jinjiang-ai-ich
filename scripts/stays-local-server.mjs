@@ -42,7 +42,7 @@ async function session(id){const refresh=randomUUID();refreshTokens.set(refresh,
 function response(res,status,data){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data,(key,v)=>typeof v==='bigint'?Number(v):['check_in','check_out','night'].includes(key)&&typeof v==='string'?v.slice(0,10):v))}
 async function body(req){let result='';for await(const chunk of req){result+=chunk;if(result.length>128000)throw new Error('REQUEST_TOO_LARGE')}return result?JSON.parse(result):{}}
 const tables=new Set(['profiles','experiences','sessions','explorations','preferences','recommendations','bookings','booking_history','feedback','events','reviewed_contents','stay_rooms','stay_plans','stay_inventory','stay_bookings','stay_history','stay_entitlements'])
-const functions=new Set(['search_stays','quote_stay','submit_stay_request','stay_session_options','transition_stay_booking','redeem_stay_entitlement','reschedule_stay_experience','set_stay_inventory','available_sessions','stay_rate_calendar','stay_session_preview','start_exploration','save_exploration','save_recommendation','submit_intention','transition_booking','submit_feedback','save_reviewed_content','participant_roster','assign_guest_batch','trial_analytics'])
+const functions=new Set(['search_stays','quote_stay','submit_stay_request','stay_session_options','transition_stay_booking','redeem_stay_entitlement','reschedule_stay_experience','set_stay_inventory','available_sessions','stay_rate_calendar','stay_session_preview','start_exploration','save_exploration','save_recommendation','submit_intention','transition_booking','submit_feedback','save_reviewed_content','save_guide_signal','stay_clock','participant_roster','assign_guest_batch','trial_analytics'])
 const identifier=v=>{if(!/^[a-z_][a-z_0-9]*$/.test(v))throw new Error('INVALID_IDENTIFIER');return `"${v}"`}
 async function asUser(uid,fn){return db.transaction(async tx=>{await tx.exec(`set local role ${uid?'authenticated':'anon'}`);await tx.query("select set_config('request.jwt.claim.sub',$1,true)",[uid||'']);return fn(tx)})}
 async function handle(req,res){
@@ -53,7 +53,7 @@ async function handle(req,res){
  res.setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS');res.setHeader('Access-Control-Expose-Headers','Content-Range')
  if(req.method==='OPTIONS'){res.writeHead(204);res.end();return}
  const url=new URL(req.url,'http://127.0.0.1:54329');const uid=identity(req)
- if(url.pathname==='/health'){response(res,200,{service:'jinjiang-stays-local',root,version:'2026.11.02-stays-v1',database:'local-only',pid:process.pid,migrations:migrationNames});return}
+ if(url.pathname==='/health'){response(res,200,{service:'jinjiang-stays-local',root,version:'2026.11.04-merged-v1',database:'local-only',pid:process.pid,migrations:migrationNames});return}
  if(url.pathname.startsWith('/auth/v1/')){
   if(url.pathname.endsWith('/token')&&req.method==='POST'){
    const b=await body(req)

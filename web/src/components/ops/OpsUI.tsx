@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type ReactNode, type RefObject } from 'react'
+import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode, type RefObject } from 'react'
 import type { BookingStatus } from '../../lib/journey'
 import { statusLabel } from '../../lib/journey'
 import type { Language } from '../../lib/i18n'
@@ -49,19 +49,38 @@ export function OpsNotice({ children, error = false }: { children: ReactNode; er
 
 export interface OpsTabItem { id: string; label: string; count?: number }
 
-export function OpsTabs({ items, value, onChange, label }: {
+export function OpsTabs({ items, value, onChange, label, panelId }: {
   items: OpsTabItem[]
   value: string
   onChange: (id: string) => void
   label: string
+  panelId?: (id: string) => string
 }) {
+  const refs = useRef<Record<string, HTMLButtonElement | null>>({})
+  function move(index: number) {
+    const next = items[(index + items.length) % items.length]
+    if (!next) return
+    onChange(next.id)
+    refs.current[next.id]?.focus()
+  }
+  function onKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    if (event.key === 'ArrowRight') { event.preventDefault(); move(index + 1) }
+    else if (event.key === 'ArrowLeft') { event.preventDefault(); move(index - 1) }
+    else if (event.key === 'Home') { event.preventDefault(); move(0) }
+    else if (event.key === 'End') { event.preventDefault(); move(items.length - 1) }
+  }
   return <div className="ops-tabs" role="tablist" aria-label={label}>
-    {items.map(item => <button
+    {items.map((item, index) => <button
       key={item.id}
+      ref={element => { refs.current[item.id] = element }}
       type="button"
       role="tab"
+      id={panelId ? `${panelId(item.id)}-tab` : undefined}
+      aria-controls={panelId ? panelId(item.id) : undefined}
       aria-selected={value === item.id}
+      tabIndex={value === item.id ? 0 : -1}
       className="ops-tab"
+      onKeyDown={event => onKeyDown(event, index)}
       onClick={() => onChange(item.id)}
     >
       {item.label}

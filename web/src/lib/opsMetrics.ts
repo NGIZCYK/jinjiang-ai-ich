@@ -12,13 +12,22 @@ export function shanghaiDay(iso: string) {
   return Number.isNaN(date.getTime()) ? '' : SHANGHAI_DAY.format(date)
 }
 
+/** End of the Nth Shanghai calendar day from now, as an epoch timestamp. */
+export function shanghaiWindowEnd(now: number, days: number) {
+  const today = shanghaiDay(new Date(now).toISOString())
+  if (!today) return now + days * 24 * 60 * 60 * 1000
+  const [year, month, day] = today.split('-').map(Number)
+  const end = new Date(Date.UTC(year, month - 1, day + days))
+  return Date.parse(`${end.toISOString().slice(0, 10)}T00:00:00+08:00`)
+}
+
 export function byCohort(bookings: JourneyBooking[], cohort: OpsCohort) {
   return bookings.filter(booking => booking.batch_id === cohort)
 }
 
 export function countByStatus(bookings: JourneyBooking[]) {
   const counts = Object.fromEntries(STATUS_ORDER.map(status => [status, 0])) as Record<BookingStatus, number>
-  bookings.forEach(booking => { counts[booking.status] += 1 })
+  bookings.forEach(booking => { if (booking.status in counts) counts[booking.status] += 1 })
   return counts
 }
 
@@ -41,7 +50,7 @@ export function pendingQueue(bookings: JourneyBooking[]) {
 }
 
 export function confirmedWithin(bookings: JourneyBooking[], now: number, days: number) {
-  const end = now + days * 24 * 60 * 60 * 1000
+  const end = shanghaiWindowEnd(now, days)
   return bookings.filter(booking => {
     if (booking.status !== 'confirmed') return false
     const start = Date.parse(booking.sessions?.starts_at ?? '')
@@ -78,7 +87,7 @@ export function sessionBooked(session: Pick<SessionSlot, 'capacity' | 'available
 }
 
 export function upcomingSessions(sessions: SessionSlot[], now: number, days = 7) {
-  const end = now + days * 24 * 60 * 60 * 1000
+  const end = shanghaiWindowEnd(now, days)
   return sessions
     .filter(session => {
       const start = Date.parse(session.starts_at)

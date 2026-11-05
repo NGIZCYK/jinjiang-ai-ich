@@ -8,8 +8,8 @@ import { useReducedMotion } from '../hooks/useReducedMotion'
 import { STAYS_ENABLED } from '../lib/stays'
 
 const CHAPTER_MEDIA = [
-  { src: '/assets/suxiu-gusu-prosperous.webp', width: 1920, height: 1152, zh: '姑苏水岸与舟船的数字纹理长卷', en: 'A digital-texture scroll of Suzhou waterways and boats' },
-  { src: '/assets/suxiu-silk-splitting-20261029.webp', width: 1200, height: 800, zh: '双手劈分细丝的工艺示意', en: 'An illustration of hands splitting fine silk threads' },
+  { src: '/assets/suxiu-floral-huayun-card-20261104.webp', width: 1080, height: 600, zh: '浅紫底上的粉白花卉苏绣绣品', en: 'Su embroidery of pink and white flowers on a pale violet ground' },
+  { src: '/assets/silk-pastel-tray-20261103.webp', width: 1600, height: 1600, zh: '木托盘中的淡彩染色丝线', en: 'Pale dyed silk threads arranged on a wooden tray' },
   { src: '/assets/suxiu-step-03-stitching.webp', width: 1920, height: 1080, zh: '绷架上持针起绣的工艺示意', en: 'An illustration of a first stitch on an embroidery frame' },
 ] as const
 
@@ -60,7 +60,7 @@ export function PremiumHomePage() {
         journeyTitle: '一段住中旅程，三次与苏绣相遇。',
         journeyLead: '从一幅绣意、一缕丝光到第一针，按自己的节奏慢慢认识。',
         chapters: [
-          ['01', '大堂 · 观绣', '循长卷与微距，发现姑苏的绣意。', '/immersive?focus=artwork'],
+          ['01', '大堂 · 观绣', '从整幅花韵到局部线向，发现苏绣的层次。', '/immersive?focus=artwork'],
           ['02', '客房 · 识线', '看丝线的色阶与光泽，认识劈丝。', '/immersive?focus=silk'],
           ['03', '工坊 · 试针', '沿上绷、配线与起针，尝试第一针。', '/immersive?focus=workbench'],
         ],
@@ -90,7 +90,7 @@ export function PremiumHomePage() {
         journeyTitle: 'One stay, three encounters with Su embroidery.',
         journeyLead: 'Heritage is not treated as a detached display. It enters the natural rhythm of arrival, pause and participation.',
         chapters: [
-          ['01', 'Lobby · Observe', 'Explore Suzhou through a scroll and its details.', '/immersive?focus=artwork'],
+          ['01', 'Lobby · Observe', 'From the full floral composition to the thread directions in its details.', '/immersive?focus=artwork'],
           ['02', 'Room · Read the thread', 'Discover silk splitting, colour and lustre.', '/immersive?focus=silk'],
           ['03', 'Atelier · Take a stitch', 'Follow mounting, threading and your first stitch.', '/immersive?focus=workbench'],
         ],

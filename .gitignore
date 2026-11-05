@@ -12,3 +12,4 @@ web/coverage/
 .cache/
 .venv/
 __pycache__/
+.tmp-build/

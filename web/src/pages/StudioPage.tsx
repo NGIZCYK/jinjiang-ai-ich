@@ -32,6 +32,7 @@ export function StudioPage() {
   const [checks, setChecks] = useState([false, false, false])
   const [notes, setNotes] = useState(restored?.notes ?? '')
   const [approved, setApproved] = useState(false)
+  const [saveId, setSaveId] = useState(() => crypto.randomUUID())
   const [saved, setSaved] = useState(false)
   const [stale, setStale] = useState(restored?.stale ?? false)
   const [busy, setBusy] = useState(false)
@@ -62,13 +63,23 @@ export function StudioPage() {
     setDraftStatus(ok ? 'saved' : 'unavailable')
     return ok
   }
+  const latestDraft = useRef({ inputs, context, title, body, notes, checks, provider, stale })
+  latestDraft.current = { inputs, context, title, body, notes, checks, provider, stale }
+  const savedRef = useRef(saved)
+  savedRef.current = saved
+  useEffect(() => () => {
+    const current = latestDraft.current
+    if (!savedRef.current && (current.body.trim() || current.title.trim())) writeStudioDraft(owner, current)
+  }, [owner])
   useEffect(() => {
     if (saved) { removeStudioDraft(owner); setDraftStatus('empty'); return }
-    if (body.trim() || title.trim()) stash()
+    if (!body.trim() && !title.trim()) return
+    const timer = setTimeout(() => { stash() }, 500)
+    return () => clearTimeout(timer)
   }, [owner, inputs, context, title, body, notes, checks, provider, stale, saved])
   useEffect(() => {
     if (!body.trim() || saved) return
-    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = '' }
+    const warn = (event: BeforeUnloadEvent) => { stash(); event.preventDefault(); event.returnValue = '' }
     window.addEventListener('beforeunload', warn)
     return () => window.removeEventListener('beforeunload', warn)
   }, [body, saved])
@@ -129,15 +140,22 @@ export function StudioPage() {
     setSaving(true)
     setFailed(false)
     try {
-      await addContent(context.task, title.trim(), content, context.language, notes.trim())
-      setSaved(true)
-      setMessage(t('已保存到内容库，原有记录保留。', 'Saved to the content library; earlier records are preserved.'))
+      await addContent(context.task, title.trim(), content, context.language, notes.trim(), saveId)
     } catch (e) {
       setFailed(true)
       setMessage(actionError(e, language))
-    } finally {
       setSaving(false)
+      return
     }
+    setSaved(true)
+    setMessage(t('已保存到内容库，原有记录保留。', 'Saved to the content library; earlier records are preserved.'))
+    try {
+      await refresh()
+    } catch {
+      setFailed(false)
+      setMessage(t('内容已保存，但内容库刷新失败，请稍后点击刷新内容库。', 'Content saved, but the library could not refresh. Refresh the library shortly.'))
+    }
+    setSaving(false)
   }
   function open(item: GeneratedContent) {
     if (!confirmReplace()) return
@@ -190,6 +208,7 @@ export function StudioPage() {
         { id: 'workbench', label: t('生成工作台', 'Workbench') },
         { id: 'library', label: t('内容库', 'Library'), count: contents.length },
       ]}
+      panelId={id => `ops-studio-${id}`}
     />
 
     {(restored || body) && <div className="studio-draft-status" role="status">      <span>{draftStatus === 'unavailable'
@@ -201,7 +220,7 @@ export function StudioPage() {
 
     {message && <OpsNotice error={failed}>{message}</OpsNotice>}
 
-    {view === 'workbench' ? <>
+    {view === 'workbench' ? <div role="tabpanel" id="ops-studio-workbench" aria-labelledby="ops-studio-workbench-tab" className="ops-tabpanel">
       <ol className="studio-workflow" aria-label={t('内容工作流', 'Content workflow')}>
         <li>01 · {t('定义需求', 'Define needs')}</li>
         <li>02 · {t('生成与编辑', 'Generate and edit')}</li>
@@ -276,14 +295,14 @@ export function StudioPage() {
               </div>
               <label className="ops-field">{t('审核意见', 'Review notes')}<textarea className="ops-input" value={notes} maxLength={1500} placeholder={t('填写本次核对结果与修改意见', 'Record the checks and changes you made')} onChange={e => { setNotes(e.target.value); setApproved(false) }} /></label>
               <div className="ops-actions">
-                <button type="button" className="ops-btn ops-btn-secondary" disabled={!canApprove} onClick={() => setApproved(true)}>{t('确认审核通过', 'Approve content')}</button>
+                <button type="button" className="ops-btn ops-btn-secondary" disabled={!canApprove} onClick={() => { setSaveId(crypto.randomUUID()); setApproved(true) }}>{t('确认审核通过', 'Approve content')}</button>
                 <button type="button" className="ops-btn ops-btn-primary" disabled={saving || saved || !approved || !canApprove} onClick={() => void save()}>{saving ? t('保存中…', 'Saving…') : t('保存到内容库', 'Save to content library')}</button>
               </div>
             </fieldset>
           </section>}
         </div>
       </div>
-    </> : <section className="ops-card" id="content-library">
+    </div> : <div role="tabpanel" id="ops-studio-library" aria-labelledby="ops-studio-library-tab" className="ops-tabpanel"><section className="ops-card" id="content-library">
       <div className="ops-card-head">
         <div>
           <h2>{t('内容库', 'Content library')} · {items.length}</h2>
@@ -314,6 +333,6 @@ export function StudioPage() {
           <button type="button" className="ops-btn ops-btn-secondary ops-btn-sm" onClick={() => open(item)}>{t('打开为新草稿', 'Open as a new draft')}</button>
         </article>)}
       </div>}
-    </section>}
+    </section></div>}
   </div>
 }

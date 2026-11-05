@@ -11,6 +11,7 @@ import { Layout } from '../src/components/Layout'
 import { OpsShell } from '../src/components/ops/OpsShell'
 import { AuthPage } from '../src/pages/AuthPage'
 import { readStudioDraft } from '../src/lib/studioDraft'
+import { OpsTabs } from '../src/components/ops/OpsUI'
 import { readContinuation, rememberContinuation } from '../src/lib/journeyFlow'
 
 const api=vi.hoisted(()=>({fetch:vi.fn()}))
@@ -32,7 +33,7 @@ describe('operator workspace drafts',()=>{
   const editor=await screen.findByLabelText('正文')
   fireEvent.change(editor,{target:{value:'My edited draft'}})
   fireEvent.change(screen.getByLabelText('内容标题'),{target:{value:'Saved local title'}})
-  expect(readStudioDraft('ops-1')?.body).toBe('My edited draft')
+  await waitFor(()=>expect(readStudioDraft('ops-1')?.body).toBe('My edited draft'))
   view.unmount();show(StudioPage)
   expect((screen.getByLabelText('正文') as HTMLTextAreaElement).value).toBe('My edited draft')
   expect((screen.getByLabelText('内容标题') as HTMLInputElement).value).toBe('Saved local title')
@@ -172,7 +173,7 @@ describe('homepage continuation and motion',()=>{
   expect(arrow.getAttribute('href')).toBe('#stay-chapters');expect(chapters.tabIndex).toBe(-1)
   const chapterLinks=Array.from(chapters.querySelectorAll<HTMLAnchorElement>('.home-journey-item'))
   expect(chapterLinks.map(link=>link.getAttribute('href'))).toEqual(['/immersive?focus=artwork','/immersive?focus=silk','/immersive?focus=workbench'])
-  expect(chapterLinks.map(link=>link.querySelector('img')?.getAttribute('src'))).toEqual(['/assets/suxiu-gusu-prosperous.webp','/assets/suxiu-silk-splitting-20261029.webp','/assets/suxiu-step-03-stitching.webp'])
+  expect(chapterLinks.map(link=>link.querySelector('img')?.getAttribute('src'))).toEqual(['/assets/suxiu-floral-huayun-card-20261104.webp','/assets/silk-pastel-tray-20261103.webp','/assets/suxiu-step-03-stitching.webp'])
   expect(chapterLinks.every(link=>link.querySelector('img')?.alt&&link.querySelector('h3')?.id===link.getAttribute('aria-labelledby'))).toBe(true)
   expect(within(intro).getByRole('link',{name:language==='zh'?'咨询婉娘':'Meet Wanniang'}).getAttribute('href')).toBe('/guide')
   expect(within(intro).getByRole('link',{name:language==='zh'?'开始探索':'Enter the embroidery atelier'}).getAttribute('href')).toBe('/immersive')
@@ -216,5 +217,31 @@ describe('homepage continuation and motion',()=>{
   act(()=>{height+=24;callbacks.forEach(callback=>callback())})
   expect(shell.style.getPropertyValue('--home-header-height')).toBe(`${height}px`)
   view.unmount();expect(disconnect).toHaveBeenCalledOnce()
+ })
+})
+
+describe('operations workspace tabs and content saves',()=>{
+ it('supports keyboard navigation between tabs',()=>{
+  const onChange=vi.fn()
+  render(createElement(OpsTabs,{label:'Views',value:'requests',onChange,items:[{id:'requests',label:'Requests'},{id:'participants',label:'Participants'}],panelId:(id:string)=>`panel-${id}`}))
+  const first=screen.getByRole('tab',{name:'Requests'})
+  expect(first.getAttribute('aria-controls')).toBe('panel-requests')
+  expect(first.getAttribute('tabindex')).toBe('0')
+  expect(screen.getByRole('tab',{name:'Participants'}).getAttribute('tabindex')).toBe('-1')
+  fireEvent.keyDown(first,{key:'ArrowRight'});expect(onChange).toHaveBeenCalledWith('participants')
+  fireEvent.keyDown(first,{key:'End'});expect(onChange).toHaveBeenCalledWith('participants')
+  fireEvent.keyDown(first,{key:'Home'});expect(onChange).toHaveBeenCalledWith('requests')
+ })
+ it('keeps a saved draft when the content library refresh fails',async()=>{
+  useAppStore.setState({refreshContents:vi.fn(async()=>{throw new Error('REFRESH_FAILED')})})
+  show(StudioPage)
+  fireEvent.click(screen.getByRole('button',{name:'生成草稿'}))
+  await screen.findByLabelText('正文')
+  fireEvent.change(screen.getByLabelText('审核意见'),{target:{value:'Checked sources and duration'}})
+  screen.getAllByRole('checkbox').forEach(box=>fireEvent.click(box))
+  fireEvent.click(screen.getByRole('button',{name:'确认审核通过'}))
+  fireEvent.click(screen.getByRole('button',{name:'保存到内容库'}))
+  await screen.findByText(/内容已保存，但内容库刷新失败/)
+  expect((screen.getByRole('button',{name:'保存到内容库'}) as HTMLButtonElement).disabled).toBe(true)
  })
 })
